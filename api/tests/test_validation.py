@@ -6,7 +6,7 @@ import pytest
 from app.series.validation import SerieInvalida, validar_serie
 
 HOY = date(2026, 11, 9)
-BASE = {"fecha": "2026-11-01", "ejercicio": "Press banca", "peso_kg": 80, "repeticiones": 8}
+BASE = {"fecha": "2026-11-01", "ejercicio_id": 3, "peso_kg": 80, "repeticiones": 8}
 
 
 def con(**cambios):
@@ -16,7 +16,7 @@ def con(**cambios):
 def test_serie_valida():
     s = validar_serie(BASE)
     assert s.fecha == date(2026, 11, 1)
-    assert s.ejercicio == "Press banca"
+    assert s.ejercicio_id == 3
     assert s.peso_kg == Decimal(80)
     assert s.repeticiones == 8
 
@@ -29,10 +29,6 @@ def test_admite_decimales_y_coma():
 def test_sin_fecha_usa_hoy():
     assert validar_serie(con(fecha=None), hoy=HOY).fecha == HOY
     assert validar_serie(con(fecha=""), hoy=HOY).fecha == HOY
-
-
-def test_quita_espacios_del_ejercicio():
-    assert validar_serie(con(ejercicio="  Sentadilla ")).ejercicio == "Sentadilla"
 
 
 @pytest.mark.parametrize(
@@ -49,9 +45,11 @@ def test_quita_espacios_del_ejercicio():
         ({"repeticiones": 0}, "al menos 1"),
         ({"repeticiones": -1}, "al menos 1"),
         ({"repeticiones": 2.5}, "entero"),
-        ({"ejercicio": ""}, "Falta el ejercicio"),
-        ({"ejercicio": "   "}, "Falta el ejercicio"),
-        ({"ejercicio": 5}, "Falta el ejercicio"),
+        ({"ejercicio_id": None}, "Falta el ejercicio"),
+        ({"ejercicio_id": ""}, "Falta el ejercicio"),
+        ({"ejercicio_id": "3"}, "ejercicio no es válido"),
+        ({"ejercicio_id": 0}, "ejercicio no es válido"),
+        ({"ejercicio_id": True}, "ejercicio no es válido"),
         ({"fecha": "ayer"}, "fecha"),
     ],
 )

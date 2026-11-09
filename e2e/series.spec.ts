@@ -5,18 +5,18 @@ test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("serie"));
 });
 
-test("registrar press banca 80 × 8 y verla en la lista", async ({ page }) => {
-  await registrarSerie(page, "Press banca", "80", "8");
+test("registrar press de banca 80 × 8 y verla en la lista", async ({ page }) => {
+  await registrarSerie(page, "Press de banca", "80", "8");
 
   const lista = page.getByRole("list", { name: "Series" });
-  await expect(lista).toContainText("Press banca · 80 kg × 8");
+  await expect(lista).toContainText("Press de banca · 80 kg × 8");
 
   await page.reload();
-  await expect(lista).toContainText("Press banca · 80 kg × 8");
+  await expect(lista).toContainText("Press de banca · 80 kg × 8");
 });
 
 test("con el peso vacío sale el aviso y no se guarda", async ({ page }) => {
-  await registrarSerie(page, "Press banca", "", "8");
+  await registrarSerie(page, "Press de banca", "", "8");
 
   await expect(page.getByRole("alert")).toHaveText("Falta el peso");
   await page.reload();

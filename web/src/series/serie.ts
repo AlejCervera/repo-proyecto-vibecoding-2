@@ -1,6 +1,9 @@
+import type { Ejercicio } from "../ejercicios/ejercicio";
+
 export type Serie = {
   id: number;
   fecha: string;
+  ejercicio_id: number;
   ejercicio: string;
   peso_kg: number;
   repeticiones: number;
@@ -8,7 +11,7 @@ export type Serie = {
 
 export type FormularioSerie = {
   fecha: string;
-  ejercicio: string;
+  ejercicio: Ejercicio | null;
   peso: string;
   repeticiones: string;
 };
@@ -18,7 +21,7 @@ export function aPeticion(f: FormularioSerie) {
   const numero = (v: string) => (v.trim() === "" ? null : v.trim());
   return {
     fecha: f.fecha || null,
-    ejercicio: f.ejercicio,
+    ejercicio_id: f.ejercicio?.id ?? null,
     peso_kg: numero(f.peso),
     repeticiones: numero(f.repeticiones),
   };

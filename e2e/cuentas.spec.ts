@@ -35,13 +35,13 @@ test("dos cuentas no ven las series de la otra", async ({ browser }) => {
   await registrar(a, nombreUnico("ana"));
   await registrar(b, nombreUnico("bea"));
 
-  await registrarSerie(a, "Press banca", "80", "8");
+  await registrarSerie(a, "Press de banca", "80", "8");
   await registrarSerie(b, "Sentadilla", "100", "5");
-  await expect(a.getByRole("list", { name: "Series" })).toContainText("Press banca · 80 kg × 8");
+  await expect(a.getByRole("list", { name: "Series" })).toContainText("Press de banca · 80 kg × 8");
   await expect(b.getByRole("list", { name: "Series" })).toContainText("Sentadilla · 100 kg × 5");
 
   await a.reload();
   await b.reload();
   await expect(a.getByRole("list", { name: "Series" })).not.toContainText("Sentadilla");
-  await expect(b.getByRole("list", { name: "Series" })).not.toContainText("Press banca");
+  await expect(b.getByRole("list", { name: "Series" })).not.toContainText("Press de banca");
 });

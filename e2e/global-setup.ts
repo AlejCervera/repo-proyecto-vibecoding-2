@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { API_URL, PROYECTO, WEB_URL, envDocker } from "./entorno";
 
 async function esperar(url: string, segundos = 90) {
@@ -20,4 +21,10 @@ export default async function globalSetup() {
   });
   await esperar(`${API_URL}/health`);
   await esperar(WEB_URL);
+  // Catálogo pequeño de prueba (no se llama a wger.de en los e2e).
+  execSync(`docker compose -p ${PROYECTO} exec -T api python -m app.importar_wger --archivo -`, {
+    env: envDocker,
+    input: readFileSync(new URL("./fixtures/wger.json", import.meta.url)),
+    stdio: ["pipe", "inherit", "inherit"],
+  });
 }

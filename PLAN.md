@@ -54,16 +54,33 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** elegir ejercicios del catálogo o crear los propios.
 
 **Tareas:**
-- [ ] Tabla de ejercicios (base compartida o propios de un usuario), sin duplicados por usuario.
+- [x] Tabla de ejercicios (base compartida o propios de un usuario), sin duplicados por usuario.
   - Duplicado = mismo nombre ignorando mayúsculas, tildes y espacios sobrantes («Press banca» = «press  bánca »). También cuenta como duplicado si coincide con uno del catálogo base.
   - Al crear uno que ya existe, la app avisa y ofrece usar el existente en vez de crearlo.
-- [ ] Script de importación única desde wger (comprobar antes que la API sigue activa y su licencia).
-- [ ] El registro elige de la lista, con búsqueda y opción de crear uno propio.
+- [x] Script de importación única desde wger (comprobar antes que la API sigue activa y su licencia).
+  - Comprobado (2026-11-09): API activa, sin autenticación; 966 ejercicios, 644 con nombre en español. Licencia por ejercicio, casi siempre CC-BY-SA: guardar licencia y autor y mostrar la atribución a wger.de.
+  - Nombre en español y, si no lo tiene, en inglés. Solo nombres (sin descripciones).
+- [x] Las series pasan de ejercicio en texto a `ejercicio_id`; las existentes se conservan convertidas en ejercicios propios.
+- [x] El registro elige de la lista, con búsqueda y opción de crear uno propio.
 
 **Pruebas:**
 - Unitarias de duplicados; API de ejercicios; importación probada con datos simulados; e2e: crear y usar un ejercicio propio.
 
 **Hecho cuando:** buscas un ejercicio importado y creas uno propio, y ambos se usan al registrar.
+
+## Fase 3b · Imágenes de ejercicios
+
+**Objetivo:** ver una imagen explicativa de cada ejercicio que la tenga.
+
+**Tareas:**
+- [ ] Importar las imágenes de wger (389 imágenes, ~38 % de los ejercicios): descargarlas una vez y guardarlas en local, con licencia y autor; la app no depende de wger después.
+- [ ] Subir una imagen propia a un ejercicio propio o a uno del catálogo que no tenga, con límite de tamaño y tipo (avisar antes si hace falta una dependencia para recibir archivos).
+- [ ] Mostrar la imagen al elegir el ejercicio y en su historial, con la atribución cuando venga de wger.
+
+**Pruebas:**
+- Importación de imágenes con datos simulados; API de subida (tipo y tamaño inválidos → 400, imagen de otro usuario no visible); e2e: subir una imagen y verla.
+
+**Hecho cuando:** un ejercicio importado muestra su imagen de wger y uno propio muestra la que has subido, también tras reiniciar los contenedores.
 
 ## Fase 4 · Historial por ejercicio
 

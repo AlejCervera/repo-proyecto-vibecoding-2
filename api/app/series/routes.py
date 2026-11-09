@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.auth.dependencies import usuario_actual
+from app.ejercicios import repository as ejercicios
 from app.series import repository
 from app.series.validation import SerieInvalida, validar_serie
 
@@ -25,4 +26,6 @@ def crear_serie(usuario: Usuario, datos: Annotated[Any, Body()] = None):
     except SerieInvalida as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     with db.connect() as conn:
+        if not ejercicios.visible(conn, usuario["id"], serie.ejercicio_id):
+            return JSONResponse({"error": "El ejercicio no existe"}, status_code=400)
         return repository.crear(conn, usuario["id"], serie)

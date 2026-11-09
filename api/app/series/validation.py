@@ -13,7 +13,7 @@ class SerieInvalida(ValueError):
 @dataclass(frozen=True)
 class NuevaSerie:
     fecha: date
-    ejercicio: str
+    ejercicio_id: int
     peso_kg: Decimal
     repeticiones: int
 
@@ -38,9 +38,11 @@ def validar_serie(datos: Any, hoy: date | None = None) -> NuevaSerie:
     if not isinstance(datos, dict):
         raise SerieInvalida("Los datos de la serie no son válidos")
 
-    ejercicio = datos.get("ejercicio")
-    if _vacio(ejercicio) or not isinstance(ejercicio, str):
+    ejercicio_id = datos.get("ejercicio_id")
+    if _vacio(ejercicio_id):
         raise SerieInvalida("Falta el ejercicio")
+    if isinstance(ejercicio_id, bool) or not isinstance(ejercicio_id, int) or ejercicio_id < 1:
+        raise SerieInvalida("El ejercicio no es válido")
 
     if _vacio(datos.get("peso_kg")):
         raise SerieInvalida("Falta el peso")
@@ -70,5 +72,5 @@ def validar_serie(datos: Any, hoy: date | None = None) -> NuevaSerie:
             raise SerieInvalida("La fecha no es válida") from None
 
     return NuevaSerie(
-        fecha=fecha, ejercicio=ejercicio.strip(), peso_kg=peso, repeticiones=int(reps)
+        fecha=fecha, ejercicio_id=ejercicio_id, peso_kg=peso, repeticiones=int(reps)
     )

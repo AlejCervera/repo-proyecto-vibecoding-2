@@ -7,6 +7,7 @@ from starlette.exceptions import HTTPException
 
 from app import db
 from app.auth.routes import router as auth_router
+from app.ejercicios.routes import router as ejercicios_router
 from app.health import check_database
 from app.migrate import migrate
 from app.series.routes import router as series_router
@@ -21,6 +22,7 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="Gym Log API", lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(ejercicios_router)
 app.include_router(series_router)
 
 

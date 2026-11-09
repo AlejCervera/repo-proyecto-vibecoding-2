@@ -4,6 +4,8 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
+from app.ejercicios.nombres import normalizar
+from app.ejercicios.repository import insertar_base
 from app.main import app
 from app.migrate import migrate
 
@@ -20,8 +22,27 @@ def conn():
     """Conexión al Postgres de pruebas, migrado y con las tablas vacías."""
     with psycopg.connect(TEST_DB, autocommit=True) as c:
         migrate(c)
-        c.execute("TRUNCATE series, sesiones, usuarios RESTART IDENTITY CASCADE")
+        c.execute("TRUNCATE series, sesiones, ejercicios, usuarios RESTART IDENTITY CASCADE")
         yield c
+
+
+def base(nombre: str, wger_id: int) -> dict:
+    return {
+        "wger_id": wger_id,
+        "nombre": nombre,
+        "nombre_normalizado": normalizar(nombre),
+        "licencia": "CC-BY-SA 4",
+        "autor": "autor",
+    }
+
+
+@pytest.fixture
+def catalogo(conn) -> dict[str, int]:
+    """Catálogo base pequeño. Devuelve {nombre: id}."""
+    nombres = ["Press de banca", "Press militar", "Sentadilla", "Peso muerto", "Remo con barra"]
+    insertar_base(conn, [base(n, i) for i, n in enumerate(nombres, start=1)])
+    rows = conn.execute("SELECT nombre, id FROM ejercicios").fetchall()
+    return dict(rows)
 
 
 @pytest.fixture(autouse=True)

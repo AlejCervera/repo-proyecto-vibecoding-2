@@ -1,18 +1,25 @@
 import { useState, type FormEvent } from "react";
 import { crearSerie } from "../api/series";
+import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { aPeticion, hoyISO, type FormularioSerie, type Serie } from "./serie";
 
 type Props = { onCreada: (s: Serie) => void };
 
-const vacio = (): FormularioSerie => ({ fecha: hoyISO(), ejercicio: "", peso: "", repeticiones: "" });
+const vacio = (): FormularioSerie => ({
+  fecha: hoyISO(),
+  ejercicio: null,
+  peso: "",
+  repeticiones: "",
+});
 
 export function SeriesForm({ onCreada }: Props) {
   const [form, setForm] = useState<FormularioSerie>(vacio);
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const cambiar = (campo: keyof FormularioSerie) => (e: { target: { value: string } }) =>
-    setForm({ ...form, [campo]: e.target.value });
+  const cambiar =
+    (campo: "fecha" | "peso" | "repeticiones") => (e: { target: { value: string } }) =>
+      setForm({ ...form, [campo]: e.target.value });
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -21,6 +28,7 @@ export function SeriesForm({ onCreada }: Props) {
     try {
       const creada = await crearSerie(aPeticion(form));
       onCreada(creada);
+      // El ejercicio se queda elegido para registrar varias series seguidas.
       setForm({ ...form, peso: "", repeticiones: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -35,10 +43,10 @@ export function SeriesForm({ onCreada }: Props) {
         Fecha
         <input type="date" value={form.fecha} onChange={cambiar("fecha")} />
       </label>
-      <label>
-        Ejercicio
-        <input value={form.ejercicio} onChange={cambiar("ejercicio")} />
-      </label>
+      <EjercicioPicker
+        value={form.ejercicio}
+        onChange={(ejercicio) => setForm((f) => ({ ...f, ejercicio }))}
+      />
       <label>
         Peso (kg)
         <input inputMode="decimal" value={form.peso} onChange={cambiar("peso")} />

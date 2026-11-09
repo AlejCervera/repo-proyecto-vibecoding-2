@@ -39,6 +39,19 @@ export function App() {
           <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />
         </>
       )}
+      <footer>
+        <small>
+          Catálogo de ejercicios:{" "}
+          <a href="https://wger.de" target="_blank" rel="noreferrer">
+            wger.de
+          </a>{" "}
+          (licencia{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
+            CC-BY-SA
+          </a>
+          ).
+        </small>
+      </footer>
     </main>
   );
 }

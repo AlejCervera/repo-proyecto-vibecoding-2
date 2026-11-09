@@ -29,8 +29,17 @@ export async function salir(page: Page) {
   await expect(page.getByRole("heading", { name: "Iniciar sesión" })).toBeVisible();
 }
 
+/** Busca un ejercicio y lo elige de las sugerencias. */
+export async function elegirEjercicio(page: Page, busqueda: string, nombre: string) {
+  await page.getByLabel("Ejercicio").fill(busqueda);
+  await page.getByRole("list", { name: "Sugerencias" }).getByRole("button", { name: nombre, exact: true }).click();
+  await expect(page.getByText(`Ejercicio: ${nombre}`)).toBeVisible();
+}
+
 export async function registrarSerie(page: Page, ejercicio: string, peso: string, reps: string) {
-  await page.getByLabel("Ejercicio").fill(ejercicio);
+  const cambiar = page.getByRole("button", { name: "Cambiar" });
+  if (await cambiar.isVisible()) await cambiar.click();
+  await elegirEjercicio(page, ejercicio, ejercicio);
   await page.getByLabel("Peso (kg)").fill(peso);
   await page.getByLabel("Repeticiones").fill(reps);
   await page.getByRole("button", { name: "Guardar" }).click();
