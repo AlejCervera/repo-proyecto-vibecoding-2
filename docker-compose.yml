@@ -12,8 +12,11 @@ services:
   api:
     build: ./api
     env_file: .env
+    environment:
+      # Los e2e lo sustituyen por su propio código; si no, se usa el de .env.
+      INVITE_CODE: ${INVITE_CODE:-}
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -23,7 +26,7 @@ services:
     environment:
       API_URL: http://api:8000
     ports:
-      - "5173:5173"
+      - "${WEB_PORT:-5173}:5173"
     depends_on:
       - api
 

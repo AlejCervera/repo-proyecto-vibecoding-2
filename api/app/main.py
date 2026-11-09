@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException
 
 from app import db
+from app.auth.routes import router as auth_router
 from app.health import check_database
 from app.migrate import migrate
 from app.series.routes import router as series_router
@@ -18,12 +20,19 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Gym Log API", lifespan=lifespan)
+app.include_router(auth_router)
 app.include_router(series_router)
 
 
 @app.exception_handler(RequestValidationError)
 async def peticion_invalida(_request: Request, _exc: RequestValidationError):
     return JSONResponse({"error": "La petición no es válida"}, status_code=400)
+
+
+@app.exception_handler(HTTPException)
+async def error_http(_request: Request, exc: HTTPException):
+    """Todos los errores con la misma forma: {"error": "..."}."""
+    return JSONResponse({"error": exc.detail}, status_code=exc.status_code, headers=exc.headers)
 
 
 @app.get("/health")

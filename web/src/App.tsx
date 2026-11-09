@@ -1,26 +1,44 @@
-import { useEffect, useState } from "react";
-import { listarSeries } from "./api/series";
-import type { Serie } from "./series/serie";
-import { SeriesForm } from "./series/SeriesForm";
-import { SeriesList } from "./series/SeriesList";
+import { useCallback, useEffect, useState } from "react";
+import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
+import { AuthScreen } from "./auth/AuthScreen";
+import { SeriesPage } from "./series/SeriesPage";
 
 export const APP_NAME = "Gym Log";
 
 export function App() {
-  const [series, setSeries] = useState<Serie[]>([]);
+  // undefined = comprobando la sesión; null = sin sesión.
+  const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    listarSeries()
-      .then(setSeries)
+    usuarioActual()
+      .then(setUsuario)
       .catch((e: Error) => setError(e.message));
   }, []);
+
+  const sinSesion = useCallback(() => setUsuario(null), []);
+
+  async function salir() {
+    await cerrarSesion();
+    setUsuario(null);
+  }
 
   return (
     <main>
       <h1>{APP_NAME}</h1>
-      <SeriesForm onCreada={(s) => setSeries((prev) => [s, ...prev])} />
-      {error ? <p role="alert">{error}</p> : <SeriesList series={series} />}
+      {error && <p role="alert">{error}</p>}
+      {usuario === null && <AuthScreen onEntrar={setUsuario} />}
+      {usuario && (
+        <>
+          <p>
+            Hola, <strong>{usuario.nombre_usuario}</strong>{" "}
+            <button type="button" onClick={salir}>
+              Cerrar sesión
+            </button>
+          </p>
+          <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />
+        </>
+      )}
     </main>
   );
 }

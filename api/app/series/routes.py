@@ -1,26 +1,28 @@
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Depends
 from fastapi.responses import JSONResponse
 
 from app import db
+from app.auth.dependencies import usuario_actual
 from app.series import repository
 from app.series.validation import SerieInvalida, validar_serie
 
 router = APIRouter(prefix="/series")
+Usuario = Annotated[dict, Depends(usuario_actual)]
 
 
 @router.get("")
-def listar_series():
+def listar_series(usuario: Usuario):
     with db.connect() as conn:
-        return repository.listar(conn)
+        return repository.listar(conn, usuario["id"])
 
 
 @router.post("", status_code=201)
-def crear_serie(datos: Annotated[Any, Body()] = None):
+def crear_serie(usuario: Usuario, datos: Annotated[Any, Body()] = None):
     try:
         serie = validar_serie(datos)
     except SerieInvalida as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     with db.connect() as conn:
-        return repository.crear(conn, serie)
+        return repository.crear(conn, usuario["id"], serie)

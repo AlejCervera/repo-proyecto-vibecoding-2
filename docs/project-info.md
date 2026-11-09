@@ -8,6 +8,7 @@ Dos personas (yo y mi novia). Cada una tiene su cuenta y su propio historial, y 
 
 ## Funciones
 - Crear cuenta e iniciar y cerrar sesión (usuario y contraseña). Cada cuenta solo ve sus datos.
+- App privada: para crear cuenta hace falta un código de invitación (`INVITE_CODE`); sin código, el registro está cerrado.
 - Elegir un ejercicio del catálogo o crear uno propio.
 - Registrar series: fecha, ejercicio, peso (kg) y repeticiones. Cada serie es un registro propio.
 - Ver el historial completo de series de un ejercicio, ordenado por fecha.
@@ -39,7 +40,7 @@ Dos personas (yo y mi novia). Cada una tiene su cuenta y su propio historial, y 
 - Ejercicio: nombre; del catálogo base (compartido) o propio de un usuario.
 - Serie: usuario, fecha, ejercicio, peso en kg y repeticiones.
 - Rutina: usuario, nombre y lista ordenada de ejercicios.
-- Claves en `.env` (nunca en git), con nombres en `.env.example`: `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SESSION_SECRET`.
+- Claves en `.env` (nunca en git), con nombres en `.env.example`: `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SESSION_SECRET`, `INVITE_CODE`, `COOKIE_SECURE`.
 - En desarrollo se usan valores inventados; las claves de producción no se tocan sin permiso.
 
 ## Cómo se prueba

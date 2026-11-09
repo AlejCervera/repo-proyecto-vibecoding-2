@@ -38,10 +38,11 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** cada persona ve solo sus datos.
 
 **Tareas:**
-- [ ] Registro, login y logout; contraseña con hash; sesión en cookie httpOnly; `SESSION_SECRET` en `.env`.
-- [ ] Las series pertenecen a un usuario; sin sesión la API responde 401.
-- [ ] Pantallas de registro e inicio de sesión.
-- [ ] Los e2e usan su propia base de datos, no la de desarrollo (hoy escriben en ella con nombres «e2e-…»).
+- [x] Registro, login y logout; contraseña con hash; sesión en cookie httpOnly; `SESSION_SECRET` en `.env`.
+- [x] App privada: registrarse exige el código `INVITE_CODE` de `.env`; si está vacío, el registro queda cerrado.
+- [x] Las series pertenecen a un usuario; sin sesión la API responde 401.
+- [x] Pantallas de registro e inicio de sesión.
+- [x] Los e2e usan su propia base de datos, no la de desarrollo (proyecto Docker `gymlog-e2e`, puertos 5174/8001).
 
 **Pruebas:**
 - API: 401 sin sesión, aislamiento entre dos usuarios; e2e: registro, login y logout.
@@ -54,6 +55,8 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Tareas:**
 - [ ] Tabla de ejercicios (base compartida o propios de un usuario), sin duplicados por usuario.
+  - Duplicado = mismo nombre ignorando mayúsculas, tildes y espacios sobrantes («Press banca» = «press  bánca »). También cuenta como duplicado si coincide con uno del catálogo base.
+  - Al crear uno que ya existe, la app avisa y ofrece usar el existente en vez de crearlo.
 - [ ] Script de importación única desde wger (comprobar antes que la API sigue activa y su licencia).
 - [ ] El registro elige de la lista, con búsqueda y opción de crear uno propio.
 
@@ -131,6 +134,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Tareas:**
 - [ ] Explicar dónde y cómo alojarlo, qué claves de producción harían falta y esperar un «adelante» específico antes de tocar nada.
+- [ ] Antes de publicar: limitar intentos de login y de código de invitación, HTTPS con `COOKIE_SECURE=true` y vaciar `INVITE_CODE` cuando existan las dos cuentas.
 
 **Hecho cuando:** hay permiso explícito y la app funciona en ambos móviles.
 

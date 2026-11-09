@@ -11,7 +11,7 @@ export function simularFetch(...respuestas: { status: number; body: unknown }[])
   const fn = vi.fn();
   for (const r of respuestas) {
     fn.mockResolvedValueOnce(
-      new Response(JSON.stringify(r.body), {
+      new Response(r.status === 204 ? null : JSON.stringify(r.body), {
         status: r.status,
         headers: { "Content-Type": "application/json" },
       }),
