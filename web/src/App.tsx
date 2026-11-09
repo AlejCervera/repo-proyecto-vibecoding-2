@@ -4,6 +4,8 @@ import { AuthScreen } from "./auth/AuthScreen";
 import { HistorialPage } from "./historial/HistorialPage";
 import { MisEjerciciosPage } from "./ejercicios/MisEjerciciosPage";
 import { enlace, useRuta } from "./navegacion";
+import { RutinaPage } from "./rutinas/RutinaPage";
+import { RutinasPage } from "./rutinas/RutinasPage";
 import { SeriesPage } from "./series/SeriesPage";
 
 export const APP_NAME = "Gym Log";
@@ -42,8 +44,19 @@ export function App() {
           </p>
           <nav aria-label="Secciones">
             <a href={enlace({ pantalla: "diario" })}>Diario</a> ·{" "}
+            <a href={enlace({ pantalla: "rutinas" })}>Rutinas</a> ·{" "}
             <a href={enlace({ pantalla: "ejercicios" })}>Mis ejercicios</a>
           </nav>
+          {ruta.pantalla === "rutinas" && (
+            <RutinasPage key={usuario.id} onSesionCaducada={sinSesion} />
+          )}
+          {ruta.pantalla === "rutina" && (
+            <RutinaPage
+              key={`${usuario.id}-${ruta.rutinaId}`}
+              rutinaId={ruta.rutinaId}
+              onSesionCaducada={sinSesion}
+            />
+          )}
           {ruta.pantalla === "historial" && (
             <HistorialPage
               key={`${usuario.id}-${ruta.ejercicioId}`}

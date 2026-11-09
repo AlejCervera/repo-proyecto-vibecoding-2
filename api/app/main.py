@@ -11,6 +11,8 @@ from app.ejercicios.routes import router as ejercicios_router
 from app.health import check_database
 from app.imagenes.routes import router as imagenes_router
 from app.migrate import migrate
+from app.rutinas import predefinidas
+from app.rutinas.routes import router as rutinas_router
 from app.series.historial import router as historial_router
 from app.series.routes import router as series_router
 
@@ -19,6 +21,7 @@ from app.series.routes import router as series_router
 async def lifespan(_app: FastAPI):
     with db.connect() as conn:
         migrate(conn)
+        predefinidas.sembrar(conn)
     yield
 
 
@@ -27,6 +30,7 @@ app.include_router(auth_router)
 app.include_router(ejercicios_router)
 app.include_router(imagenes_router)
 app.include_router(historial_router)
+app.include_router(rutinas_router)
 app.include_router(series_router)
 
 

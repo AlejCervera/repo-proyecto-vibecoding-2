@@ -114,9 +114,9 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** agrupar ejercicios en rutinas con nombre.
 
 **Tareas:**
-- [ ] Tablas y endpoints de rutinas: crear, renombrar, añadir y quitar ejercicios, borrar.
-- [ ] Pantallas de rutinas.
-- [ ] Rutinas predefinidas: plantillas compartidas que vienen con la app (p. ej. «Pecho», «Espalda» y otras clásicas que proponga el agente), con ejercicios del catálogo. No se modifican: «Copiar a mis rutinas» crea una propia editable. Cada usuario puede crear además las suyas con los ejercicios que quiera.
+- [x] Tablas y endpoints de rutinas: crear, renombrar, añadir y quitar ejercicios, borrar.
+- [x] Pantallas de rutinas, con reordenar ejercicios (↑/↓).
+- [x] Rutinas predefinidas: plantillas compartidas que vienen con la app (p. ej. «Pecho», «Espalda» y otras clásicas que proponga el agente), con ejercicios del catálogo (Pecho, Espalda, Pierna, Hombro, Brazos y Cuerpo completo, definidas en api/app/rutinas/predefinidas.py). No se modifican: «Copiar a mis rutinas» crea una propia editable. Cada usuario puede crear además las suyas con los ejercicios que quiera.
 
 **Pruebas:**
 - API de rutinas; plantillas visibles para todos y no editables; copiar una plantilla; e2e: «Pecho» con press banca y aperturas, renombrar y recargar.

@@ -22,7 +22,9 @@ def conn():
     """Conexión al Postgres de pruebas, migrado y con las tablas vacías."""
     with psycopg.connect(TEST_DB, autocommit=True) as c:
         migrate(c)
-        c.execute("TRUNCATE series, sesiones, ejercicios, usuarios RESTART IDENTITY CASCADE")
+        c.execute(
+            "TRUNCATE series, sesiones, rutinas, ejercicios, usuarios RESTART IDENTITY CASCADE"
+        )
         yield c
 
 

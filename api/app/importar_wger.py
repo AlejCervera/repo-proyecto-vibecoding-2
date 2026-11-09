@@ -15,6 +15,7 @@ from app import db
 from app.ejercicios import repository
 from app.ejercicios.wger import extraer_ejercicios, paginas
 from app.migrate import migrate
+from app.rutinas import predefinidas
 
 
 def leer_archivo(ruta: str) -> list[dict[str, Any]]:
@@ -40,7 +41,9 @@ def main(argv: list[str] | None = None) -> None:
     with db.connect() as conn:
         migrate(conn)
         leidos, nuevos = importar(conn, resultados)
+        rutinas = predefinidas.sembrar(conn)
     print(f"Ejercicios leídos: {leidos}. Nuevos en el catálogo: {nuevos}.")
+    print(f"Rutinas predefinidas disponibles: {rutinas}.")
 
 
 if __name__ == "__main__":
