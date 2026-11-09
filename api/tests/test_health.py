@@ -1,20 +1,7 @@
-import os
-
-import pytest
 from fastapi.testclient import TestClient
 
 from app.health import check_database
 from app.main import app
-
-TEST_DB = os.environ.get(
-    "TEST_DATABASE_URL", "postgresql://gymlog:dev-password-inventada@localhost:5433/gymlog_test"
-)
-
-
-@pytest.fixture
-def client(monkeypatch):
-    monkeypatch.setenv("DATABASE_URL", TEST_DB)
-    return TestClient(app)
 
 
 def test_health_ok_con_postgres_de_pruebas(client):

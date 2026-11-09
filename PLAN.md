@@ -24,9 +24,9 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** guardar series en Postgres y verlas en una lista.
 
 **Tareas:**
-- [ ] Primera migración y tabla de series (fecha, ejercicio como texto, peso, repeticiones).
-- [ ] Endpoints para crear y listar series, con validación (peso vacío o ≤ 0, reps < 1 → 400).
-- [ ] Formulario y lista en la web, con aviso de error.
+- [x] Primera migración y tabla de series (fecha, ejercicio como texto, peso, repeticiones).
+- [x] Endpoints para crear y listar series, con validación (peso vacío o ≤ 0, reps < 1 → 400).
+- [x] Formulario y lista en la web, con aviso de error.
 
 **Pruebas:**
 - Unitarias de validación; API contra Postgres de pruebas; e2e: press banca 80 × 8 aparece.
@@ -41,6 +41,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 - [ ] Registro, login y logout; contraseña con hash; sesión en cookie httpOnly; `SESSION_SECRET` en `.env`.
 - [ ] Las series pertenecen a un usuario; sin sesión la API responde 401.
 - [ ] Pantallas de registro e inicio de sesión.
+- [ ] Los e2e usan su propia base de datos, no la de desarrollo (hoy escriben en ella con nombres «e2e-…»).
 
 **Pruebas:**
 - API: 401 sin sesión, aislamiento entre dos usuarios; e2e: registro, login y logout.
@@ -136,3 +137,4 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 ## Mejoras futuras (fuera de este plan)
 
 Exportar copia de seguridad, gráficas y récords, modo sin conexión.
+
