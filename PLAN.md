@@ -155,9 +155,10 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** controlar los descansos entre series.
 
 **Tareas:**
-- [ ] Cuenta atrás grande con botones rápidos (60 s, 90 s, 2 min, 3 min), pausa y reinicio; calculada por hora, no por contador.
-- [ ] Al terminar, sonido y vibración (vibración solo donde el navegador la permita: Android sí, iPhone no).
-- [ ] Al entrenar con una rutina, arranca solo al guardar una serie, con el último tiempo elegido.
+- [x] Cuenta atrás grande con botones rápidos (60 s, 90 s, 2 min, 3 min), pausa y reinicio; calculada por hora, no por contador.
+- [x] Al terminar, sonido y vibración (vibración solo donde el navegador la permita: Android sí, iPhone no).
+- [x] Al entrenar con una rutina, arranca solo al guardar una serie, con el último tiempo elegido.
+- [x] Mientras se entrena, se pide al navegador mantener la pantalla encendida (Wake Lock; Android y iOS 16.4+), lo que evita casi siempre el bloqueo entre series. Solo en el entrenamiento, no en el diario.
 - Limitación aceptada: con el móvil bloqueado el aviso puede no sonar hasta volver a la app (avisar en segundo plano exigiría PWA con notificaciones, fuera de este plan).
 
 **Pruebas:**

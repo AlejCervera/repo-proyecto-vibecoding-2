@@ -92,6 +92,31 @@ test("guardar todas las series marca el ejercicio como completado", async () => 
   expect(within(indice).getAllByRole("listitem")[0].textContent).toBe("Press de banca 2/2 ✓");
 });
 
+test("guardar una serie arranca el descanso con la última duración elegida", async () => {
+  localStorage.setItem("gymlog-descanso", "120000");
+  pintar(0, RUTINA, [], historial(10, "Press de banca", []), {
+    status: 201,
+    body: serie(20, HOY, 10, 60, 10),
+  });
+  const paso = await screen.findByRole("article", { name: "Press de banca" });
+  expect(screen.queryByRole("timer")).toBeNull();
+
+  fireEvent.change(within(paso).getByLabelText("Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(within(paso).getByRole("button", { name: "Guardar serie" }));
+
+  const reloj = await screen.findByRole("timer");
+  expect(reloj.textContent).toMatch(/^(2:00|1:59)$/);
+  expect(JSON.parse(sessionStorage.getItem("gymlog-cronometro")!).duracion).toBe(120_000);
+});
+
+test("elegir una duración la recuerda para las siguientes series", async () => {
+  pintar(0, RUTINA, [], historial(10, "Press de banca", []));
+  await screen.findByRole("article", { name: "Press de banca" });
+  fireEvent.click(screen.getByRole("button", { name: "60 s" }));
+  expect(screen.getByRole("timer").textContent).toMatch(/^(1:00|0:59)$/);
+  expect(localStorage.getItem("gymlog-descanso")).toBe("60000");
+});
+
 test("añadir y quitar series para hoy; no se puede quitar por debajo de las hechas", async () => {
   pintar(0, RUTINA, [serie(30, HOY, 10, 60, 10)], historial(10, "Press de banca", [serie(30, HOY, 10, 60, 10)]));
   const paso = await screen.findByRole("article", { name: "Press de banca" });

@@ -16,7 +16,7 @@ type Props = {
   repsMin: number | null;
   repsMax: number | null;
   onCambiarPrevistas: (n: number) => void;
-  /** Se llama tras guardar cada serie (aquí arrancará el cronómetro de descanso, Fase 7b). */
+  /** Se llama tras guardar cada serie (arranca el cronómetro de descanso). */
   onGuardada: (s: Serie) => void;
 };
 

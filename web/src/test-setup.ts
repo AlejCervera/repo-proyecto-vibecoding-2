@@ -5,6 +5,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   sessionStorage.clear();
+  localStorage.clear();
 });
 
 /** Simula fetch con una lista de respuestas, en orden. */

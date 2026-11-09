@@ -5,6 +5,16 @@ import { listarSeries } from "../api/series";
 import { enlace, enlaceRutina } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, type Serie } from "../series/serie";
+import { desbloquearAudio, useMantenerPantalla } from "./aviso";
+import {
+  guardarCronometro,
+  guardarDuracion,
+  iniciar,
+  leerCronometro,
+  leerDuracion,
+  type Cronometro,
+} from "./cronometro";
+import { CronometroPanel } from "./CronometroPanel";
 import { guardarAjustes, leerAjustes } from "./plan";
 import { PasoEjercicio } from "./PasoEjercicio";
 import { contarHoy } from "./progreso";
@@ -32,9 +42,23 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
       });
   }, [rutinaId, onSesionCaducada]);
 
+  // Descanso: se recuerda para no perderlo al recargar; arranca solo al guardar una serie.
+  const [cronometro, setCronometro] = useState<Cronometro | null>(() => leerCronometro());
+  useMantenerPantalla();
+
   function cambiarAjustes(nuevos: Record<number, number>) {
     setAjustes(nuevos);
     guardarAjustes(rutinaId, hoy, nuevos);
+  }
+
+  function cambiarCronometro(c: Cronometro | null) {
+    setCronometro(c);
+    guardarCronometro(c);
+  }
+
+  function elegirDuracion(ms: number) {
+    guardarDuracion(ms);
+    cambiarCronometro(iniciar(ms, Date.now()));
   }
 
   const volver = <a href={enlaceRutina(rutinaId)}>← Volver a la rutina</a>;
@@ -64,7 +88,8 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
   const e = actual === null ? null : ejercicios[actual];
 
   return (
-    <section>
+    // Cualquier toque desbloquea el sonido (iPhone solo lo permite tras una pulsación).
+    <section onPointerDown={desbloquearAudio}>
       {volver}
       <h2>Entrenando: {rutina.nombre}</h2>
       <ol aria-label="Ejercicios del entrenamiento">
@@ -85,6 +110,11 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
 
       {e && actual !== null ? (
         <>
+          <CronometroPanel
+            cronometro={cronometro}
+            onCambiar={cambiarCronometro}
+            onElegirDuracion={elegirDuracion}
+          />
           <PasoEjercicio
             key={e.id}
             ejercicioId={e.id}
@@ -93,7 +123,10 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
             repsMin={e.reps_min}
             repsMax={e.reps_max}
             onCambiarPrevistas={(n) => cambiarAjustes({ ...ajustes, [e.id]: n })}
-            onGuardada={(s) => setSeries((prev) => [s, ...prev])}
+            onGuardada={(s) => {
+              setSeries((prev) => [s, ...prev]);
+              cambiarCronometro(iniciar(leerDuracion(), Date.now()));
+            }}
           />
           <nav aria-label="Pasos">
             {actual > 0 && <a href={ir(actual - 1)}>← Anterior</a>}{" "}
