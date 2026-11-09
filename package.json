@@ -1,0 +1,14 @@
+{
+  "name": "gym-log",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "npm run test:api && npm --prefix web test",
+    "test:api": "api\\.venv\\Scripts\\python -m pytest api",
+    "lint": "api\\.venv\\Scripts\\ruff check api && npm --prefix web run lint",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0"
+  }
+}
