@@ -1,0 +1,404 @@
+/* Gym Log — estilos pensados primero para el móvil (probado a 390 px). Sin librerías. */
+
+:root {
+  --fondo: #f5f6f8;
+  --superficie: #ffffff;
+  --texto: #1b1e23;
+  --suave: #5f6670;
+  --borde: #d9dde3;
+  --primario: #1f6feb;
+  --primario-texto: #ffffff;
+  --exito: #1a7f37;
+  --exito-fondo: #e6f4ea;
+  --error: #b42318;
+  --error-fondo: #fdecea;
+  --radio: 12px;
+  --toque: 44px; /* tamaño mínimo cómodo para el dedo */
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #111418;
+    --superficie: #1b1f24;
+    --texto: #e8eaed;
+    --suave: #9aa3ad;
+    --borde: #2f353d;
+    --primario: #4c8dff;
+    --primario-texto: #0b0d10;
+    --exito: #4ac26b;
+    --exito-fondo: #12301b;
+    --error: #ff7b72;
+    --error-fondo: #3a1714;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0;
+}
+h2 {
+  font-size: 1.25rem;
+  margin: 16px 0 8px;
+}
+h3 {
+  font-size: 1.1rem;
+  margin: 12px 0 8px;
+}
+
+a {
+  color: var(--primario);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radio);
+}
+
+figure {
+  margin: 8px 0;
+}
+
+/* --- Controles: grandes y fáciles de tocar --------------------------------------------- */
+
+button,
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  min-width: var(--toque);
+  padding: 8px 14px;
+  margin: 2px 0;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button[type="submit"],
+.primario {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: var(--primario-texto);
+}
+
+.grande {
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.15rem;
+}
+
+.discreto {
+  padding: 4px 10px;
+  font-weight: 500;
+  background: transparent;
+}
+
+input {
+  min-height: var(--toque);
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--texto);
+  font: inherit;
+  font-size: 16px; /* evita el zoom automático del iPhone */
+}
+
+input[type="file"] {
+  min-height: 0;
+  padding: 6px;
+  font-size: 14px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.95rem;
+  color: var(--suave);
+}
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 10px;
+  margin: 8px 0;
+}
+
+form > label {
+  flex: 1 1 140px;
+}
+
+form > div {
+  flex: 1 1 100%;
+}
+
+form > button {
+  flex: 0 0 auto;
+}
+
+/* --- Cabecera y navegación ------------------------------------------------------------- */
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.usuario {
+  margin: 0;
+  color: var(--suave);
+}
+
+.secciones {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.secciones a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  padding: 4px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  color: var(--texto);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+}
+
+.secciones a[aria-current="page"] {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: var(--primario-texto);
+}
+
+/* --- Listas como tarjetas -------------------------------------------------------------- */
+
+main ul,
+main ol {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+main li {
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+}
+
+main li li {
+  border: 0;
+  padding: 4px 0;
+  margin: 0;
+}
+
+/* Las sugerencias del buscador, compactas */
+ul[aria-label="Sugerencias"] li {
+  padding: 2px;
+}
+ul[aria-label="Sugerencias"] button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: 500;
+}
+
+/* --- Avisos ---------------------------------------------------------------------------- */
+
+[role="alert"] {
+  padding: 10px 12px;
+  border-radius: var(--radio);
+  background: var(--error-fondo);
+  color: var(--error);
+  font-weight: 600;
+}
+
+[role="status"] {
+  padding: 10px 12px;
+  border-radius: var(--radio);
+  background: var(--exito-fondo);
+  color: var(--exito);
+  font-weight: 600;
+}
+
+/* --- Entrenamiento --------------------------------------------------------------------- */
+
+/* El descanso queda fijo arriba mientras se hace scroll */
+section[aria-label="Descanso"] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 8px -16px;
+  padding: 4px 16px;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--borde);
+}
+
+section[aria-label="Descanso"] p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+[role="timer"] {
+  font-size: 2.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 4ch;
+}
+
+section[aria-label="Descanso"] [role="alert"] {
+  background: var(--exito-fondo);
+  color: var(--exito);
+}
+
+section[aria-label="Descanso"] button[aria-pressed="true"] {
+  border-color: var(--primario);
+  color: var(--primario);
+}
+
+ol[aria-label="Ejercicios del entrenamiento"] {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto; /* el índice se desliza en su sitio, sin ensanchar la página */
+  padding-bottom: 4px;
+}
+
+ol[aria-label="Ejercicios del entrenamiento"] li {
+  flex: 0 0 auto;
+  margin: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+ol[aria-label="Series de hoy"] li[aria-current="step"] {
+  border: 2px solid var(--primario);
+}
+
+ol[aria-label="Series de hoy"] li:not([aria-current]) {
+  color: var(--suave);
+}
+
+nav[aria-label="Pasos"] {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+nav[aria-label="Pasos"] a {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  border-radius: var(--radio);
+  border: 1px solid var(--primario);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* --- Inicio ---------------------------------------------------------------------------- */
+
+.tarjeta {
+  padding: 14px 16px;
+  margin: 12px 0;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+}
+
+.tarjeta h2 {
+  margin-top: 0;
+  font-size: 1rem;
+  color: var(--suave);
+}
+
+.tarjeta p {
+  margin: 8px 0 0;
+}
+
+.cifra {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.semana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.semana li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+  margin: 0;
+  border: 0;
+  color: var(--suave);
+}
+
+.semana li.hecho {
+  color: var(--exito);
+  font-weight: 700;
+}
+
+footer {
+  margin-top: 24px;
+  color: var(--suave);
+  text-align: center;
+}

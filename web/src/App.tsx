@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
 import { AuthScreen } from "./auth/AuthScreen";
-import { HistorialPage } from "./historial/HistorialPage";
 import { MisEjerciciosPage } from "./ejercicios/MisEjerciciosPage";
 import { EntrenarPage } from "./entrenar/EntrenarPage";
-import { enlace, useRuta } from "./navegacion";
+import { HistorialPage } from "./historial/HistorialPage";
+import { Empezar } from "./inicio/Empezar";
+import { InicioPage } from "./inicio/InicioPage";
+import { enlace, useRuta, type Ruta } from "./navegacion";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
 import { SeriesPage } from "./series/SeriesPage";
 
 export const APP_NAME = "Gym Log";
+
+const SECCIONES: { ruta: Ruta; texto: string; activa: Ruta["pantalla"][] }[] = [
+  { ruta: { pantalla: "inicio" }, texto: "Inicio", activa: ["inicio"] },
+  { ruta: { pantalla: "diario" }, texto: "Diario", activa: ["diario", "historial"] },
+  { ruta: { pantalla: "rutinas" }, texto: "Rutinas", activa: ["rutinas", "rutina", "entrenar"] },
+  { ruta: { pantalla: "ejercicios" }, texto: "Mis ejercicios", activa: ["ejercicios"] },
+];
 
 export function App() {
   // undefined = comprobando la sesión; null = sin sesión.
@@ -32,25 +41,36 @@ export function App() {
 
   return (
     <main>
-      <h1>{APP_NAME}</h1>
+      <header className="cabecera">
+        <h1>{APP_NAME}</h1>
+        {usuario && (
+          <p className="usuario">
+            Hola, <strong>{usuario.nombre_usuario}</strong>{" "}
+            <button type="button" className="discreto" onClick={salir}>
+              Cerrar sesión
+            </button>
+          </p>
+        )}
+      </header>
       {error && <p role="alert">{error}</p>}
       {usuario === null && <AuthScreen onEntrar={setUsuario} />}
       {usuario && (
         <>
-          <p>
-            Hola, <strong>{usuario.nombre_usuario}</strong>{" "}
-            <button type="button" onClick={salir}>
-              Cerrar sesión
-            </button>
-          </p>
-          <nav aria-label="Secciones">
-            <a href={enlace({ pantalla: "diario" })}>Diario</a> ·{" "}
-            <a href={enlace({ pantalla: "rutinas" })}>Rutinas</a> ·{" "}
-            <a href={enlace({ pantalla: "ejercicios" })}>Mis ejercicios</a>
+          <nav aria-label="Secciones" className="secciones">
+            {SECCIONES.map((s) => (
+              <a
+                key={s.texto}
+                href={enlace(s.ruta)}
+                aria-current={s.activa.includes(ruta.pantalla) ? "page" : undefined}
+              >
+                {s.texto}
+              </a>
+            ))}
           </nav>
-          {ruta.pantalla === "rutinas" && (
-            <RutinasPage key={usuario.id} onSesionCaducada={sinSesion} />
-          )}
+          {ruta.pantalla === "inicio" && <InicioPage key={usuario.id} onSesionCaducada={sinSesion} />}
+          {ruta.pantalla === "empezar" && <Empezar />}
+          {ruta.pantalla === "diario" && <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />}
+          {ruta.pantalla === "rutinas" && <RutinasPage key={usuario.id} onSesionCaducada={sinSesion} />}
           {ruta.pantalla === "entrenar" && (
             <EntrenarPage
               key={`${usuario.id}-${ruta.rutinaId}`}
@@ -76,7 +96,6 @@ export function App() {
           {ruta.pantalla === "ejercicios" && (
             <MisEjerciciosPage key={usuario.id} onSesionCaducada={sinSesion} />
           )}
-          {ruta.pantalla === "diario" && <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />}
         </>
       )}
       <footer>

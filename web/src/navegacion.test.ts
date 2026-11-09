@@ -26,17 +26,24 @@ test("entrenar: paso inicial, un paso concreto y el resumen", () => {
     paso: "fin",
   });
   expect(enlace({ pantalla: "entrenar", rutinaId: 4, paso: 2 })).toBe("#/rutinas/4/entrenar/2");
-  expect(leerRuta("#/rutinas/4/entrenar/x")).toEqual({ pantalla: "diario" });
+  expect(leerRuta("#/rutinas/4/entrenar/x")).toEqual({ pantalla: "inicio" });
 });
 
-test("cualquier otra dirección es el diario", () => {
+test("diario y atajo de empezar", () => {
+  expect(leerRuta("#/diario")).toEqual({ pantalla: "diario" });
+  expect(enlace({ pantalla: "diario" })).toBe("#/diario");
+  expect(leerRuta("#/empezar")).toEqual({ pantalla: "empezar" });
+  expect(enlace({ pantalla: "empezar" })).toBe("#/empezar");
+});
+
+test("cualquier otra dirección es el inicio", () => {
   for (const hash of ["", "#/", "#/ejercicios/abc/historial", "#/ejercicios/12", "#/otra"]) {
-    expect(leerRuta(hash)).toEqual({ pantalla: "diario" });
+    expect(leerRuta(hash)).toEqual({ pantalla: "inicio" });
   }
+  expect(enlace({ pantalla: "inicio" })).toBe("#/");
 });
 
 test("enlace y leerRuta son inversos", () => {
   expect(enlaceHistorial(7)).toBe("#/ejercicios/7/historial");
   expect(leerRuta(enlaceHistorial(7))).toEqual({ pantalla: "historial", ejercicioId: 7 });
-  expect(enlace({ pantalla: "diario" })).toBe("#/");
 });

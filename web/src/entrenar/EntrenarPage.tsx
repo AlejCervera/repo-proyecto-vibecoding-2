@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/http";
 import { obtenerRutina } from "../api/rutinas";
 import { listarSeries } from "../api/series";
+import { guardarUltimaRutina } from "../inicio/resumen";
 import { enlace, enlaceRutina } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, type Serie } from "../series/serie";
@@ -35,6 +36,7 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
       .then(([r, s]) => {
         setRutina(r);
         setSeries(s);
+        guardarUltimaRutina(r); // para «Continuar con…» en el inicio
       })
       .catch((e: Error) => {
         if (e instanceof ApiError && e.status === 401) onSesionCaducada();

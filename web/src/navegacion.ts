@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 
 /** Pantallas de la app. La dirección (#/…) permite usar «atrás» y recargar sin perderla. */
 export type Ruta =
+  | { pantalla: "inicio" }
+  /** Atajo del icono del móvil: entrena con la última rutina (o elige una). */
+  | { pantalla: "empezar" }
   | { pantalla: "diario" }
   | { pantalla: "ejercicios" }
   | { pantalla: "historial"; ejercicioId: number }
@@ -26,7 +29,9 @@ export function leerRuta(hash: string): Ruta {
   if (m) return { pantalla: "rutina", rutinaId: Number(m[1]) };
   if (hash === "#/ejercicios") return { pantalla: "ejercicios" };
   if (hash === "#/rutinas") return { pantalla: "rutinas" };
-  return { pantalla: "diario" };
+  if (hash === "#/diario") return { pantalla: "diario" };
+  if (hash === "#/empezar") return { pantalla: "empezar" };
+  return { pantalla: "inicio" };
 }
 
 export function enlace(ruta: Ruta): string {
@@ -41,6 +46,10 @@ export function enlace(ruta: Ruta): string {
       return "#/ejercicios";
     case "rutinas":
       return "#/rutinas";
+    case "diario":
+      return "#/diario";
+    case "empezar":
+      return "#/empezar";
     default:
       return "#/";
   }

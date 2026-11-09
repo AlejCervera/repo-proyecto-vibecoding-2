@@ -32,7 +32,7 @@ test("muestra el ejercicio, su imagen y cada serie en una fila, en el orden de l
   expect(filas[1]).toContain("09/11/2026 · 80 kg × 8");
   expect(screen.getByRole("img", { name: "Imagen de Press de banca" })).toBeTruthy();
   expect(screen.getByText(/Everkinetic/)).toBeTruthy();
-  expect(screen.getByRole("link", { name: "← Volver" }).getAttribute("href")).toBe("#/");
+  expect(screen.getByRole("link", { name: "← Volver" }).getAttribute("href")).toBe("#/diario");
   expect(fetch).toHaveBeenCalledWith("/api/ejercicios/3/series", undefined);
 });
 

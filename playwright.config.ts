@@ -6,5 +6,18 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
   globalTeardown: "./e2e/global-teardown.ts",
   use: { baseURL: WEB_URL },
-  projects: [{ name: "chromium", use: { browserName: "chromium" } }],
+  // Todo se prueba dos veces: en escritorio y con el tamaño y el tacto de un móvil.
+  projects: [
+    { name: "escritorio", use: { browserName: "chromium" } },
+    {
+      name: "movil",
+      use: {
+        browserName: "chromium",
+        viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+      },
+    },
+  ],
 });

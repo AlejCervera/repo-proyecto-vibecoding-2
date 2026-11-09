@@ -51,7 +51,7 @@ export function CronometroPanel({ cronometro, onCambiar, onElegirDuracion }: Pro
       {cronometro && queda !== null && (
         <p>
           <strong>Descanso</strong>{" "}
-          <span role="timer" aria-label="Tiempo de descanso" style={{ fontSize: "2em" }}>
+          <span role="timer" aria-label="Tiempo de descanso">
             {formatear(queda)}
           </span>{" "}
           {queda > 0 && (

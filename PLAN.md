@@ -171,8 +171,11 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** cómoda en el móvil.
 
 **Tareas:**
-- [ ] Diseño adaptado a móvil (botones grandes, probado a 390 px).
-- [ ] Acceso desde el móvil por la red local.
+- [x] Diseño adaptado a móvil (botones grandes, probado a 390 px): hoja de estilos propia, modo oscuro automático, descanso fijo arriba al entrenar.
+- [x] Pantalla «Inicio» dentro de la app: «Iniciar entrenamiento» (continúa con la última rutina), «Esta semana» y «Último entrenamiento». El diario pasa a `#/diario`.
+- [x] «Añadir a pantalla de inicio»: manifiesto, icono y atajo «Iniciar entrenamiento» (Android). A pantalla completa en Android solo con HTTPS (Fase 9).
+- [x] Acceso desde el móvil por la red local: `http://<IP del PC>:5173` (hoy 192.168.1.199). El firewall ya lo permite (regla de Docker Desktop).
+- [ ] Comprobación en el móvil real (la hace el usuario).
 
 **Pruebas:**
 - Playwright con viewport móvil.
@@ -186,6 +189,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Tareas:**
 - [ ] Explicar dónde y cómo alojarlo, qué claves de producción harían falta y esperar un «adelante» específico antes de tocar nada.
 - [ ] Antes de publicar: limitar intentos de login y de código de invitación, HTTPS con `COOKIE_SECURE=true` y vaciar `INVITE_CODE` cuando existan las dos cuentas.
+- [ ] Con HTTPS funcionarán también: mantener la pantalla encendida al entrenar y abrir la app instalada a pantalla completa (con su atajo) en Android.
 
 **Hecho cuando:** hay permiso explícito y la app funciona en ambos móviles.
 

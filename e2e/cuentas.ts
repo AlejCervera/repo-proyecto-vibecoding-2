@@ -16,6 +16,16 @@ export async function registrar(page: Page, usuario: string) {
   await page.getByLabel("Código de invitación").fill(CODIGO);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+  // La primera pantalla es el Inicio; la mayoría de pruebas empiezan en el diario.
+  await irA(page, "Diario");
+  await expect(page.getByRole("form", { name: "Registrar serie" })).toBeVisible();
+}
+
+export async function irA(page: Page, seccion: "Inicio" | "Diario" | "Rutinas" | "Mis ejercicios") {
+  await page
+    .getByRole("navigation", { name: "Secciones" })
+    .getByRole("link", { name: seccion, exact: true })
+    .click();
 }
 
 export async function entrar(page: Page, usuario: string, password = PASSWORD) {
