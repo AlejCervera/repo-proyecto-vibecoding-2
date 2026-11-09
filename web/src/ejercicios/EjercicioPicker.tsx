@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { buscarEjercicios, crearEjercicio } from "../api/ejercicios";
 import { ofrecerCrear, type Ejercicio } from "./ejercicio";
+import { EjercicioImagen } from "./EjercicioImagen";
 
 type Props = {
   value: Ejercicio | null;
@@ -50,12 +51,15 @@ export function EjercicioPicker({ value, onChange }: Props) {
 
   if (value) {
     return (
-      <p>
-        Ejercicio: <strong>{value.nombre}</strong>{" "}
-        <button type="button" onClick={() => onChange(null)}>
-          Cambiar
-        </button>
-      </p>
+      <div>
+        <p>
+          Ejercicio: <strong>{value.nombre}</strong>{" "}
+          <button type="button" onClick={() => onChange(null)}>
+            Cambiar
+          </button>
+        </p>
+        <EjercicioImagen ejercicio={value} onCambio={onChange} />
+      </div>
     );
   }
 

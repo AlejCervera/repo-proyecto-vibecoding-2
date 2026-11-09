@@ -33,7 +33,8 @@ test("cerrar sesión vuelve a la pantalla de inicio de sesión", async () => {
     { status: 204, body: null },
   );
   render(<App />);
-  fireEvent.click(await screen.findByRole("button", { name: "Cerrar sesión" }));
+  await screen.findByText("Aún no hay series."); // esperar a que se pidan las series
+  fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" }));
   expect(await screen.findByRole("heading", { name: "Iniciar sesión" })).toBeTruthy();
   expect(fetch).toHaveBeenLastCalledWith("/api/auth/logout", { method: "POST" });
 });

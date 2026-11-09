@@ -43,7 +43,7 @@ def test_series_existentes_pasan_a_ejercicios_propios(db_vacia, tmp_path):
             (usuario, ejercicio),
         )
 
-    assert migrate(db_vacia) == ["003_ejercicios"]
+    assert migrate(db_vacia)[0] == "003_ejercicios"
 
     ejercicios = db_vacia.execute(
         "SELECT usuario_id, nombre, nombre_normalizado FROM ejercicios ORDER BY usuario_id, id"

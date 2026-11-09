@@ -73,9 +73,10 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** ver una imagen explicativa de cada ejercicio que la tenga.
 
 **Tareas:**
-- [ ] Importar las imágenes de wger (389 imágenes, ~38 % de los ejercicios): descargarlas una vez y guardarlas en local, con licencia y autor; la app no depende de wger después.
-- [ ] Subir una imagen propia a un ejercicio propio o a uno del catálogo que no tenga, con límite de tamaño y tipo (avisar antes si hace falta una dependencia para recibir archivos).
-- [ ] Mostrar la imagen al elegir el ejercicio y en su historial, con la atribución cuando venga de wger.
+- [x] Importar las imágenes de wger: descargarlas una vez y guardarlas en local (en PostgreSQL), con licencia y autor; la app no depende de wger después. Resultado: 279 ejercicios con imagen de ejemplo (16 MB).
+- [x] Subir una imagen propia a un ejercicio propio o a uno del catálogo que no tenga imagen de ejemplo (JPEG/PNG/WebP, máx. 2 MB; la web la reduce a 1200 px). Sin dependencias nuevas.
+  - Las imágenes de wger son de ejemplo y las ven todos; la subida es privada (solo la ve quien la sube). La imagen es opcional.
+- [x] Mostrar la imagen al elegir el ejercicio, con la atribución cuando venga de wger. (Mostrarla en el historial pasa a la Fase 4.)
 
 **Pruebas:**
 - Importación de imágenes con datos simulados; API de subida (tipo y tamaño inválidos → 400, imagen de otro usuario no visible); e2e: subir una imagen y verla.
@@ -88,6 +89,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Tareas:**
 - [ ] Endpoint y pantalla con las series de un ejercicio, cada una por separado.
+- [ ] Mostrar en esa pantalla la imagen del ejercicio (de la Fase 3b), con su atribución si es de wger.
 
 **Pruebas:**
 - API de filtrado y orden; e2e: 80×8 y 85×6 salen como dos filas.

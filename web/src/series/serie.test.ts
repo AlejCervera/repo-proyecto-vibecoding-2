@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { aPeticion, formatearSerie, hoyISO } from "./serie";
 
 test("aPeticion envía el id del ejercicio y convierte los vacíos en null", () => {
-  const ejercicio = { id: 3, nombre: "Press de banca", propio: false };
+  const ejercicio = { id: 3, nombre: "Press de banca", propio: false, imagen: null };
   expect(aPeticion({ fecha: "", ejercicio, peso: " ", repeticiones: "8" })).toEqual({
     fecha: null,
     ejercicio_id: 3,

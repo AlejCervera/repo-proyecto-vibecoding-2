@@ -31,7 +31,12 @@ def test_resultados_indican_si_es_propio(ana, catalogo):
 def test_crear_ejercicio_propio(ana):
     r = ana.post("/ejercicios", json={"nombre": "  Remo   con mancuerna "})
     assert r.status_code == 201
-    assert r.json() == {"id": r.json()["id"], "nombre": "Remo con mancuerna", "propio": True}
+    assert r.json() == {
+        "id": r.json()["id"],
+        "nombre": "Remo con mancuerna",
+        "propio": True,
+        "imagen": None,
+    }
 
 
 def test_duplicado_del_catalogo_da_409_con_el_existente(ana, catalogo):
@@ -39,7 +44,12 @@ def test_duplicado_del_catalogo_da_409_con_el_existente(ana, catalogo):
     assert r.status_code == 409
     assert r.json() == {
         "error": "Ya existe «Press de banca»",
-        "ejercicio": {"id": catalogo["Press de banca"], "nombre": "Press de banca", "propio": False},
+        "ejercicio": {
+            "id": catalogo["Press de banca"],
+            "nombre": "Press de banca",
+            "propio": False,
+            "imagen": None,
+        },
     }
 
 
