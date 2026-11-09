@@ -3,6 +3,7 @@ import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
 import { AuthScreen } from "./auth/AuthScreen";
 import { HistorialPage } from "./historial/HistorialPage";
 import { MisEjerciciosPage } from "./ejercicios/MisEjerciciosPage";
+import { EntrenarPage } from "./entrenar/EntrenarPage";
 import { enlace, useRuta } from "./navegacion";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
@@ -49,6 +50,14 @@ export function App() {
           </nav>
           {ruta.pantalla === "rutinas" && (
             <RutinasPage key={usuario.id} onSesionCaducada={sinSesion} />
+          )}
+          {ruta.pantalla === "entrenar" && (
+            <EntrenarPage
+              key={`${usuario.id}-${ruta.rutinaId}`}
+              rutinaId={ruta.rutinaId}
+              paso={ruta.paso}
+              onSesionCaducada={sinSesion}
+            />
           )}
           {ruta.pantalla === "rutina" && (
             <RutinaPage

@@ -128,7 +128,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** registrar series directamente desde una rutina.
 
 **Tareas:**
-- [ ] Abrir una rutina y registrar series de sus ejercicios.
+- [x] Abrir una rutina (propia o predefinida) y registrar series de sus ejercicios, uno a uno, con «la última vez» como referencia del progreso y el formulario relleno con la última serie.
 
 **Pruebas:**
 - e2e: desde «Pecho» registrar press banca y verlo en su historial.

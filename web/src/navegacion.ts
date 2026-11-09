@@ -6,14 +6,22 @@ export type Ruta =
   | { pantalla: "ejercicios" }
   | { pantalla: "historial"; ejercicioId: number }
   | { pantalla: "rutinas" }
-  | { pantalla: "rutina"; rutinaId: number };
+  | { pantalla: "rutina"; rutinaId: number }
+  /** paso = índice del ejercicio en la rutina, o "fin" para el resumen. */
+  | { pantalla: "entrenar"; rutinaId: number; paso: number | "fin" };
 
 const HISTORIAL = /^#\/ejercicios\/(\d+)\/historial$/;
 const RUTINA = /^#\/rutinas\/(\d+)$/;
+const ENTRENAR = /^#\/rutinas\/(\d+)\/entrenar(?:\/(\d+|fin))?$/;
 
 export function leerRuta(hash: string): Ruta {
   let m = HISTORIAL.exec(hash);
   if (m) return { pantalla: "historial", ejercicioId: Number(m[1]) };
+  m = ENTRENAR.exec(hash);
+  if (m) {
+    const paso = m[2] === "fin" ? "fin" : Number(m[2] ?? 0);
+    return { pantalla: "entrenar", rutinaId: Number(m[1]), paso };
+  }
   m = RUTINA.exec(hash);
   if (m) return { pantalla: "rutina", rutinaId: Number(m[1]) };
   if (hash === "#/ejercicios") return { pantalla: "ejercicios" };
@@ -27,6 +35,8 @@ export function enlace(ruta: Ruta): string {
       return `#/ejercicios/${ruta.ejercicioId}/historial`;
     case "rutina":
       return `#/rutinas/${ruta.rutinaId}`;
+    case "entrenar":
+      return `#/rutinas/${ruta.rutinaId}/entrenar/${ruta.paso}`;
     case "ejercicios":
       return "#/ejercicios";
     case "rutinas":

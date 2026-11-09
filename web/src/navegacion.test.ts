@@ -17,6 +17,18 @@ test("rutinas y detalle de una rutina", () => {
   expect(enlace({ pantalla: "rutinas" })).toBe("#/rutinas");
 });
 
+test("entrenar: paso inicial, un paso concreto y el resumen", () => {
+  expect(leerRuta("#/rutinas/4/entrenar")).toEqual({ pantalla: "entrenar", rutinaId: 4, paso: 0 });
+  expect(leerRuta("#/rutinas/4/entrenar/2")).toEqual({ pantalla: "entrenar", rutinaId: 4, paso: 2 });
+  expect(leerRuta("#/rutinas/4/entrenar/fin")).toEqual({
+    pantalla: "entrenar",
+    rutinaId: 4,
+    paso: "fin",
+  });
+  expect(enlace({ pantalla: "entrenar", rutinaId: 4, paso: 2 })).toBe("#/rutinas/4/entrenar/2");
+  expect(leerRuta("#/rutinas/4/entrenar/x")).toEqual({ pantalla: "diario" });
+});
+
 test("cualquier otra dirección es el diario", () => {
   for (const hash of ["", "#/", "#/ejercicios/abc/historial", "#/ejercicios/12", "#/otra"]) {
     expect(leerRuta(hash)).toEqual({ pantalla: "diario" });

@@ -86,6 +86,13 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
     <section>
       {volver}
       <h2>{rutina.nombre}</h2>
+      {rutina.ejercicios.length > 0 && (
+        <p>
+          <a href={enlace({ pantalla: "entrenar", rutinaId: rutina.id, paso: 0 })}>
+            <strong>▶ Empezar entrenamiento</strong>
+          </a>
+        </p>
+      )}
       {rutina.predefinida && (
         <p>
           <small>Rutina predefinida: no se puede modificar.</small>{" "}
