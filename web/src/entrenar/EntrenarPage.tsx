@@ -4,9 +4,11 @@ import { obtenerRutina } from "../api/rutinas";
 import { listarSeries } from "../api/series";
 import { enlace, enlaceRutina } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
-import { hoyISO, pesoPorReps, type Serie } from "../series/serie";
+import { hoyISO, type Serie } from "../series/serie";
+import { guardarAjustes, leerAjustes } from "./plan";
 import { PasoEjercicio } from "./PasoEjercicio";
-import { contarHoy, seriesDeHoy } from "./progreso";
+import { contarHoy } from "./progreso";
+import { ResumenEntreno } from "./ResumenEntreno";
 
 type Props = { rutinaId: number; paso: number | "fin"; onSesionCaducada: () => void };
 
@@ -15,6 +17,8 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
   const [series, setSeries] = useState<Serie[]>([]);
   const [error, setError] = useState<string | null>(null);
   const hoy = useMemo(() => hoyISO(), []);
+  // Series previstas para hoy cuando difieren de la rutina (+/− durante el entrenamiento)
+  const [ajustes, setAjustes] = useState<Record<number, number>>(() => leerAjustes(rutinaId, hoy));
 
   useEffect(() => {
     Promise.all([obtenerRutina(rutinaId), listarSeries()])
@@ -27,6 +31,11 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
         else setError(e.message);
       });
   }, [rutinaId, onSesionCaducada]);
+
+  function cambiarAjustes(nuevos: Record<number, number>) {
+    setAjustes(nuevos);
+    guardarAjustes(rutinaId, hoy, nuevos);
+  }
 
   const volver = <a href={enlaceRutina(rutinaId)}>← Volver a la rutina</a>;
   if (!rutina) {
@@ -50,29 +59,40 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
 
   const ir = (p: number | "fin") => enlace({ pantalla: "entrenar", rutinaId, paso: p });
   const cuenta = contarHoy(series, hoy);
+  const previstas = (id: number, base: number) => ajustes[id] ?? base;
   const actual = paso === "fin" ? null : Math.min(Math.max(paso, 0), ejercicios.length - 1);
+  const e = actual === null ? null : ejercicios[actual];
 
   return (
     <section>
       {volver}
       <h2>Entrenando: {rutina.nombre}</h2>
       <ol aria-label="Ejercicios del entrenamiento">
-        {ejercicios.map((e, i) => (
-          <li key={e.id}>
-            <a href={ir(i)} aria-current={i === actual ? "step" : undefined}>
-              {i === actual ? <strong>{e.nombre}</strong> : e.nombre}
-            </a>
-            {cuenta.get(e.id) ? ` ✓${cuenta.get(e.id)}` : ""}
-          </li>
-        ))}
+        {ejercicios.map((x, i) => {
+          const hechas = cuenta.get(x.id) ?? 0;
+          const total = previstas(x.id, x.series);
+          return (
+            <li key={x.id}>
+              <a href={ir(i)} aria-current={i === actual ? "step" : undefined}>
+                {i === actual ? <strong>{x.nombre}</strong> : x.nombre}
+              </a>{" "}
+              {hechas}/{total}
+              {hechas >= total ? " ✓" : ""}
+            </li>
+          );
+        })}
       </ol>
 
-      {actual !== null ? (
+      {e && actual !== null ? (
         <>
           <PasoEjercicio
-            key={ejercicios[actual].id}
-            ejercicioId={ejercicios[actual].id}
+            key={e.id}
+            ejercicioId={e.id}
             hoy={hoy}
+            previstas={previstas(e.id, e.series)}
+            repsMin={e.reps_min}
+            repsMax={e.reps_max}
+            onCambiarPrevistas={(n) => cambiarAjustes({ ...ajustes, [e.id]: n })}
             onGuardada={(s) => setSeries((prev) => [s, ...prev])}
           />
           <nav aria-label="Pasos">
@@ -85,38 +105,17 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
           </nav>
         </>
       ) : (
-        <Resumen rutina={rutina} series={series} hoy={hoy} />
+        <ResumenEntreno
+          rutina={rutina}
+          series={series}
+          hoy={hoy}
+          ajustes={ajustes}
+          onRutinaGuardada={(r) => {
+            setRutina(r);
+            cambiarAjustes({});
+          }}
+        />
       )}
     </section>
-  );
-}
-
-function Resumen({ rutina, series, hoy }: { rutina: Rutina; series: Serie[]; hoy: string }) {
-  const filas = rutina.ejercicios.map((e) => ({
-    ...e,
-    deHoy: seriesDeHoy(
-      series.filter((s) => s.ejercicio_id === e.id),
-      hoy,
-    ),
-  }));
-  const total = filas.reduce((n, f) => n + f.deHoy.length, 0);
-  return (
-    <article aria-label="Resumen del entrenamiento">
-      <h3>Resumen de hoy</h3>
-      <p>
-        {total === 0
-          ? "Hoy no has registrado series de esta rutina."
-          : `${total} ${total === 1 ? "serie" : "series"} en total.`}
-      </p>
-      <ul>
-        {filas.map((f) => (
-          <li key={f.id}>
-            {f.nombre}:{" "}
-            {f.deHoy.length > 0 ? f.deHoy.map(pesoPorReps).join(" · ") : "sin series"}
-          </li>
-        ))}
-      </ul>
-      <a href={enlace({ pantalla: "diario" })}>Ir al diario</a>
-    </article>
   );
 }

@@ -135,6 +135,21 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** la serie registrada desde la rutina aparece en el historial del ejercicio.
 
+## Fase 7a · Series y repeticiones objetivo en las rutinas
+
+**Objetivo:** que cada ejercicio de una rutina tenga sus series previstas y su objetivo de repeticiones.
+
+**Tareas:**
+- [x] Cada ejercicio de una rutina guarda nº de series (por defecto 3, de 1 a 10) y repeticiones objetivo opcionales (rango «8-12» o número). Predefinidas: 3 × 8-12; al copiar se conserva.
+- [x] En mis rutinas: [−]/[+] series y editar el objetivo; se guarda al momento.
+- [x] Al entrenar: casillas por serie (hechas, siguiente con formulario, pendientes), «completado», añadir o quitar series para hoy.
+- [x] Al terminar, si cambiaste las series de hoy en una rutina propia, ofrecer guardarlas en la rutina.
+
+**Pruebas:**
+- Unitarias de validación y de casillas; API (por defecto, cambiar, límites, predefinida 403, copia conserva); e2e: 4 series en mi rutina tras recargar y entrenar completándolas.
+
+**Hecho cuando:** una rutina propia guarda 4 × 8-10 en un ejercicio, sigue así tras recargar, y al entrenar se completan sus 4 series.
+
 ## Fase 7b · Cronómetro de descanso
 
 **Objetivo:** controlar los descansos entre series.

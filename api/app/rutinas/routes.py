@@ -9,11 +9,13 @@ from app.ejercicios import repository as ejercicios
 from app.ejercicios.nombres import normalizar
 from app.rutinas import repository
 from app.rutinas.logica import (
+    Plan,
     RutinaInvalida,
     nombre_copia,
     validar_ejercicio_id,
     validar_nombre,
     validar_orden,
+    validar_plan,
 )
 
 router = APIRouter(prefix="/rutinas")
@@ -95,6 +97,7 @@ def borrar_rutina(rutina_id: int, usuario: Usuario):
 def anadir_ejercicio(rutina_id: int, usuario: Usuario, datos: Datos = None):
     try:
         ejercicio_id = validar_ejercicio_id(datos)
+        plan = validar_plan(datos)
     except RutinaInvalida as e:
         return _error(str(e), 400)
     with db.connect() as conn:
@@ -102,8 +105,25 @@ def anadir_ejercicio(rutina_id: int, usuario: Usuario, datos: Datos = None):
             return error
         if not ejercicios.visible(conn, usuario["id"], ejercicio_id):
             return _error("El ejercicio no existe", 400)
-        if not repository.anadir_ejercicio(conn, rutina_id, ejercicio_id):
+        if not repository.anadir_ejercicio(conn, rutina_id, ejercicio_id, plan):
             return _error("Ese ejercicio ya está en la rutina", 409)
+        return repository.obtener(conn, usuario["id"], rutina_id)
+
+
+@router.put("/{rutina_id}/ejercicios/{ejercicio_id}")
+def configurar_ejercicio(rutina_id: int, ejercicio_id: int, usuario: Usuario, datos: Datos = None):
+    """Cambia las series y/o las repeticiones objetivo; lo que no se envía se conserva."""
+    with db.connect() as conn:
+        if error := _solo_propia(conn, usuario["id"], rutina_id):
+            return error
+        actual = repository.plan_de(conn, rutina_id, ejercicio_id)
+        if actual is None:
+            return _error("Ese ejercicio no está en la rutina", 404)
+        try:
+            plan = validar_plan(datos, por_defecto=actual)
+        except RutinaInvalida as e:
+            return _error(str(e), 400)
+        repository.configurar_ejercicio(conn, rutina_id, ejercicio_id, plan)
         return repository.obtener(conn, usuario["id"], rutina_id)
 
 
@@ -126,7 +146,7 @@ def reordenar(rutina_id: int, usuario: Usuario, datos: Datos = None):
             orden = validar_orden(repository.ids_ejercicios(conn, rutina_id), datos)
         except RutinaInvalida as e:
             return _error(str(e), 400)
-        repository.poner_ejercicios(conn, rutina_id, orden)
+        repository.reordenar(conn, rutina_id, orden)
         return repository.obtener(conn, usuario["id"], rutina_id)
 
 
@@ -141,5 +161,9 @@ def copiar(rutina_id: int, usuario: Usuario):
             nueva = repository.crear(conn, usuario["id"], nombre, normalizar(nombre))
             if nueva is None:  # otra petición usó el nombre a la vez
                 return _ya_tienes(nombre)
-            repository.poner_ejercicios(conn, nueva, [e["id"] for e in original["ejercicios"]])
+            planes = [
+                (e["id"], Plan(e["series"], e["reps_min"], e["reps_max"]))
+                for e in original["ejercicios"]
+            ]
+            repository.poner_ejercicios(conn, nueva, planes)
         return repository.obtener(conn, usuario["id"], nueva)

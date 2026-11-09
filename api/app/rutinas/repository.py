@@ -4,6 +4,8 @@ from typing import Any, Literal
 
 import psycopg
 
+from app.rutinas.logica import Plan
+
 _VISIBLE = "(r.usuario_id IS NULL OR r.usuario_id = %(usuario)s)"
 
 
@@ -12,13 +14,21 @@ def _ejercicios(conn: psycopg.Connection, rutina_ids: list[int]) -> dict[int, li
     if not rutina_ids:
         return por_rutina
     rows = conn.execute(
-        "SELECT re.rutina_id, e.id, e.nombre FROM rutina_ejercicios re "
-        "JOIN ejercicios e ON e.id = re.ejercicio_id "
+        "SELECT re.rutina_id, e.id, e.nombre, re.series, re.reps_min, re.reps_max "
+        "FROM rutina_ejercicios re JOIN ejercicios e ON e.id = re.ejercicio_id "
         "WHERE re.rutina_id = ANY(%s) ORDER BY re.rutina_id, re.posicion, e.id",
         (rutina_ids,),
     ).fetchall()
-    for rutina_id, ejercicio_id, nombre in rows:
-        por_rutina[rutina_id].append({"id": ejercicio_id, "nombre": nombre})
+    for rutina_id, ejercicio_id, nombre, series, reps_min, reps_max in rows:
+        por_rutina[rutina_id].append(
+            {
+                "id": ejercicio_id,
+                "nombre": nombre,
+                "series": series,
+                "reps_min": reps_min,
+                "reps_max": reps_max,
+            }
+        )
     return por_rutina
 
 
@@ -105,15 +115,54 @@ def ids_ejercicios(conn: psycopg.Connection, rutina_id: int) -> list[int]:
     return [r[0] for r in rows]
 
 
-def anadir_ejercicio(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int) -> bool:
+def anadir_ejercicio(
+    conn: psycopg.Connection, rutina_id: int, ejercicio_id: int, plan: Plan
+) -> bool:
     """Lo añade al final. False si ya estaba."""
     cur = conn.execute(
-        "INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id, posicion) "
-        "SELECT %(r)s, %(e)s, coalesce(max(posicion), 0) + 1 FROM rutina_ejercicios "
-        "WHERE rutina_id = %(r)s ON CONFLICT DO NOTHING",
-        {"r": rutina_id, "e": ejercicio_id},
+        "INSERT INTO rutina_ejercicios "
+        "(rutina_id, ejercicio_id, posicion, series, reps_min, reps_max) "
+        "SELECT %(r)s, %(e)s, coalesce(max(posicion), 0) + 1, %(s)s, %(min)s, %(max)s "
+        "FROM rutina_ejercicios WHERE rutina_id = %(r)s ON CONFLICT DO NOTHING",
+        {
+            "r": rutina_id,
+            "e": ejercicio_id,
+            "s": plan.series,
+            "min": plan.reps_min,
+            "max": plan.reps_max,
+        },
     )
     return cur.rowcount == 1
+
+
+def plan_de(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int) -> Plan | None:
+    row = conn.execute(
+        "SELECT series, reps_min, reps_max FROM rutina_ejercicios "
+        "WHERE rutina_id = %s AND ejercicio_id = %s",
+        (rutina_id, ejercicio_id),
+    ).fetchone()
+    return Plan(*row) if row else None
+
+
+def configurar_ejercicio(
+    conn: psycopg.Connection, rutina_id: int, ejercicio_id: int, plan: Plan
+) -> None:
+    conn.execute(
+        "UPDATE rutina_ejercicios SET series = %s, reps_min = %s, reps_max = %s "
+        "WHERE rutina_id = %s AND ejercicio_id = %s",
+        (plan.series, plan.reps_min, plan.reps_max, rutina_id, ejercicio_id),
+    )
+
+
+def reordenar(conn: psycopg.Connection, rutina_id: int, ejercicio_ids: list[int]) -> None:
+    """Cambia solo el orden; conserva series y objetivos."""
+    with conn.transaction():
+        for posicion, ejercicio_id in enumerate(ejercicio_ids, start=1):
+            conn.execute(
+                "UPDATE rutina_ejercicios SET posicion = %s "
+                "WHERE rutina_id = %s AND ejercicio_id = %s",
+                (posicion, rutina_id, ejercicio_id),
+            )
 
 
 def quitar_ejercicio(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int) -> bool:
@@ -124,15 +173,18 @@ def quitar_ejercicio(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int
     return cur.rowcount == 1
 
 
-def poner_ejercicios(conn: psycopg.Connection, rutina_id: int, ejercicio_ids: list[int]) -> None:
-    """Sustituye la lista entera, en este orden."""
+def poner_ejercicios(
+    conn: psycopg.Connection, rutina_id: int, ejercicios: list[tuple[int, Plan]]
+) -> None:
+    """Sustituye la lista entera (ejercicio y su plan), en este orden."""
     with conn.transaction():
         conn.execute("DELETE FROM rutina_ejercicios WHERE rutina_id = %s", (rutina_id,))
-        for posicion, ejercicio_id in enumerate(ejercicio_ids, start=1):
+        for posicion, (ejercicio_id, plan) in enumerate(ejercicios, start=1):
             conn.execute(
-                "INSERT INTO rutina_ejercicios (rutina_id, ejercicio_id, posicion) "
-                "VALUES (%s, %s, %s)",
-                (rutina_id, ejercicio_id, posicion),
+                "INSERT INTO rutina_ejercicios "
+                "(rutina_id, ejercicio_id, posicion, series, reps_min, reps_max) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (rutina_id, ejercicio_id, posicion, plan.series, plan.reps_min, plan.reps_max),
             )
 
 

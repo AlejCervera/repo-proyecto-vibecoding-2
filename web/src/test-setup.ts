@@ -4,6 +4,7 @@ import { afterEach, vi } from "vitest";
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  sessionStorage.clear();
 });
 
 /** Simula fetch con una lista de respuestas, en orden. */

@@ -7,7 +7,13 @@ afterEach(() => {
   window.location.hash = "";
 });
 
-const ej = (id: number, nombre: string) => ({ id, nombre });
+const ej = (id: number, nombre: string, series = 3, reps_min: number | null = 8, reps_max: number | null = 12) => ({
+  id,
+  nombre,
+  series,
+  reps_min,
+  reps_max,
+});
 const PREDEFINIDA = {
   id: 1,
   nombre: "Pecho",
@@ -111,6 +117,61 @@ test("propia: borrar pide confirmación y vuelve a la lista", async () => {
   fireEvent.click(screen.getByRole("button", { name: "Sí, borrar" }));
   await vi.waitFor(() => expect(window.location.hash).toBe("#/rutinas"));
   expect(fetch).toHaveBeenLastCalledWith("/api/rutinas/7", { method: "DELETE" });
+});
+
+test("muestra el plan de cada ejercicio", async () => {
+  await pintar({ ...MIA, ejercicios: [ej(10, "Press de banca"), ej(11, "Aperturas", 4, null, null)] });
+  const filas = within(screen.getByRole("list", { name: "Ejercicios de la rutina" })).getAllByRole("listitem");
+  expect(filas[0].textContent).toContain("Press de banca — 3 × 8-12");
+  expect(filas[1].textContent).toContain("Aperturas — 4 series");
+});
+
+test("propia: [+] guarda una serie más al momento", async () => {
+  const fetch = await pintar(MIA, {
+    status: 200,
+    body: { ...MIA, ejercicios: [ej(10, "Press de banca", 4), ej(11, "Aperturas")] },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Más series de Press de banca" }));
+  await vi.waitFor(() => expect(screen.getByText("4 × 8-12")).toBeTruthy());
+  const [url, init] = fetch.mock.calls[1];
+  expect(url).toBe("/api/rutinas/7/ejercicios/10");
+  expect(init.method).toBe("PUT");
+  expect(JSON.parse(init.body)).toEqual({ series: 4 });
+});
+
+test("propia: [−] desactivado con 1 serie", async () => {
+  await pintar({ ...MIA, ejercicios: [ej(10, "Press de banca", 1)] });
+  const menos = screen.getByRole("button", { name: "Menos series de Press de banca" }) as HTMLButtonElement;
+  expect(menos.disabled).toBe(true);
+});
+
+test("propia: cambiar el objetivo de repeticiones", async () => {
+  const fetch = await pintar(MIA, {
+    status: 200,
+    body: { ...MIA, ejercicios: [ej(10, "Press de banca", 3, 6, 8), ej(11, "Aperturas")] },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Repeticiones objetivo de Press de banca" }));
+  const campo = screen.getByLabelText("Repeticiones objetivo") as HTMLInputElement;
+  expect(campo.value).toBe("8-12");
+  fireEvent.change(campo, { target: { value: "6 a 8" } });
+  fireEvent.click(screen.getByRole("button", { name: "Guardar objetivo" }));
+  await vi.waitFor(() => expect(screen.getByText("3 × 6-8")).toBeTruthy());
+  expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({ reps_min: 6, reps_max: 8 });
+});
+
+test("propia: objetivo mal escrito avisa sin llamar a la API", async () => {
+  const fetch = await pintar(MIA);
+  fireEvent.click(screen.getByRole("button", { name: "Repeticiones objetivo de Press de banca" }));
+  fireEvent.change(screen.getByLabelText("Repeticiones objetivo"), { target: { value: "muchas" } });
+  fireEvent.click(screen.getByRole("button", { name: "Guardar objetivo" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("«8-12» o «10»");
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test("predefinida: sin controles de series", async () => {
+  await pintar(PREDEFINIDA);
+  expect(screen.queryByRole("button", { name: /Más series/ })).toBeNull();
+  expect(screen.queryByRole("button", { name: /Repeticiones objetivo/ })).toBeNull();
 });
 
 test("rutina que no existe: aviso", async () => {

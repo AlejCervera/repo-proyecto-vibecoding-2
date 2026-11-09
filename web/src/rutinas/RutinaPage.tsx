@@ -3,6 +3,7 @@ import { ApiError } from "../api/http";
 import {
   anadirEjercicio,
   borrarRutina,
+  configurarEjercicio,
   copiarRutina,
   obtenerRutina,
   quitarEjercicio,
@@ -11,7 +12,8 @@ import {
 } from "../api/rutinas";
 import type { Ejercicio } from "../ejercicios/ejercicio";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
-import { enlace, enlaceHistorial, ir } from "../navegacion";
+import { enlace, ir } from "../navegacion";
+import { EjercicioRutinaFila } from "./EjercicioRutinaFila";
 import { mover, type Rutina } from "./rutina";
 
 type Props = { rutinaId: number; onSesionCaducada: () => void };
@@ -157,38 +159,17 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
       ) : (
         <ol aria-label="Ejercicios de la rutina">
           {rutina.ejercicios.map((e, i) => (
-            <li key={e.id}>
-              <a href={enlaceHistorial(e.id)}>{e.nombre}</a>
-              {editable && (
-                <>
-                  {" "}
-                  <button
-                    type="button"
-                    aria-label={`Subir ${e.nombre}`}
-                    disabled={ocupado || i === 0}
-                    onClick={() => ejecutar(() => reordenarRutina(rutina.id, mover(ids, i, -1)))}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Bajar ${e.nombre}`}
-                    disabled={ocupado || i === ids.length - 1}
-                    onClick={() => ejecutar(() => reordenarRutina(rutina.id, mover(ids, i, 1)))}
-                  >
-                    ↓
-                  </button>{" "}
-                  <button
-                    type="button"
-                    aria-label={`Quitar ${e.nombre}`}
-                    disabled={ocupado}
-                    onClick={() => ejecutar(() => quitarEjercicio(rutina.id, e.id))}
-                  >
-                    Quitar
-                  </button>
-                </>
-              )}
-            </li>
+            <EjercicioRutinaFila
+              key={e.id}
+              ejercicio={e}
+              editable={editable}
+              primero={i === 0}
+              ultimo={i === ids.length - 1}
+              ocupado={ocupado}
+              onMover={(d) => ejecutar(() => reordenarRutina(rutina.id, mover(ids, i, d)))}
+              onQuitar={() => ejecutar(() => quitarEjercicio(rutina.id, e.id))}
+              onConfigurar={(cambios) => ejecutar(() => configurarEjercicio(rutina.id, e.id, cambios))}
+            />
           ))}
         </ol>
       )}

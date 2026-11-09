@@ -10,7 +10,10 @@ import psycopg
 
 from app.ejercicios.nombres import normalizar
 from app.rutinas import repository
+from app.rutinas.logica import Plan
 
+# Todas las predefinidas: 3 series de 8 a 12 repeticiones por ejercicio.
+PLAN = Plan(series=3, reps_min=8, reps_max=12)
 
 class Predefinida(TypedDict):
     clave: str
@@ -76,6 +79,6 @@ def sembrar(conn: psycopg.Connection, definiciones: list[Predefinida] = PREDEFIN
             rutina_id = repository.guardar_predefinida(
                 conn, d["clave"], d["nombre"], normalizar(d["nombre"])
             )
-            repository.poner_ejercicios(conn, rutina_id, ejercicios)
+            repository.poner_ejercicios(conn, rutina_id, [(e, PLAN) for e in ejercicios])
             creadas += 1
     return creadas

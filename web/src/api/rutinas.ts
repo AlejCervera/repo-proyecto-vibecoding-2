@@ -20,6 +20,11 @@ export const anadirEjercicio = (id: number, ejercicio_id: number) =>
 export const quitarEjercicio = (id: number, ejercicioId: number) =>
   pedir<Rutina>(`/rutinas/${id}/ejercicios/${ejercicioId}`, { method: "DELETE" });
 
+export type CambiosPlan = Partial<{ series: number; reps_min: number | null; reps_max: number | null }>;
+
+export const configurarEjercicio = (id: number, ejercicioId: number, cambios: CambiosPlan) =>
+  pedir<Rutina>(`/rutinas/${id}/ejercicios/${ejercicioId}`, enviarJson(cambios, "PUT"));
+
 export const reordenarRutina = (id: number, ejercicios: number[]) =>
   pedir<Rutina>(`/rutinas/${id}/orden`, enviarJson({ ejercicios }, "PUT"));
 
