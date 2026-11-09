@@ -65,6 +65,15 @@ def duplicado(
     return _a_dict(row)
 
 
+def obtener(conn: psycopg.Connection, usuario_id: int, ejercicio_id: int) -> dict[str, Any] | None:
+    """El ejercicio con su imagen, si el usuario puede verlo."""
+    row = conn.execute(
+        _SELECT + f"WHERE e.id = %(id)s AND {_VISIBLE}",
+        {"usuario": usuario_id, "id": ejercicio_id},
+    ).fetchone()
+    return _a_dict(row)
+
+
 def crear_propio(
     conn: psycopg.Connection, usuario_id: int, nombre: str, normalizado: str
 ) -> dict[str, Any] | None:

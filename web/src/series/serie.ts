@@ -27,9 +27,19 @@ export function aPeticion(f: FormularioSerie) {
   };
 }
 
+/** «82,5 kg × 8» */
+export function pesoPorReps(s: Pick<Serie, "peso_kg" | "repeticiones">): string {
+  return `${s.peso_kg.toLocaleString("es-ES")} kg × ${s.repeticiones}`;
+}
+
 export function formatearSerie(s: Serie): string {
-  const peso = s.peso_kg.toLocaleString("es-ES");
-  return `${s.ejercicio} · ${peso} kg × ${s.repeticiones}`;
+  return `${s.ejercicio} · ${pesoPorReps(s)}`;
+}
+
+/** «2026-11-09» → «09/11/2026» */
+export function formatearFecha(iso: string): string {
+  const [anio, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${anio}`;
 }
 
 export function hoyISO(ahora: Date = new Date()): string {

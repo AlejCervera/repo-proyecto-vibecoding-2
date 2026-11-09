@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
 import { AuthScreen } from "./auth/AuthScreen";
+import { HistorialPage } from "./historial/HistorialPage";
+import { useRuta } from "./navegacion";
 import { SeriesPage } from "./series/SeriesPage";
 
 export const APP_NAME = "Gym Log";
@@ -9,6 +11,7 @@ export function App() {
   // undefined = comprobando la sesión; null = sin sesión.
   const [usuario, setUsuario] = useState<Usuario | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
+  const ruta = useRuta();
 
   useEffect(() => {
     usuarioActual()
@@ -36,7 +39,15 @@ export function App() {
               Cerrar sesión
             </button>
           </p>
-          <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />
+          {ruta.pantalla === "historial" ? (
+            <HistorialPage
+              key={`${usuario.id}-${ruta.ejercicioId}`}
+              ejercicioId={ruta.ejercicioId}
+              onSesionCaducada={sinSesion}
+            />
+          ) : (
+            <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />
+          )}
         </>
       )}
       <footer>

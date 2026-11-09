@@ -33,6 +33,17 @@ def crear(conn: psycopg.Connection, usuario_id: int, serie: NuevaSerie) -> dict[
     return _a_dict(conn.execute(_SELECT + "WHERE s.id = %s", (nuevo_id,)).fetchone())
 
 
+def listar_por_ejercicio(
+    conn: psycopg.Connection, usuario_id: int, ejercicio_id: int
+) -> list[dict[str, Any]]:
+    rows = conn.execute(
+        _SELECT + "WHERE s.usuario_id = %s AND s.ejercicio_id = %s "
+        "ORDER BY s.fecha DESC, s.id DESC",
+        (usuario_id, ejercicio_id),
+    ).fetchall()
+    return [_a_dict(r) for r in rows]
+
+
 def listar(conn: psycopg.Connection, usuario_id: int) -> list[dict[str, Any]]:
     rows = conn.execute(
         _SELECT + "WHERE s.usuario_id = %s ORDER BY s.fecha DESC, s.id DESC", (usuario_id,)

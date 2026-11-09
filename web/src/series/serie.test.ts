@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { aPeticion, formatearSerie, hoyISO } from "./serie";
+import { aPeticion, formatearFecha, formatearSerie, hoyISO, pesoPorReps } from "./serie";
 
 test("aPeticion envía el id del ejercicio y convierte los vacíos en null", () => {
   const ejercicio = { id: 3, nombre: "Press de banca", propio: false, imagen: null };
@@ -24,6 +24,11 @@ test("formatearSerie muestra peso con coma decimal", () => {
     repeticiones: 8,
   };
   expect(formatearSerie(s)).toBe("Press banca · 82,5 kg × 8");
+});
+
+test("pesoPorReps y formatearFecha", () => {
+  expect(pesoPorReps({ peso_kg: 85, repeticiones: 6 })).toBe("85 kg × 6");
+  expect(formatearFecha("2026-11-09")).toBe("09/11/2026");
 });
 
 test("hoyISO usa la fecha local", () => {

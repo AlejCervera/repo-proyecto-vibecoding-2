@@ -19,7 +19,7 @@ export function SeriesForm({ onCreada }: Props) {
 
   const cambiar =
     (campo: "fecha" | "peso" | "repeticiones") => (e: { target: { value: string } }) =>
-      setForm({ ...form, [campo]: e.target.value });
+      setForm((f) => ({ ...f, [campo]: e.target.value }));
 
   async function enviar(e: FormEvent) {
     e.preventDefault();
@@ -29,7 +29,8 @@ export function SeriesForm({ onCreada }: Props) {
       const creada = await crearSerie(aPeticion(form));
       onCreada(creada);
       // El ejercicio se queda elegido para registrar varias series seguidas.
-      setForm({ ...form, peso: "", repeticiones: "" });
+      // Estado actual (no el de antes de enviar): el usuario puede haber cambiado algo mientras.
+      setForm((f) => ({ ...f, peso: "", repeticiones: "" }));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
     } finally {

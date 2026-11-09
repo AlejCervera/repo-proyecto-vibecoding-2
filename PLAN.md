@@ -88,8 +88,8 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** ver todas las series de un ejercicio.
 
 **Tareas:**
-- [ ] Endpoint y pantalla con las series de un ejercicio, cada una por separado.
-- [ ] Mostrar en esa pantalla la imagen del ejercicio (de la Fase 3b), con su atribución si es de wger.
+- [x] Endpoint y pantalla con las series de un ejercicio, cada una por separado.
+- [x] Mostrar en esa pantalla la imagen del ejercicio (de la Fase 3b), con su atribución si es de wger.
 
 **Pruebas:**
 - API de filtrado y orden; e2e: 80×8 y 85×6 salen como dos filas.

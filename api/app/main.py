@@ -11,6 +11,7 @@ from app.ejercicios.routes import router as ejercicios_router
 from app.health import check_database
 from app.imagenes.routes import router as imagenes_router
 from app.migrate import migrate
+from app.series.historial import router as historial_router
 from app.series.routes import router as series_router
 
 
@@ -25,6 +26,7 @@ app = FastAPI(title="Gym Log API", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(ejercicios_router)
 app.include_router(imagenes_router)
+app.include_router(historial_router)
 app.include_router(series_router)
 
 

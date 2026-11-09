@@ -21,9 +21,34 @@ test("con sesión carga y muestra las series del usuario", async () => {
     },
   );
   render(<App />);
-  expect(await screen.findByText(/Press banca · 80 kg × 8/)).toBeTruthy();
+  expect((await screen.findByRole("list", { name: "Series" })).textContent).toContain(
+    "Press banca · 80 kg × 8",
+  );
   expect(screen.getByText("ana")).toBeTruthy();
   expect(fetch).toHaveBeenCalledWith("/api/series", undefined);
+});
+
+test("el enlace del ejercicio abre su historial", async () => {
+  window.location.hash = "";
+  simularFetch(
+    { status: 200, body: ANA },
+    {
+      status: 200,
+      body: [{ id: 1, fecha: "2026-11-09", ejercicio_id: 3, ejercicio: "Press banca", peso_kg: 80, repeticiones: 8 }],
+    },
+    {
+      status: 200,
+      body: { ejercicio: { id: 3, nombre: "Press banca", propio: false, imagen: null }, series: [] },
+    },
+  );
+  render(<App />);
+  const enlace = await screen.findByRole("link", { name: "Press banca" });
+  expect(enlace.getAttribute("href")).toBe("#/ejercicios/3/historial");
+
+  window.location.hash = "#/ejercicios/3/historial";
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  expect(await screen.findByRole("heading", { name: "Historial: Press banca" })).toBeTruthy();
+  window.location.hash = "";
 });
 
 test("cerrar sesión vuelve a la pantalla de inicio de sesión", async () => {

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { buscarEjercicios, crearEjercicio } from "../api/ejercicios";
+import { enlaceHistorial } from "../navegacion";
 import { ofrecerCrear, type Ejercicio } from "./ejercicio";
 import { EjercicioImagen } from "./EjercicioImagen";
 
@@ -56,7 +57,8 @@ export function EjercicioPicker({ value, onChange }: Props) {
           Ejercicio: <strong>{value.nombre}</strong>{" "}
           <button type="button" onClick={() => onChange(null)}>
             Cambiar
-          </button>
+          </button>{" "}
+          <a href={enlaceHistorial(value.id)}>Ver historial</a>
         </p>
         <EjercicioImagen ejercicio={value} onCambio={onChange} />
       </div>

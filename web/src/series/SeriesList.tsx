@@ -1,4 +1,5 @@
-import { formatearSerie, type Serie } from "./serie";
+import { enlaceHistorial } from "../navegacion";
+import { pesoPorReps, type Serie } from "./serie";
 
 export function SeriesList({ series }: { series: Serie[] }) {
   if (series.length === 0) return <p>Aún no hay series.</p>;
@@ -6,7 +7,8 @@ export function SeriesList({ series }: { series: Serie[] }) {
     <ul aria-label="Series">
       {series.map((s) => (
         <li key={s.id}>
-          <time dateTime={s.fecha}>{s.fecha}</time> — {formatearSerie(s)}
+          <time dateTime={s.fecha}>{s.fecha}</time> —{" "}
+          <a href={enlaceHistorial(s.ejercicio_id)}>{s.ejercicio}</a> · {pesoPorReps(s)}
         </li>
       ))}
     </ul>
