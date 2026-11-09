@@ -9,6 +9,8 @@ export type Ejercicio = {
   imagen: ImagenEjercicio | null;
 };
 
+export type EjercicioPropio = { id: number; nombre: string; num_series: number };
+
 /** Misma regla que la API: sin tildes, en minúsculas y sin espacios sobrantes. */
 export function normalizar(nombre: string): string {
   return nombre

@@ -54,15 +54,77 @@ def buscar(
 
 
 def duplicado(
-    conn: psycopg.Connection, usuario_id: int, normalizado: str
+    conn: psycopg.Connection, usuario_id: int, normalizado: str, excluir_id: int | None = None
 ) -> dict[str, Any] | None:
     """Ejercicio visible con el mismo nombre normalizado (primero el propio)."""
     row = conn.execute(
         _SELECT + f"WHERE {_VISIBLE} AND e.nombre_normalizado = %(norm)s "
+        "AND e.id IS DISTINCT FROM %(excluir)s "
         "ORDER BY e.usuario_id IS NULL LIMIT 1",
-        {"usuario": usuario_id, "norm": normalizado},
+        {"usuario": usuario_id, "norm": normalizado, "excluir": excluir_id},
     ).fetchone()
     return _a_dict(row)
+
+
+def listar_propios(conn: psycopg.Connection, usuario_id: int) -> list[dict[str, Any]]:
+    """Los ejercicios propios del usuario, con cuántas series tiene de cada uno."""
+    rows = conn.execute(
+        "SELECT e.id, e.nombre, count(s.id) FROM ejercicios e "
+        "LEFT JOIN series s ON s.ejercicio_id = e.id AND s.usuario_id = e.usuario_id "
+        "WHERE e.usuario_id = %s GROUP BY e.id ORDER BY e.nombre_normalizado, e.id",
+        (usuario_id,),
+    ).fetchall()
+    return [{"id": r[0], "nombre": r[1], "num_series": r[2]} for r in rows]
+
+
+def es_propio(conn: psycopg.Connection, usuario_id: int, ejercicio_id: int) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM ejercicios WHERE id = %s AND usuario_id = %s", (ejercicio_id, usuario_id)
+    ).fetchone()
+    return row is not None
+
+
+def renombrar(
+    conn: psycopg.Connection, usuario_id: int, ejercicio_id: int, nombre: str, normalizado: str
+) -> bool:
+    """False si otro ejercicio propio ya tiene ese nombre."""
+    try:
+        with conn.transaction():
+            conn.execute(
+                "UPDATE ejercicios SET nombre = %s, nombre_normalizado = %s "
+                "WHERE id = %s AND usuario_id = %s",
+                (nombre, normalizado, ejercicio_id, usuario_id),
+            )
+    except psycopg.errors.UniqueViolation:
+        return False
+    return True
+
+
+def contar_series(conn: psycopg.Connection, usuario_id: int, ejercicio_id: int) -> int:
+    return conn.execute(
+        "SELECT count(*) FROM series WHERE ejercicio_id = %s AND usuario_id = %s",
+        (ejercicio_id, usuario_id),
+    ).fetchone()[0]
+
+
+def borrar_propio(
+    conn: psycopg.Connection, usuario_id: int, ejercicio_id: int, mover_a: int | None
+) -> None:
+    """Pasa las series a «mover_a» (o las borra si es None) y borra el ejercicio. Todo o nada."""
+    with conn.transaction():
+        if mover_a is None:
+            conn.execute(
+                "DELETE FROM series WHERE ejercicio_id = %s AND usuario_id = %s",
+                (ejercicio_id, usuario_id),
+            )
+        else:
+            conn.execute(
+                "UPDATE series SET ejercicio_id = %s WHERE ejercicio_id = %s AND usuario_id = %s",
+                (mover_a, ejercicio_id, usuario_id),
+            )
+        conn.execute(
+            "DELETE FROM ejercicios WHERE id = %s AND usuario_id = %s", (ejercicio_id, usuario_id)
+        )
 
 
 def obtener(conn: psycopg.Connection, usuario_id: int, ejercicio_id: int) -> dict[str, Any] | None:

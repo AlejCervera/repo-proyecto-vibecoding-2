@@ -7,11 +7,14 @@ import { EjercicioImagen } from "./EjercicioImagen";
 type Props = {
   value: Ejercicio | null;
   onChange: (e: Ejercicio | null) => void;
+  /** Sin imagen ni enlace al historial (para formularios dentro de una fila). */
+  compacto?: boolean;
+  etiqueta?: string;
 };
 
 type Aviso = { mensaje: string; ejercicio: Ejercicio };
 
-export function EjercicioPicker({ value, onChange }: Props) {
+export function EjercicioPicker({ value, onChange, compacto = false, etiqueta = "Ejercicio" }: Props) {
   const [texto, setTexto] = useState("");
   const [resultados, setResultados] = useState<Ejercicio[]>([]);
   const [aviso, setAviso] = useState<Aviso | null>(null);
@@ -43,7 +46,7 @@ export function EjercicioPicker({ value, onChange }: Props) {
     setError(null);
     try {
       const r = await crearEjercicio(texto);
-      if (r.tipo === "creado") elegir(r.ejercicio);
+      if (r.tipo === "ok") elegir(r.ejercicio);
       else setAviso({ mensaje: r.mensaje, ejercicio: r.ejercicio });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -54,13 +57,18 @@ export function EjercicioPicker({ value, onChange }: Props) {
     return (
       <div>
         <p>
-          Ejercicio: <strong>{value.nombre}</strong>{" "}
+          {etiqueta}: <strong>{value.nombre}</strong>{" "}
           <button type="button" onClick={() => onChange(null)}>
             Cambiar
-          </button>{" "}
-          <a href={enlaceHistorial(value.id)}>Ver historial</a>
+          </button>
+          {!compacto && (
+            <>
+              {" "}
+              <a href={enlaceHistorial(value.id)}>Ver historial</a>
+            </>
+          )}
         </p>
-        <EjercicioImagen ejercicio={value} onCambio={onChange} />
+        {!compacto && <EjercicioImagen ejercicio={value} onCambio={onChange} />}
       </div>
     );
   }
@@ -68,7 +76,7 @@ export function EjercicioPicker({ value, onChange }: Props) {
   return (
     <div>
       <label>
-        Ejercicio
+        {etiqueta}
         <input
           value={texto}
           onChange={(e) => escribir(e.target.value)}

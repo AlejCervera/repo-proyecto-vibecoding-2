@@ -1,15 +1,34 @@
-import { enlaceHistorial } from "../navegacion";
-import { pesoPorReps, type Serie } from "./serie";
+import type { Serie } from "./serie";
+import { SerieFila } from "./SerieFila";
 
-export function SeriesList({ series }: { series: Serie[] }) {
-  if (series.length === 0) return <p>Aún no hay series.</p>;
+type Props = {
+  series: Serie[];
+  etiqueta?: string;
+  mostrarEjercicio?: boolean;
+  vacio?: string;
+  onCambiada: (s: Serie) => void;
+  onBorrada: (id: number) => void;
+};
+
+export function SeriesList({
+  series,
+  etiqueta = "Series",
+  mostrarEjercicio = true,
+  vacio = "Aún no hay series.",
+  onCambiada,
+  onBorrada,
+}: Props) {
+  if (series.length === 0) return <p>{vacio}</p>;
   return (
-    <ul aria-label="Series">
+    <ul aria-label={etiqueta}>
       {series.map((s) => (
-        <li key={s.id}>
-          <time dateTime={s.fecha}>{s.fecha}</time> —{" "}
-          <a href={enlaceHistorial(s.ejercicio_id)}>{s.ejercicio}</a> · {pesoPorReps(s)}
-        </li>
+        <SerieFila
+          key={s.id}
+          serie={s}
+          mostrarEjercicio={mostrarEjercicio}
+          onCambiada={onCambiada}
+          onBorrada={onBorrada}
+        />
       ))}
     </ul>
   );

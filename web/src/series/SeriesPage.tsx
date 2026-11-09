@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "../api/http";
 import { listarSeries } from "../api/series";
-import type { Serie } from "./serie";
+import { ordenarSeries, reemplazarSerie, type Serie } from "./serie";
 import { SeriesForm } from "./SeriesForm";
 import { SeriesList } from "./SeriesList";
 
@@ -22,8 +22,16 @@ export function SeriesPage({ onSesionCaducada }: Props) {
 
   return (
     <>
-      <SeriesForm onCreada={(s) => setSeries((prev) => [s, ...prev])} />
-      {error ? <p role="alert">{error}</p> : <SeriesList series={series} />}
+      <SeriesForm onCreada={(s) => setSeries((prev) => ordenarSeries([s, ...prev]))} />
+      {error ? (
+        <p role="alert">{error}</p>
+      ) : (
+        <SeriesList
+          series={series}
+          onCambiada={(s) => setSeries((prev) => reemplazarSerie(prev, s))}
+          onBorrada={(id) => setSeries((prev) => prev.filter((s) => s.id !== id))}
+        />
+      )}
     </>
   );
 }

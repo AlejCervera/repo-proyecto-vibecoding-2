@@ -101,8 +101,8 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Objetivo:** corregir y eliminar datos.
 
 **Tareas:**
-- [ ] Editar y borrar series y ejercicios propios, con confirmación.
-- [ ] Al borrar un ejercicio con series, pedir confirmar qué pasa con ellas.
+- [x] Editar y borrar series y ejercicios propios, con confirmación.
+- [x] Al borrar un ejercicio con series, pedir confirmar qué pasa con ellas: borrarlas también o pasarlas a otro ejercicio (sirve para juntar duplicados).
 
 **Pruebas:**
 - API de editar y borrar (incluido no tocar datos de otro usuario); e2e: corregir un peso y borrar una serie.
@@ -116,11 +116,12 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 **Tareas:**
 - [ ] Tablas y endpoints de rutinas: crear, renombrar, añadir y quitar ejercicios, borrar.
 - [ ] Pantallas de rutinas.
+- [ ] Rutinas predefinidas: plantillas compartidas que vienen con la app (p. ej. «Pecho», «Espalda» y otras clásicas que proponga el agente), con ejercicios del catálogo. No se modifican: «Copiar a mis rutinas» crea una propia editable. Cada usuario puede crear además las suyas con los ejercicios que quiera.
 
 **Pruebas:**
-- API de rutinas; e2e: «Pecho» con press banca y aperturas, renombrar y recargar.
+- API de rutinas; plantillas visibles para todos y no editables; copiar una plantilla; e2e: «Pecho» con press banca y aperturas, renombrar y recargar.
 
-**Hecho cuando:** la rutina sigue igual tras reiniciar los contenedores.
+**Hecho cuando:** la rutina sigue igual tras reiniciar los contenedores, y copiar «Pecho» predefinida da una rutina propia editable.
 
 ## Fase 7 · Entrenar con una rutina
 
@@ -133,6 +134,21 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 - e2e: desde «Pecho» registrar press banca y verlo en su historial.
 
 **Hecho cuando:** la serie registrada desde la rutina aparece en el historial del ejercicio.
+
+## Fase 7b · Cronómetro de descanso
+
+**Objetivo:** controlar los descansos entre series.
+
+**Tareas:**
+- [ ] Cuenta atrás grande con botones rápidos (60 s, 90 s, 2 min, 3 min), pausa y reinicio; calculada por hora, no por contador.
+- [ ] Al terminar, sonido y vibración (vibración solo donde el navegador la permita: Android sí, iPhone no).
+- [ ] Al entrenar con una rutina, arranca solo al guardar una serie, con el último tiempo elegido.
+- Limitación aceptada: con el móvil bloqueado el aviso puede no sonar hasta volver a la app (avisar en segundo plano exigiría PWA con notificaciones, fuera de este plan).
+
+**Pruebas:**
+- Unitarias del cálculo del tiempo restante; web con reloj simulado; e2e: guardar una serie desde una rutina arranca la cuenta atrás.
+
+**Hecho cuando:** en el gimnasio, al guardar una serie de la rutina, empieza el descanso y avisa al terminar.
 
 ## Fase 8 · Uso en móvil
 

@@ -33,6 +33,27 @@ def crear(conn: psycopg.Connection, usuario_id: int, serie: NuevaSerie) -> dict[
     return _a_dict(conn.execute(_SELECT + "WHERE s.id = %s", (nuevo_id,)).fetchone())
 
 
+def actualizar(
+    conn: psycopg.Connection, usuario_id: int, serie_id: int, serie: NuevaSerie
+) -> dict[str, Any] | None:
+    """None si la serie no existe o no es del usuario."""
+    row = conn.execute(
+        "UPDATE series SET fecha = %s, ejercicio_id = %s, peso_kg = %s, repeticiones = %s "
+        "WHERE id = %s AND usuario_id = %s RETURNING id",
+        (serie.fecha, serie.ejercicio_id, serie.peso_kg, serie.repeticiones, serie_id, usuario_id),
+    ).fetchone()
+    if row is None:
+        return None
+    return _a_dict(conn.execute(_SELECT + "WHERE s.id = %s", (serie_id,)).fetchone())
+
+
+def borrar(conn: psycopg.Connection, usuario_id: int, serie_id: int) -> bool:
+    cur = conn.execute(
+        "DELETE FROM series WHERE id = %s AND usuario_id = %s", (serie_id, usuario_id)
+    )
+    return cur.rowcount == 1
+
+
 def listar_por_ejercicio(
     conn: psycopg.Connection, usuario_id: int, ejercicio_id: int
 ) -> list[dict[str, Any]]:

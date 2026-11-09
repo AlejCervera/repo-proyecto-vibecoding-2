@@ -21,9 +21,9 @@ export async function pedir<T>(ruta: string, init?: RequestInit): Promise<T> {
   return cuerpo as T;
 }
 
-export function enviarJson(datos: unknown): RequestInit {
+export function enviarJson(datos: unknown, method = "POST"): RequestInit {
   return {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(datos),
   };

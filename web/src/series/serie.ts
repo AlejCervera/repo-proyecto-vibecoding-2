@@ -27,6 +27,26 @@ export function aPeticion(f: FormularioSerie) {
   };
 }
 
+/** Rellena el formulario de edición con los datos de una serie guardada. */
+export function formularioDesde(s: Serie): FormularioSerie {
+  return {
+    fecha: s.fecha,
+    ejercicio: { id: s.ejercicio_id, nombre: s.ejercicio, propio: false, imagen: null },
+    peso: String(s.peso_kg).replace(".", ","),
+    repeticiones: String(s.repeticiones),
+  };
+}
+
+/** Mismo orden que la API: fecha más reciente primero y, a igual fecha, la registrada después. */
+export function ordenarSeries(series: Serie[]): Serie[] {
+  return [...series].sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id - a.id);
+}
+
+/** Sustituye una serie editada y reordena. */
+export function reemplazarSerie(series: Serie[], editada: Serie): Serie[] {
+  return ordenarSeries(series.map((s) => (s.id === editada.id ? editada : s)));
+}
+
 /** «82,5 kg × 8» */
 export function pesoPorReps(s: Pick<Serie, "peso_kg" | "repeticiones">): string {
   return `${s.peso_kg.toLocaleString("es-ES")} kg × ${s.repeticiones}`;

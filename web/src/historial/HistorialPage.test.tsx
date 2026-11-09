@@ -27,7 +27,9 @@ test("muestra el ejercicio, su imagen y cada serie en una fila, en el orden de l
 
   expect(await screen.findByRole("heading", { name: "Historial: Press de banca" })).toBeTruthy();
   const filas = screen.getAllByRole("listitem").map((li) => li.textContent);
-  expect(filas).toEqual(["09/11/2026 · 85 kg × 6", "09/11/2026 · 80 kg × 8"]);
+  expect(filas).toHaveLength(2);
+  expect(filas[0]).toContain("09/11/2026 · 85 kg × 6");
+  expect(filas[1]).toContain("09/11/2026 · 80 kg × 8");
   expect(screen.getByRole("img", { name: "Imagen de Press de banca" })).toBeTruthy();
   expect(screen.getByText(/Everkinetic/)).toBeTruthy();
   expect(screen.getByRole("link", { name: "← Volver" }).getAttribute("href")).toBe("#/");

@@ -3,7 +3,8 @@ import { obtenerHistorial, type Historial } from "../api/historial";
 import { ApiError } from "../api/http";
 import { EjercicioImagen } from "../ejercicios/EjercicioImagen";
 import { enlace } from "../navegacion";
-import { formatearFecha, pesoPorReps } from "../series/serie";
+import { reemplazarSerie } from "../series/serie";
+import { SeriesList } from "../series/SeriesList";
 
 type Props = { ejercicioId: number; onSesionCaducada: () => void };
 
@@ -41,17 +42,25 @@ export function HistorialPage({ ejercicioId, onSesionCaducada }: Props) {
         ejercicio={ejercicio}
         onCambio={(e) => setHistorial({ ...historial, ejercicio: e })}
       />
-      {series.length === 0 ? (
-        <p>Aún no has registrado series de este ejercicio.</p>
-      ) : (
-        <ul aria-label="Historial">
-          {series.map((s) => (
-            <li key={s.id}>
-              <time dateTime={s.fecha}>{formatearFecha(s.fecha)}</time> · {pesoPorReps(s)}
-            </li>
-          ))}
-        </ul>
-      )}
+      <SeriesList
+        series={series}
+        etiqueta="Historial"
+        mostrarEjercicio={false}
+        vacio="Aún no has registrado series de este ejercicio."
+        onCambiada={(s) =>
+          setHistorial({
+            ...historial,
+            // si se cambia a otro ejercicio, ya no pertenece a este historial
+            series:
+              s.ejercicio_id === ejercicio.id
+                ? reemplazarSerie(series, s)
+                : series.filter((x) => x.id !== s.id),
+          })
+        }
+        onBorrada={(id) =>
+          setHistorial({ ...historial, series: series.filter((x) => x.id !== id) })
+        }
+      />
     </section>
   );
 }
