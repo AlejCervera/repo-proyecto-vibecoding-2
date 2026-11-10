@@ -1,61 +1,46 @@
-import { expect, test, type Page } from "@playwright/test";
-import { nombreUnico, registrar, registrarSerie } from "./cuentas";
+import { expect, test } from "@playwright/test";
+import { crearEjercicioPropio, entrenar, irA, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("edit"));
 });
 
-const lista = (page: Page) => page.getByRole("list", { name: "Series" });
-
-test("corregir un peso y borrar una serie; los cambios persisten al recargar", async ({ page }) => {
-  await registrarSerie(page, "Press de banca", "80", "8");
-  await registrarSerie(page, "Sentadilla", "100", "5");
-  await expect(lista(page).getByRole("listitem")).toHaveCount(2);
+test("en el diario: corregir un peso y borrar una serie; persiste al recargar", async ({ page }) => {
+  await entrenar(page, "Mixta", [
+    ["Press de banca", "80", "8"],
+    ["Sentadilla", "100", "5"],
+  ]);
+  await page.getByRole("link", { name: "Ver en el diario" }).click();
 
   // Corregir el peso de press de banca: 80 → 82,5
-  const banca = lista(page).getByRole("listitem").filter({ hasText: "Press de banca" });
+  const banca = page.getByRole("article", { name: "Press de banca" });
   await banca.getByRole("button", { name: "Editar" }).click();
   const form = page.getByRole("form", { name: "Editar serie" });
   await form.getByLabel("Peso (kg)").fill("82,5");
   await form.getByRole("button", { name: "Guardar cambios" }).click();
-  await expect(lista(page)).toContainText("Press de banca · 82,5 kg × 8");
+  await expect(banca).toContainText("82,5 kg × 8");
 
   // Borrar la de sentadilla, con confirmación
-  const sentadilla = lista(page).getByRole("listitem").filter({ hasText: "Sentadilla" });
+  const sentadilla = page.getByRole("article", { name: "Sentadilla" });
   await sentadilla.getByRole("button", { name: "Borrar", exact: true }).click();
   await sentadilla.getByRole("button", { name: "Sí, borrar" }).click();
-  await expect(lista(page).getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("article", { name: "Sentadilla" })).toHaveCount(0);
 
   await page.reload();
-  await expect(lista(page).getByRole("listitem")).toHaveCount(1);
-  await expect(lista(page)).toContainText("Press de banca · 82,5 kg × 8");
-  await expect(lista(page)).not.toContainText("Sentadilla");
+  await expect(banca).toContainText("82,5 kg × 8");
+  await expect(page.getByRole("article", { name: "Sentadilla" })).toHaveCount(0);
 });
 
-async function crearPropio(page: Page, nombre: string) {
-  const cambiar = page.getByRole("button", { name: "Cambiar", exact: true });
-  if (await cambiar.isVisible()) await cambiar.click();
-  await page.getByLabel("Ejercicio").fill(nombre);
-  await page.getByRole("button", { name: `Crear «${nombre}» como ejercicio propio` }).click();
-  await expect(page.getByText(`Ejercicio: ${nombre}`)).toBeVisible();
-}
-
-async function guardarSerie(page: Page, peso: string, reps: string) {
-  await page.getByLabel("Peso (kg)").fill(peso);
-  await page.getByLabel("Repeticiones").fill(reps);
-  await page.getByRole("button", { name: "Guardar", exact: true }).click();
-}
-
 test("renombrar un ejercicio propio y borrarlo pasando sus series a otro", async ({ page }) => {
-  await crearPropio(page, "Remo maquina");
-  await guardarSerie(page, "50", "10");
-  await expect(lista(page)).toContainText("Remo maquina · 50 kg × 10");
-  await guardarSerie(page, "55", "8");
-  await crearPropio(page, "Remo en polea");
-  await guardarSerie(page, "40", "12");
-  await expect(lista(page).getByRole("listitem")).toHaveCount(3);
+  await crearEjercicioPropio(page, "Remo maquina");
+  await crearEjercicioPropio(page, "Remo en polea");
+  await entrenar(page, "Espalda", [
+    ["Remo maquina", "50", "10"],
+    ["Remo maquina", "55", "8"],
+    ["Remo en polea", "40", "12"],
+  ]);
 
-  await page.getByRole("link", { name: "Mis ejercicios" }).click();
+  await irA(page, "Mis ejercicios");
   const mis = page.getByRole("list", { name: "Mis ejercicios" });
   const remo = mis.getByRole("listitem").filter({ hasText: "Remo maquina" });
   await expect(remo).toContainText("(2 series)");

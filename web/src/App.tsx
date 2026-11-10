@@ -9,13 +9,14 @@ import { InicioPage } from "./inicio/InicioPage";
 import { enlace, useRuta, type Ruta } from "./navegacion";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
-import { SeriesPage } from "./series/SeriesPage";
+import { DiarioPage } from "./diario/DiarioPage";
+import { EntrenamientoPage } from "./diario/EntrenamientoPage";
 
 export const APP_NAME = "Gym Log";
 
 const SECCIONES: { ruta: Ruta; texto: string; activa: Ruta["pantalla"][] }[] = [
   { ruta: { pantalla: "inicio" }, texto: "Inicio", activa: ["inicio"] },
-  { ruta: { pantalla: "diario" }, texto: "Diario", activa: ["diario", "historial"] },
+  { ruta: { pantalla: "diario" }, texto: "Diario", activa: ["diario", "entrenamiento", "historial"] },
   { ruta: { pantalla: "rutinas" }, texto: "Rutinas", activa: ["rutinas", "rutina", "entrenar"] },
   { ruta: { pantalla: "ejercicios" }, texto: "Mis ejercicios", activa: ["ejercicios"] },
 ];
@@ -69,7 +70,14 @@ export function App() {
           </nav>
           {ruta.pantalla === "inicio" && <InicioPage key={usuario.id} onSesionCaducada={sinSesion} />}
           {ruta.pantalla === "empezar" && <Empezar />}
-          {ruta.pantalla === "diario" && <SeriesPage key={usuario.id} onSesionCaducada={sinSesion} />}
+          {ruta.pantalla === "diario" && <DiarioPage key={usuario.id} onSesionCaducada={sinSesion} />}
+          {ruta.pantalla === "entrenamiento" && (
+            <EntrenamientoPage
+              key={`${usuario.id}-${ruta.entrenamientoId}`}
+              entrenamientoId={ruta.entrenamientoId}
+              onSesionCaducada={sinSesion}
+            />
+          )}
           {ruta.pantalla === "rutinas" && <RutinasPage key={usuario.id} onSesionCaducada={sinSesion} />}
           {ruta.pantalla === "entrenar" && (
             <EntrenarPage

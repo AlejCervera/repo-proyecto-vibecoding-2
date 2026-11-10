@@ -66,6 +66,9 @@ test("pasar al siguiente, recargar a mitad y terminar con el resumen", async ({ 
   // Es predefinida: no ofrece guardar cambios
   await expect(resumen.getByRole("complementary")).toHaveCount(0);
 
-  await page.getByRole("link", { name: "Ir al diario" }).click();
-  await expect(page.getByRole("list", { name: "Series" }).getByRole("listitem")).toHaveCount(2);
+  // Guardarlo en el diario: queda con sus dos ejercicios y sus series
+  await resumen.getByRole("button", { name: "Guardar en el diario" }).click();
+  await resumen.getByRole("link", { name: "Ver en el diario" }).click();
+  await expect(page.getByRole("article", { name: "Press de banca" })).toContainText("60 kg × 10");
+  await expect(page.getByRole("article", { name: "Aperturas con mancuernas" })).toContainText("14 kg × 12");
 });

@@ -43,7 +43,9 @@ def test_series_existentes_pasan_a_ejercicios_propios(db_vacia, tmp_path):
             (usuario, ejercicio),
         )
 
-    assert migrate(db_vacia)[0] == "003_ejercicios"
+    # Solo hasta la 003: las posteriores (p. ej. la 007 borra las series de prueba) no aplican aquí.
+    shutil.copy(MIGRATIONS_DIR / "003_ejercicios.sql", tmp_path / "003_ejercicios.sql")
+    assert migrate(db_vacia, tmp_path) == ["003_ejercicios"]
 
     ejercicios = db_vacia.execute(
         "SELECT usuario_id, nombre, nombre_normalizado FROM ejercicios ORDER BY usuario_id, id"

@@ -8,6 +8,7 @@ from starlette.exceptions import HTTPException
 from app import db
 from app.auth.routes import router as auth_router
 from app.ejercicios.routes import router as ejercicios_router
+from app.entrenamientos.routes import router as entrenamientos_router
 from app.health import check_database
 from app.imagenes.routes import router as imagenes_router
 from app.migrate import migrate
@@ -31,6 +32,7 @@ app.include_router(ejercicios_router)
 app.include_router(imagenes_router)
 app.include_router(historial_router)
 app.include_router(rutinas_router)
+app.include_router(entrenamientos_router)
 app.include_router(series_router)
 
 

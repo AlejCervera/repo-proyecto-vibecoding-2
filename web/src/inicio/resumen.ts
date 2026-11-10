@@ -32,15 +32,6 @@ export function semana(series: Serie[], hoy: string) {
   };
 }
 
-/** El día más reciente con series: fecha, cuántas y qué ejercicios (en el orden en que se hicieron). */
-export function ultimoEntrenamiento(series: Serie[]) {
-  if (series.length === 0) return null;
-  const fecha = series.reduce((max, s) => (s.fecha > max ? s.fecha : max), series[0].fecha);
-  const delDia = series.filter((s) => s.fecha === fecha).sort((a, b) => a.id - b.id);
-  const ejercicios = [...new Set(delDia.map((s) => s.ejercicio))];
-  return { fecha, numSeries: delDia.length, ejercicios };
-}
-
 const NOMBRES_DIA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
 /** «Lun 09/11» */

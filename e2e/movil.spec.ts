@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { irA, nombreUnico, registrar, registrarSerie } from "./cuentas";
+import { abrirPredefinida, irA, nombreUnico, registrar, serieEntrenando } from "./cuentas";
 
 // Comprobaciones de diseño a 390 px: solo tienen sentido en el proyecto «movil».
 test.skip(({ viewport }) => (viewport?.width ?? 0) > 500, "solo con tamaño de móvil");
@@ -34,34 +34,22 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await revisar(page, "inicio de sesión");
 
   await registrar(page, nombreUnico("movil"));
-  await registrarSerie(page, "Press de banca", "80", "8");
-  await revisar(page, "diario");
-
-  await page.getByRole("list", { name: "Series" }).getByRole("link", { name: "Press de banca" }).click();
-  await expect(page.getByRole("heading", { name: "Historial: Press de banca" })).toBeVisible();
-  await revisar(page, "historial");
-
-  await irA(page, "Inicio");
-  await expect(page.getByRole("article", { name: "Esta semana" })).toBeVisible();
   await revisar(page, "inicio");
 
   await irA(page, "Mis ejercicios");
   await expect(page.getByRole("heading", { name: "Mis ejercicios" })).toBeVisible();
   await revisar(page, "mis ejercicios");
 
-  await irA(page, "Rutinas");
-  await expect(page.getByRole("list", { name: "Rutinas predefinidas" })).toBeVisible();
-  await revisar(page, "rutinas");
-
-  await page.getByRole("list", { name: "Rutinas predefinidas" }).getByRole("link", { name: "Pecho" }).click();
+  await abrirPredefinida(page, "Pecho");
   await page.getByRole("button", { name: "Copiar a mis rutinas" }).click();
   await expect(page.getByRole("button", { name: "Renombrar" })).toBeVisible();
   await revisar(page, "rutina propia");
+  await irA(page, "Rutinas");
+  await revisar(page, "rutinas");
+  await page.getByRole("list", { name: "Mis rutinas" }).getByRole("link", { name: "Pecho" }).click();
 
   await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
-  const paso = page.getByRole("article", { name: "Press de banca" });
-  await paso.getByLabel("Peso (kg)").fill("80");
-  await paso.getByRole("button", { name: "Guardar serie" }).click();
+  await serieEntrenando(page, "Press de banca", "80", "8");
   await expect(page.getByRole("timer")).toBeVisible();
   await revisar(page, "entrenar");
 
@@ -69,8 +57,19 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect(page.getByRole("timer")).toBeInViewport();
 
-  await page.getByRole("link", { name: "Siguiente →" }).click();
-  await page.getByRole("link", { name: "Terminar" }).click();
+  await page.getByRole("navigation", { name: "Pasos" }).getByRole("link", { name: "Terminar" }).click();
   await expect(page.getByRole("article", { name: "Resumen del entrenamiento" })).toBeVisible();
   await revisar(page, "resumen");
+  await page.getByRole("button", { name: "Guardar en el diario" }).click();
+  await page.getByRole("link", { name: "Ver en el diario" }).click();
+  await expect(page.getByRole("article", { name: "Press de banca" })).toBeVisible();
+  await revisar(page, "entrenamiento del diario");
+
+  await page.getByRole("article", { name: "Press de banca" }).getByRole("link", { name: "Press de banca" }).click();
+  await expect(page.getByRole("heading", { name: "Historial: Press de banca" })).toBeVisible();
+  await revisar(page, "historial");
+
+  await irA(page, "Diario");
+  await expect(page.getByRole("list", { name: "Entrenamientos" })).toBeVisible();
+  await revisar(page, "diario");
 });

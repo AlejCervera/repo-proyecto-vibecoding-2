@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/http";
+import { listarEntrenamientos, type EntradaDiario } from "../api/entrenamientos";
 import { listarRutinas } from "../api/rutinas";
+import { resumenEntrada } from "../diario/DiarioPage";
 import { listarSeries } from "../api/series";
 import { enlace } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, type Serie } from "../series/serie";
-import { DIAS, fechaCorta, leerUltimaRutina, semana, ultimoEntrenamiento } from "./resumen";
+import { DIAS, fechaCorta, leerUltimaRutina, semana } from "./resumen";
 
 type Props = { onSesionCaducada: () => void };
 
@@ -13,14 +15,16 @@ type Props = { onSesionCaducada: () => void };
 export function InicioPage({ onSesionCaducada }: Props) {
   const [series, setSeries] = useState<Serie[] | null>(null);
   const [rutinas, setRutinas] = useState<Rutina[]>([]);
+  const [diario, setDiario] = useState<EntradaDiario[]>([]);
   const [error, setError] = useState<string | null>(null);
   const hoy = useMemo(() => hoyISO(), []);
 
   useEffect(() => {
-    Promise.all([listarSeries(), listarRutinas()])
-      .then(([s, r]) => {
+    Promise.all([listarSeries(), listarRutinas(), listarEntrenamientos()])
+      .then(([s, r, d]) => {
         setSeries(s);
         setRutinas(r);
+        setDiario(d);
       })
       .catch((e: Error) => {
         if (e instanceof ApiError && e.status === 401) onSesionCaducada();
@@ -35,7 +39,7 @@ export function InicioPage({ onSesionCaducada }: Props) {
   const guardada = leerUltimaRutina();
   const ultima = rutinas.find((r) => r.id === guardada?.id && r.ejercicios.length > 0);
   const esta = semana(series, hoy);
-  const anterior = ultimoEntrenamiento(series);
+  const anterior = diario[0]; // el diario viene del más reciente al más antiguo
 
   return (
     <section className="inicio">
@@ -86,21 +90,16 @@ export function InicioPage({ onSesionCaducada }: Props) {
         {anterior ? (
           <>
             <p className="cifra">
-              {fechaCorta(anterior.fecha)} · {anterior.numSeries}{" "}
-              {anterior.numSeries === 1 ? "serie" : "series"}
+              <a href={enlace({ pantalla: "entrenamiento", entrenamientoId: anterior.id })}>
+                {fechaCorta(anterior.fecha)} · {anterior.rutina_nombre}
+              </a>
             </p>
-            <p>{anterior.ejercicios.join(", ")}</p>
+            <p>{resumenEntrada(anterior)}</p>
           </>
         ) : (
-          <p>Aún no has registrado ninguna serie.</p>
+          <p>Aún no hay entrenamientos en el diario.</p>
         )}
       </article>
-
-      <p>
-        <a className="boton" href={enlace({ pantalla: "diario" })}>
-          + Serie suelta → Diario
-        </a>
-      </p>
     </section>
   );
 }

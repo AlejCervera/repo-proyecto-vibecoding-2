@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { entrar, nombreUnico, registrar, registrarSerie, salir } from "./cuentas";
+import { entrar, entrenar, irA, nombreUnico, registrar, salir } from "./cuentas";
 
 test("registro, logout y login", async ({ page }) => {
   const usuario = nombreUnico("ana");
@@ -35,13 +35,19 @@ test("dos cuentas no ven las series de la otra", async ({ browser }) => {
   await registrar(a, nombreUnico("ana"));
   await registrar(b, nombreUnico("bea"));
 
-  await registrarSerie(a, "Press de banca", "80", "8");
-  await registrarSerie(b, "Sentadilla", "100", "5");
-  await expect(a.getByRole("list", { name: "Series" })).toContainText("Press de banca · 80 kg × 8");
-  await expect(b.getByRole("list", { name: "Series" })).toContainText("Sentadilla · 100 kg × 5");
+  await entrenar(a, "Rutina de Ana", [["Press de banca", "80", "8"]]);
+  await entrenar(b, "Rutina de Bea", [["Sentadilla", "100", "5"]]);
 
-  await a.reload();
-  await b.reload();
-  await expect(a.getByRole("list", { name: "Series" })).not.toContainText("Sentadilla");
-  await expect(b.getByRole("list", { name: "Series" })).not.toContainText("Press de banca");
+  await irA(a, "Diario");
+  await irA(b, "Diario");
+  const diarioA = a.getByRole("list", { name: "Entrenamientos" });
+  const diarioB = b.getByRole("list", { name: "Entrenamientos" });
+  await expect(diarioA.getByRole("listitem")).toHaveCount(1);
+  await expect(diarioA).toContainText("Rutina de Ana");
+  await expect(diarioB.getByRole("listitem")).toHaveCount(1);
+  await expect(diarioB).toContainText("Rutina de Bea");
+
+  // Ni rutinas ni historial de la otra cuenta
+  await irA(b, "Rutinas");
+  await expect(b.getByRole("list", { name: "Mis rutinas" })).not.toContainText("Rutina de Ana");
 });

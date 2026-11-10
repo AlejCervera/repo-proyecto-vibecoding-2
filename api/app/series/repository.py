@@ -24,6 +24,11 @@ def _a_dict(row: tuple) -> dict[str, Any]:
     }
 
 
+# Para otros módulos que leen series (p. ej. el diario de entrenamientos).
+SELECT_SERIES = _SELECT
+serie_a_dict = _a_dict
+
+
 def crear(conn: psycopg.Connection, usuario_id: int, serie: NuevaSerie) -> dict[str, Any]:
     (nuevo_id,) = conn.execute(
         "INSERT INTO series (usuario_id, fecha, ejercicio_id, peso_kg, repeticiones) "

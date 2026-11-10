@@ -23,6 +23,28 @@ test("lista mis ejercicios con su número de series", async () => {
   expect(fila("Curl martillo").textContent).toContain("(0 series)");
 });
 
+test("crear un ejercicio nuevo recarga la lista", async () => {
+  const fetch = await pintar(
+    { status: 201, body: { id: 9, nombre: "Remo con goma", propio: true, imagen: null } },
+    { status: 200, body: [CURL, REMO, { id: 9, nombre: "Remo con goma", num_series: 0 }] },
+  );
+  fireEvent.change(screen.getByLabelText("Nuevo ejercicio"), { target: { value: "Remo con goma" } });
+  fireEvent.click(screen.getByRole("button", { name: "Crear" }));
+  expect(await screen.findByRole("link", { name: "Remo con goma" })).toBeTruthy();
+  expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual({ nombre: "Remo con goma" });
+  expect((screen.getByLabelText("Nuevo ejercicio") as HTMLInputElement).value).toBe("");
+});
+
+test("crear uno que ya existe avisa y no lo crea", async () => {
+  await pintar({
+    status: 409,
+    body: { error: "Ya existe «Press de banca»", ejercicio: { id: 1, nombre: "Press de banca" } },
+  });
+  fireEvent.change(screen.getByLabelText("Nuevo ejercicio"), { target: { value: "press de banca" } });
+  fireEvent.click(screen.getByRole("button", { name: "Crear" }));
+  expect((await screen.findByRole("alert")).textContent).toContain("Ya existe «Press de banca»");
+});
+
 test("renombrar", async () => {
   const fetch = await pintar({
     status: 200,

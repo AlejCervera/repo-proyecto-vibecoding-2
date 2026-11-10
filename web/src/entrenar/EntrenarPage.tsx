@@ -132,11 +132,9 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
           />
           <nav aria-label="Pasos">
             {actual > 0 && <a href={ir(actual - 1)}>← Anterior</a>}{" "}
-            {actual < ejercicios.length - 1 ? (
-              <a href={ir(actual + 1)}>Siguiente →</a>
-            ) : (
-              <a href={ir("fin")}>Terminar</a>
-            )}
+            {actual < ejercicios.length - 1 && <a href={ir(actual + 1)}>Siguiente →</a>}{" "}
+            {/* Se puede terminar en cualquier momento (p. ej. si hoy te saltas un ejercicio) */}
+            <a href={ir("fin")}>Terminar</a>
           </nav>
         </>
       ) : (

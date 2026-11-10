@@ -151,6 +151,29 @@ test("resumen: si cambiaste las series de una rutina tuya, ofrece guardarlas", a
   expect(within(resumen).queryByRole("complementary")).toBeNull();
 });
 
+test("resumen: guardar en el diario", async () => {
+  const fetch = pintar("fin", RUTINA, [serie(3, HOY, 11, 12, 12)], {
+    status: 201,
+    body: { id: 40, fecha: HOY, rutina_id: 7, rutina_nombre: "Pecho", ejercicios: [] },
+  });
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+  fireEvent.click(within(resumen).getByRole("button", { name: "Guardar en el diario" }));
+
+  const estado = await within(resumen).findByRole("status");
+  expect(estado.textContent).toContain("Guardado en el diario.");
+  expect(within(estado).getByRole("link", { name: "Ver en el diario" }).getAttribute("href")).toBe("#/diario/40");
+  expect(within(resumen).queryByRole("button", { name: "Guardar en el diario" })).toBeNull();
+  const [url, init] = fetch.mock.calls[2];
+  expect(url).toBe("/api/entrenamientos");
+  expect(JSON.parse(init.body)).toEqual({ rutina_id: 7, fecha: HOY });
+});
+
+test("resumen sin series de hoy: no ofrece guardar en el diario", async () => {
+  pintar("fin", RUTINA, []);
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+  expect(within(resumen).queryByRole("button", { name: "Guardar en el diario" })).toBeNull();
+});
+
 test("resumen de una predefinida: no ofrece guardar cambios", async () => {
   sessionStorage.setItem(`gymlog-entreno-7-${HOY}`, JSON.stringify({ 10: 4 }));
   pintar("fin", { ...RUTINA, predefinida: true }, []);

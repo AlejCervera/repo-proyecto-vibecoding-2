@@ -29,6 +29,11 @@ test("entrenar: paso inicial, un paso concreto y el resumen", () => {
   expect(leerRuta("#/rutinas/4/entrenar/x")).toEqual({ pantalla: "inicio" });
 });
 
+test("un entrenamiento del diario", () => {
+  expect(leerRuta("#/diario/5")).toEqual({ pantalla: "entrenamiento", entrenamientoId: 5 });
+  expect(enlace({ pantalla: "entrenamiento", entrenamientoId: 5 })).toBe("#/diario/5");
+});
+
 test("diario y atajo de empezar", () => {
   expect(leerRuta("#/diario")).toEqual({ pantalla: "diario" });
   expect(enlace({ pantalla: "diario" })).toBe("#/diario");

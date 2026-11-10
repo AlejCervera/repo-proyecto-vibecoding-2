@@ -6,7 +6,6 @@ import {
   leerUltimaRutina,
   lunesDe,
   semana,
-  ultimoEntrenamiento,
 } from "./resumen";
 
 let id = 0;
@@ -41,16 +40,6 @@ test("semana: días entrenados y series, sin contar otras semanas", () => {
     numSeries: 4,
   });
   expect(semana([], "2026-11-12").numDias).toBe(0);
-});
-
-test("ultimoEntrenamiento: el día más reciente, con sus ejercicios sin repetir y en orden", () => {
-  const series = [s("2026-11-05", "Sentadilla"), s("2026-11-09", "Press"), s("2026-11-09", "Aperturas"), s("2026-11-09", "Press")];
-  expect(ultimoEntrenamiento([...series].reverse())).toEqual({
-    fecha: "2026-11-09",
-    numSeries: 3,
-    ejercicios: ["Press", "Aperturas"],
-  });
-  expect(ultimoEntrenamiento([])).toBeNull();
 });
 
 test("fechaCorta", () => {

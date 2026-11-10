@@ -1,15 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { irA, nombreUnico, registrar, registrarSerie } from "./cuentas";
+import { abrirPredefinida, irA, nombreUnico, registrar, serieEntrenando, terminarYGuardar } from "./cuentas";
 
 test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", async ({ page }) => {
   await registrar(page, nombreUnico("ini"));
-  await registrarSerie(page, "Press de banca", "80", "8");
-  await registrarSerie(page, "Sentadilla", "100", "5");
-
-  await irA(page, "Inicio");
-  await expect(page.getByRole("article", { name: "Esta semana" })).toContainText("1 día · 2 series");
   await expect(page.getByRole("article", { name: "Último entrenamiento" })).toContainText(
-    "Press de banca, Sentadilla",
+    "Aún no hay entrenamientos en el diario.",
   );
 
   // Sin rutina usada: «Iniciar entrenamiento» lleva a elegir rutina
@@ -19,10 +14,17 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
     .getByRole("link", { name: "Pecho" })
     .click();
   await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
-  await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
+  await serieEntrenando(page, "Press de banca", "80", "8");
+  await serieEntrenando(page, "Aperturas con mancuernas", "14", "12");
+  await terminarYGuardar(page);
+
+  await irA(page, "Inicio");
+  await expect(page.getByRole("article", { name: "Esta semana" })).toContainText("1 día · 2 series");
+  const ultimo = page.getByRole("article", { name: "Último entrenamiento" });
+  await expect(ultimo).toContainText("Pecho");
+  await expect(ultimo).toContainText("2 ejercicios · 2 series");
 
   // Ahora el inicio ofrece continuar con «Pecho»
-  await irA(page, "Inicio");
   await expect(page.getByRole("article", { name: "Entrenar" })).toContainText("Continuar con «Pecho»");
   await page.getByRole("link", { name: "▶ Iniciar entrenamiento" }).click();
   await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
@@ -30,6 +32,11 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
   // El atajo del icono del móvil (#/empezar) hace lo mismo
   await page.goto("/#/empezar");
   await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
+
+  // Y el último entrenamiento lleva a su detalle en el diario
+  await irA(page, "Inicio");
+  await ultimo.getByRole("link").click();
+  await expect(page.getByRole("article", { name: "Press de banca" })).toContainText("80 kg × 8");
 });
 
 test("el manifiesto y los iconos para «Añadir a pantalla de inicio» se sirven", async ({ request }) => {

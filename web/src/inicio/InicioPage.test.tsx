@@ -22,8 +22,12 @@ const serie = (id: number, fecha: string, ejercicio: string) => ({
   repeticiones: 8,
 });
 
-async function pintar(series: unknown[], rutinas: unknown[] = [PECHO]) {
-  simularFetch({ status: 200, body: series }, { status: 200, body: rutinas });
+async function pintar(series: unknown[], rutinas: unknown[] = [PECHO], diario: unknown[] = []) {
+  simularFetch(
+    { status: 200, body: series },
+    { status: 200, body: rutinas },
+    { status: 200, body: diario },
+  );
   render(<InicioPage onSesionCaducada={vi.fn()} />);
   return screen.findByRole("article", { name: "Entrenar" });
 }
@@ -34,7 +38,7 @@ test("sin rutina usada: «Iniciar entrenamiento» lleva a elegir rutina", async 
     "#/rutinas",
   );
   expect(screen.getByRole("article", { name: "Último entrenamiento" }).textContent).toContain(
-    "Aún no has registrado ninguna serie.",
+    "Aún no hay entrenamientos en el diario.",
   );
   expect(screen.getByRole("article", { name: "Esta semana" }).textContent).toContain("0 días · 0 series");
 });
@@ -54,14 +58,19 @@ test("si la rutina usada ya no existe, no la ofrece", async () => {
   expect(entrenar.textContent).not.toContain("Borrada");
 });
 
-test("esta semana y último entrenamiento con datos", async () => {
-  await pintar([serie(2, HOY, "Aperturas"), serie(1, HOY, "Press de banca")]);
+test("esta semana y último entrenamiento del diario", async () => {
+  const diario = [
+    { id: 8, fecha: "2026-11-09", rutina_id: 3, rutina_nombre: "Pecho", num_ejercicios: 2, num_series: 6 },
+    { id: 5, fecha: "2026-11-05", rutina_id: 4, rutina_nombre: "Pierna", num_ejercicios: 3, num_series: 9 },
+  ];
+  await pintar([serie(2, HOY, "Aperturas"), serie(1, HOY, "Press de banca")], [PECHO], diario);
   const semana = screen.getByRole("article", { name: "Esta semana" });
   expect(semana.textContent).toContain("1 día · 2 series");
   expect(within(semana).getAllByLabelText("entrenado")).toHaveLength(1);
   const ultimo = screen.getByRole("article", { name: "Último entrenamiento" });
-  expect(ultimo.textContent).toContain("2 series");
-  expect(ultimo.textContent).toContain("Press de banca, Aperturas");
+  expect(ultimo.textContent).toContain("Lun 09/11 · Pecho");
+  expect(ultimo.textContent).toContain("2 ejercicios · 6 series");
+  expect(within(ultimo).getByRole("link").getAttribute("href")).toBe("#/diario/8");
 });
 
 test("el atajo «empezar» va a la última rutina o a elegir una", () => {

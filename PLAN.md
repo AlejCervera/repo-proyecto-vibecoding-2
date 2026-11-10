@@ -182,6 +182,22 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** desde tu móvil, por la IP del PC, puedes registrar una serie sin problemas.
 
+## Fase 8b · Diario de entrenamientos
+
+**Objetivo:** que el diario guarde entrenamientos completos (rutina, ejercicios y series), no series sueltas.
+
+**Tareas:**
+- [x] Al terminar una rutina, «Guardar en el diario» crea un entrenamiento con las series de hoy de esa rutina (guarda el nombre de la rutina de ese día).
+- [x] El diario lista los entrenamientos y su detalle muestra ejercicios y series (corregir o borrar series desde ahí).
+- [x] El diario ya no tiene formulario de series sueltas; los ejercicios propios se crean desde «Mis ejercicios» o al añadirlos a una rutina.
+- [x] Quitar un entrenamiento del diario no borra sus series: el historial de cada ejercicio es independiente del diario.
+- [x] Las series de prueba existentes se borran (aprobado por el usuario).
+
+**Pruebas:**
+- API (guardar, listar, detalle, quitar sin borrar series, aislamiento); web; e2e: entrenar «Pecho», terminar, guardar en el diario y ver sus ejercicios y series.
+
+**Hecho cuando:** tras entrenar una rutina y guardarla, el diario la muestra con sus ejercicios y series, y quitarla del diario no cambia el historial.
+
 ## Fase 9 · Despliegue (solo con permiso explícito)
 
 **Objetivo:** que los dos móviles usen la app sin depender de tu PC.

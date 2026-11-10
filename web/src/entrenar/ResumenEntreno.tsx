@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { guardarEntrenamiento } from "../api/entrenamientos";
 import { configurarEjercicio } from "../api/rutinas";
 import { enlace } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
@@ -19,6 +20,21 @@ export function ResumenEntreno({ rutina, series, hoy, ajustes, onRutinaGuardada 
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [enDiario, setEnDiario] = useState<number | null>(null); // id del entrenamiento guardado
+  const [guardandoDiario, setGuardandoDiario] = useState(false);
+
+  async function guardarEnDiario() {
+    setGuardandoDiario(true);
+    setError(null);
+    try {
+      const e = await guardarEntrenamiento(rutina.id, hoy);
+      setEnDiario(e.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se ha podido guardar");
+    } finally {
+      setGuardandoDiario(false);
+    }
+  }
 
   const filas = rutina.ejercicios.map((e) => ({
     ...e,
@@ -64,6 +80,25 @@ export function ResumenEntreno({ rutina, series, hoy, ajustes, onRutinaGuardada 
         ))}
       </ul>
 
+      {total > 0 && enDiario === null && (
+        <button
+          type="button"
+          className="primario grande"
+          onClick={guardarEnDiario}
+          disabled={guardandoDiario}
+        >
+          Guardar en el diario
+        </button>
+      )}
+      {enDiario !== null && (
+        <p role="status">
+          Guardado en el diario.{" "}
+          <a href={enlace({ pantalla: "entrenamiento", entrenamientoId: enDiario })}>
+            Ver en el diario
+          </a>
+        </p>
+      )}
+
       {cambios.length > 0 && (
         <aside aria-label="Cambios en la rutina">
           <p>Hoy cambiaste las series previstas:</p>
@@ -82,7 +117,12 @@ export function ResumenEntreno({ rutina, series, hoy, ajustes, onRutinaGuardada 
       )}
       {guardado && <p role="status">Guardado en la rutina «{rutina.nombre}».</p>}
       {error && <p role="alert">{error}</p>}
-      <a href={enlace({ pantalla: "diario" })}>Ir al diario</a>
+      <p>
+        <small>
+          Las series ya están en el historial de cada ejercicio, las guardes o no en el diario.
+        </small>
+      </p>
+      <a href={enlace({ pantalla: "inicio" })}>Ir al inicio</a>
     </article>
   );
 }

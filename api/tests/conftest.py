@@ -23,7 +23,8 @@ def conn():
     with psycopg.connect(TEST_DB, autocommit=True) as c:
         migrate(c)
         c.execute(
-            "TRUNCATE series, sesiones, rutinas, ejercicios, usuarios RESTART IDENTITY CASCADE"
+            "TRUNCATE series, entrenamientos, sesiones, rutinas, ejercicios, usuarios "
+            "RESTART IDENTITY CASCADE"
         )
         yield c
 

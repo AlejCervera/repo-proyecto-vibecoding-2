@@ -6,6 +6,7 @@ export type Ruta =
   /** Atajo del icono del móvil: entrena con la última rutina (o elige una). */
   | { pantalla: "empezar" }
   | { pantalla: "diario" }
+  | { pantalla: "entrenamiento"; entrenamientoId: number }
   | { pantalla: "ejercicios" }
   | { pantalla: "historial"; ejercicioId: number }
   | { pantalla: "rutinas" }
@@ -16,6 +17,7 @@ export type Ruta =
 const HISTORIAL = /^#\/ejercicios\/(\d+)\/historial$/;
 const RUTINA = /^#\/rutinas\/(\d+)$/;
 const ENTRENAR = /^#\/rutinas\/(\d+)\/entrenar(?:\/(\d+|fin))?$/;
+const ENTRENAMIENTO = /^#\/diario\/(\d+)$/;
 
 export function leerRuta(hash: string): Ruta {
   let m = HISTORIAL.exec(hash);
@@ -27,6 +29,8 @@ export function leerRuta(hash: string): Ruta {
   }
   m = RUTINA.exec(hash);
   if (m) return { pantalla: "rutina", rutinaId: Number(m[1]) };
+  m = ENTRENAMIENTO.exec(hash);
+  if (m) return { pantalla: "entrenamiento", entrenamientoId: Number(m[1]) };
   if (hash === "#/ejercicios") return { pantalla: "ejercicios" };
   if (hash === "#/rutinas") return { pantalla: "rutinas" };
   if (hash === "#/diario") return { pantalla: "diario" };
@@ -48,6 +52,8 @@ export function enlace(ruta: Ruta): string {
       return "#/rutinas";
     case "diario":
       return "#/diario";
+    case "entrenamiento":
+      return `#/diario/${ruta.entrenamientoId}`;
     case "empezar":
       return "#/empezar";
     default:
