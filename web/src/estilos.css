@@ -337,48 +337,6 @@ section[aria-label="Descanso"] button[aria-pressed="true"] {
   color: var(--acento-texto);
 }
 
-ol[aria-label="Ejercicios del entrenamiento"] {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto; /* el índice se desliza en su sitio, sin ensanchar la página */
-  padding-bottom: 4px;
-}
-
-ol[aria-label="Ejercicios del entrenamiento"] li {
-  flex: 0 0 auto;
-  margin: 0;
-  white-space: nowrap;
-  overflow-wrap: normal;
-}
-
-ol[aria-label="Series de hoy"] li[aria-current="step"] {
-  outline: 2px solid var(--acento);
-}
-
-ol[aria-label="Series de hoy"] li:not([aria-current]) {
-  color: var(--suave);
-}
-
-nav[aria-label="Pasos"] {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 16px 0;
-}
-
-nav[aria-label="Pasos"] a {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--toque);
-  border-radius: var(--radio);
-  background: var(--superficie-2);
-  color: var(--texto);
-  font-weight: 700;
-  text-decoration: none;
-}
-
 /* --- Inicio (se rehace en la Fase 9b) -------------------------------------------------- */
 
 .tarjeta {

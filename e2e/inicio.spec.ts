@@ -33,6 +33,11 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
   await page.goto("/#/empezar");
   await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
 
+  // Mientras se entrena no hay pestañas: se sale con la ✕ (a la rutina) y desde ahí, a Inicio
+  await expect(page.getByRole("navigation", { name: "Secciones" })).toHaveCount(0);
+  await page.getByRole("link", { name: "Salir del entreno" }).click();
+  await expect(page.getByRole("heading", { name: "Pecho", exact: true })).toBeVisible();
+
   // Y el último entrenamiento lleva a su detalle en el diario
   await irA(page, "Inicio");
   await ultimo.getByRole("link").click();

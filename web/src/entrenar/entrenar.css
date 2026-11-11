@@ -1,0 +1,345 @@
+/* Entrenar en modo foco (maqueta 2B con los colores de la 2A). */
+
+/* --- Cabecera: salir, rutina y tiempo, lista de ejercicios ------------------------------ */
+
+.entreno-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.entreno-salir,
+.entreno-lista {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--toque);
+  height: var(--toque);
+  min-width: var(--toque);
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.entreno-titulo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.entreno-titulo h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.tiempo-entreno {
+  font-size: 1.1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Un tramo por ejercicio: el actual en lima, los completos en lima apagado */
+.progreso {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  margin: 12px 0 16px;
+}
+
+.progreso span {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--superficie-2);
+}
+
+.progreso span.hecho {
+  background: #5d7317;
+}
+
+.progreso span.actual {
+  background: var(--acento);
+}
+
+/* --- Descanso, compacto ------------------------------------------------------------------ */
+
+.entreno section[aria-label="Descanso"] {
+  margin: 0 -16px 12px;
+  border-bottom: 0;
+}
+
+/* Cada fila del descanso en una sola línea (se desliza si no cabe, sin ensanchar la página) */
+.entreno section[aria-label="Descanso"] p {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.entreno section[aria-label="Descanso"] p > * {
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+/* El reloj en lima ya se entiende solo: la palabra «Descanso» queda para lectores de pantalla */
+.entreno section[aria-label="Descanso"] strong {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.entreno section[aria-label="Descanso"] button {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.entreno [role="timer"] {
+  font-size: 1.8rem;
+  min-width: 3.2ch;
+  color: var(--acento);
+}
+
+/* --- El ejercicio ------------------------------------------------------------------------- */
+
+.paso-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: -4px; /* el botón de la foto tiene margen para el dedo: se alinea el círculo */
+}
+
+.paso-cabecera h2 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.paso-objetivo {
+  margin: 2px 0 0;
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.paso-series {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+main ol.puntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+main ol.puntos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 34px;
+  min-height: 34px;
+  justify-content: center;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--suave);
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+main ol.puntos li.hecha {
+  background: var(--hecho-fondo);
+  color: var(--hecho-texto);
+}
+
+main ol.puntos li.hecha > span[aria-hidden] {
+  color: var(--acento);
+}
+
+main ol.puntos li.siguiente {
+  background: transparent;
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
+  color: var(--acento);
+}
+
+.ajuste-series {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ajuste-series button {
+  padding: 0;
+  background: var(--superficie);
+  color: var(--suave);
+}
+
+.contadores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.contadores .contador-etiqueta {
+  font-size: 11px;
+}
+
+.paso-referencia {
+  color: var(--suave);
+  font-size: 0.95rem;
+}
+
+.paso-referencia strong {
+  color: var(--texto);
+}
+
+.pista {
+  margin-top: -4px;
+  font-size: 0.95rem;
+}
+
+.completado {
+  text-align: center;
+}
+
+/* Anterior / Siguiente / Terminar: discretos; el botón fijo es la acción principal */
+.pasos {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 20px 0 96px;
+}
+
+.pasos a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque);
+  color: var(--suave);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* --- Hojas: lista de ejercicios y foto ------------------------------------------------------ */
+
+main ol.lista-entreno li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--fondo);
+  font-variant-numeric: tabular-nums;
+  color: var(--suave);
+}
+
+.lista-entreno a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque);
+  color: var(--texto);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lista-entreno a[aria-current="step"] {
+  color: var(--acento);
+}
+
+.hoja-acciones a.boton {
+  width: 100%;
+  min-height: 52px;
+}
+
+.datos-ejercicio {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.datos-ejercicio div,
+.cifras div {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--fondo);
+}
+
+.datos-ejercicio dt,
+.cifras dt {
+  font-size: 0.75rem;
+  color: var(--suave);
+}
+
+.datos-ejercicio dd,
+.cifras dd {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Resumen final ---------------------------------------------------------------------------- */
+
+.resumen h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 8px 0 4px;
+}
+
+.resumen h4 {
+  margin: 20px 0 6px;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--suave);
+}
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+
+.cifras div {
+  background: var(--superficie);
+}
+
+.cifras dd {
+  font-size: 1.3rem;
+}
+
+.resumen-salidas {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resumen-salidas a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque);
+}
+
+.comparacion strong,
+.records strong {
+  color: var(--acento);
+}

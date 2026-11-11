@@ -241,13 +241,14 @@ Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claud
 **Objetivo:** entrenar como en la maqueta 2B.
 
 **Tareas:**
-- [ ] Un ejercicio por pantalla: foto grande en círculo, puntos de progreso de ejercicios y de series, kilos y repeticiones en grande con − / + (2,5 kg y 1 rep), «la última vez» y lo hecho hoy.
-- [ ] Botón fijo «Hecha · empezar descanso» que guarda la serie y arranca el descanso; «Siguiente ejercicio» al completarlo. Lista de ejercicios accesible desde la cabecera.
-- [ ] Al tocar la foto: hoja inferior con la imagen, su licencia, la mejor serie, la última vez, «Cambiar foto» y «Ver historial».
-- [ ] Resumen final de celebración: duración, volumen, récords nuevos y comparación con la vez anterior, con «Guardar en el diario».
+- [x] Un ejercicio por pantalla: foto pequeña (36 px) al lado del nombre, barra de progreso de ejercicios, series de hoy como puntos (con + / − serie), kilos y repeticiones en grande con − / + (2,5 kg y 1 rep; el número también se puede escribir), «la última vez» y una pista de progresión (al llegar al máximo del objetivo, +2,5 kg).
+- [x] Botón fijo «Hecha · empezar descanso» que guarda la serie y arranca el descanso, con aviso «Serie guardada · Deshacer»; al completarlo, «Siguiente ejercicio» o, en el último, «Terminar entreno». Cabecera con ✕ (salir a la rutina), rutina y tiempo, y lista de ejercicios en la hoja inferior.
+- [x] Mientras se entrena no hay barra de pestañas; en el resumen final vuelven.
+- [x] Al tocar la foto: hoja inferior con la imagen y su licencia, la mejor serie, la última vez, subir o cambiar la imagen y «Ver historial».
+- [x] Resumen final de celebración: duración (desde que se abre el entreno ese día; se guarda la hora en el navegador porque las series solo tienen fecha), volumen, récords nuevos (más peso que cualquier día anterior; la primera vez no cuenta) y comparación con la vez anterior solo de los ejercicios hechos hoy, con «Guardar en el diario».
 
 **Pruebas:**
-- Unitarias (pasos de − / +, récords, comparación); web; e2e: entrenar «Pecho» completo solo con los botones − / + y guardarlo en el diario.
+- Unitarias (pasos de − / +, estadísticas: volumen, récords, comparación, duración, pista); web de la pantalla de entreno y del resumen; e2e: entrenar «Pecho» completo solo con los botones − / + y guardarlo en el diario, foto y «Deshacer».
 
 **Hecho cuando:** se puede entrenar una rutina entera sin abrir el teclado y el resumen muestra los récords del día.
 

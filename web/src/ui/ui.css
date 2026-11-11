@@ -65,15 +65,52 @@
   opacity: 0.92;
 }
 
-button.foto-circulo {
-  /* El círculo es pequeño, pero el área de toque llega a 44 px. */
-  position: relative;
+/* El círculo es pequeño, pero el botón que lo rodea mide 44 px para el dedo. */
+.foto-boton {
+  min-width: var(--toque);
+  min-height: var(--toque);
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  flex-shrink: 0;
 }
 
-button.foto-circulo::after {
-  content: "";
+/* --- Subir imagen: el campo de archivo del navegador se esconde y la etiqueta hace de botón --- */
+
+label:has(> input[type="file"]) {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  padding: 8px 16px;
+  border-radius: var(--radio);
+  background: var(--superficie-2);
+  color: var(--texto);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+}
+
+label:has(> input[type="file"]) > input {
   position: absolute;
-  inset: -6px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+label:has(> input[type="file"]:focus-visible) {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.hoja label:has(> input[type="file"]) {
+  width: 100%;
+  min-height: 52px;
 }
 
 /* --- Hoja inferior ---------------------------------------------------------------------- */
@@ -188,12 +225,22 @@ button.foto-circulo::after {
   color: var(--suave);
 }
 
+/* El número grande es un campo: se toca para escribirlo. Parece texto, no una caja. */
 .contador-valor {
+  width: 100%;
+  min-height: 64px;
+  padding: 0;
+  background: transparent;
+  text-align: center;
   font-size: 3.2rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
+}
+
+.contador-valor:focus {
+  background: var(--superficie-2);
 }
 
 .contador-botones {
@@ -220,10 +267,23 @@ button.foto-circulo::after {
   background: linear-gradient(to top, var(--fondo) 75%, transparent);
 }
 
+.boton-fijo.sin-pestanas {
+  bottom: 0;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
 .boton-fijo > * {
   flex: 1;
   min-height: 56px;
   border-radius: 16px;
+  font-size: 1.1rem;
+}
+
+.boton-fijo > a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 /* --- Aviso breve ------------------------------------------------------------------------ */

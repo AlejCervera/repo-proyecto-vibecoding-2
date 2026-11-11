@@ -29,3 +29,21 @@ export function ajustar(valor: number, direccion: 1 | -1, { paso, min, max }: Li
 export function formatearNumero(n: number): string {
   return n.toLocaleString("es-ES", { maximumFractionDigits: 2, useGrouping: false });
 }
+
+/** Lee lo escrito («62,5», « 60 »). Vacío o no numérico → null. */
+export function leerNumero(texto: string): number | null {
+  const t = texto.trim().replace(",", ".");
+  if (t === "") return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * − / + sobre un campo de texto: lo escrito se lee, se ajusta y se vuelve a escribir con coma.
+ * Si el campo está vacío o no es un número, se parte del mínimo.
+ */
+export function ajustarTexto(texto: string, direccion: 1 | -1, limites: Limites): string {
+  const actual = leerNumero(texto);
+  if (actual === null) return formatearNumero(direccion === 1 ? ajustar(limites.min, 1, limites) : limites.min);
+  return formatearNumero(ajustar(actual, direccion, limites));
+}

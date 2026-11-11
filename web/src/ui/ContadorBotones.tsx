@@ -1,38 +1,50 @@
+import { useId } from "react";
 import { IconoMas, IconoMenos } from "./iconos";
-import { ajustar, formatearNumero, type Limites } from "./pasos";
+import { ajustarTexto, formatearNumero, leerNumero, type Limites } from "./pasos";
 
 type Props = Limites & {
-  /** Nombre visible, p. ej. «Kilos». */
+  /** Etiqueta del campo, p. ej. «Peso (kg)». */
   etiqueta: string;
   /** Unidad para los botones, p. ej. «kg» → «Restar 2,5 kg». */
   unidad: string;
-  valor: number;
-  onCambio: (v: number) => void;
+  /** Lo escrito en el campo («62,5»): se puede teclear o cambiar con − / +. */
+  valor: string;
+  onCambio: (v: string) => void;
+  modoTeclado: "decimal" | "numeric";
 };
 
-/** Un número grande con botones − / + para no tener que abrir el teclado. */
-export function ContadorBotones({ etiqueta, unidad, valor, onCambio, ...limites }: Props) {
+/** Un número grande con botones − / + para no abrir el teclado; también se puede escribir. */
+export function ContadorBotones({ etiqueta, unidad, valor, onCambio, modoTeclado, ...limites }: Props) {
+  const id = useId();
   const paso = `${formatearNumero(limites.paso)} ${unidad}`;
+  const n = leerNumero(valor);
   return (
-    <div className="contador" role="group" aria-label={etiqueta}>
-      <span className="contador-etiqueta">{etiqueta}</span>
-      <output className="contador-valor" aria-live="polite">
-        {formatearNumero(valor)}
-      </output>
+    <div className="contador">
+      <label htmlFor={id} className="contador-etiqueta">
+        {etiqueta}
+      </label>
+      <input
+        id={id}
+        className="contador-valor"
+        inputMode={modoTeclado}
+        value={valor}
+        onChange={(e) => onCambio(e.target.value)}
+        onFocus={(e) => e.target.select()}
+      />
       <div className="contador-botones">
         <button
           type="button"
           aria-label={`Restar ${paso}`}
-          disabled={valor <= limites.min}
-          onClick={() => onCambio(ajustar(valor, -1, limites))}
+          disabled={n !== null && n <= limites.min}
+          onClick={() => onCambio(ajustarTexto(valor, -1, limites))}
         >
           <IconoMenos />
         </button>
         <button
           type="button"
           aria-label={`Sumar ${paso}`}
-          disabled={valor >= limites.max}
-          onClick={() => onCambio(ajustar(valor, 1, limites))}
+          disabled={n !== null && n >= limites.max}
+          onClick={() => onCambio(ajustarTexto(valor, 1, limites))}
         >
           <IconoMas />
         </button>

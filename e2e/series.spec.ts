@@ -54,7 +54,7 @@ test("con el peso vacío sale el aviso y no se guarda", async ({ page }) => {
   await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
   const paso = page.getByRole("article", { name: "Press de banca" });
   await paso.getByLabel("Peso (kg)").fill("");
-  await paso.getByRole("button", { name: "Guardar serie" }).click();
+  await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
   await expect(paso.getByRole("alert")).toHaveText("Falta el peso");
   await page.reload();
   await expect(paso.getByText("✓")).toHaveCount(0);

@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { irA, nombreUnico, registrar } from "./cuentas";
+import { irA, listaEntreno, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("plan"));
@@ -37,11 +37,11 @@ test("4 × 8-10 en press de banca se guarda, sigue tras recargar y se completa a
   for (const reps of ["10", "9", "8", "8"]) {
     await paso.getByLabel("Peso (kg)").fill("70");
     await paso.getByLabel("Repeticiones").fill(reps);
-    await paso.getByRole("button", { name: "Guardar serie" }).click();
+    await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
   }
   await expect(hechas(paso)).toHaveCount(4);
-  await expect(paso.getByRole("status")).toHaveText("¡Ejercicio completado!");
-  await expect(page.getByRole("list", { name: "Ejercicios del entrenamiento" })).toContainText(
+  await expect(paso.getByText("¡Ejercicio completado!")).toBeVisible();
+  await expect(await listaEntreno(page)).toContainText(
     "Press de banca 4/4 ✓",
   );
 });
@@ -49,7 +49,7 @@ test("4 × 8-10 en press de banca se guarda, sigue tras recargar y se completa a
 test("añadir una serie durante el entrenamiento y guardarla en la rutina al terminar", async ({ page }) => {
   await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
   const paso = page.getByRole("article", { name: "Press de banca" });
-  await paso.getByRole("button", { name: "+ Añadir serie" }).click();
+  await paso.getByRole("button", { name: "Añadir serie" }).click();
   await expect(paso).toContainText("Objetivo: 4 × 8-12");
 
   await page.getByRole("link", { name: "Siguiente →" }).click();
@@ -59,6 +59,6 @@ test("añadir una serie durante el entrenamiento y guardarla en la rutina al ter
   await cambios.getByRole("button", { name: "Guardar en la rutina" }).click();
   await expect(page.getByRole("status")).toContainText("Guardado en la rutina");
 
-  await page.getByRole("link", { name: "← Volver a la rutina" }).click();
+  await page.getByRole("link", { name: "Volver a la rutina" }).click();
   await expect(fila(page, "Press de banca")).toContainText("4 × 8-12");
 });

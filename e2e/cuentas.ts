@@ -82,18 +82,22 @@ export async function abrirPredefinida(page: Page, nombre: string) {
     .click();
 }
 
-/** Durante un entrenamiento: va al ejercicio y guarda una serie. */
+/** Durante un entrenamiento: abre la lista de ejercicios (hoja de abajo) y devuelve la lista. */
+export async function listaEntreno(page: Page) {
+  await page.getByRole("button", { name: "Ejercicios", exact: true }).click();
+  return page.getByRole("list", { name: "Ejercicios del entrenamiento" });
+}
+
+/** Durante un entrenamiento: va al ejercicio y guarda una serie con «Hecha». */
 export async function serieEntrenando(page: Page, ejercicio: string, peso: string, reps: string) {
-  await page
-    .getByRole("list", { name: "Ejercicios del entrenamiento" })
-    .getByRole("link", { name: ejercicio, exact: true })
-    .click();
+  await (await listaEntreno(page)).getByRole("link", { name: ejercicio, exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   const paso = page.getByRole("article", { name: ejercicio });
   const hechas = paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ hasText: "✓" });
   const antes = await hechas.count();
   await paso.getByLabel("Peso (kg)").fill(peso);
   await paso.getByLabel("Repeticiones").fill(reps);
-  await paso.getByRole("button", { name: "Guardar serie" }).click();
+  await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
   await expect(hechas).toHaveCount(antes + 1);
 }
 

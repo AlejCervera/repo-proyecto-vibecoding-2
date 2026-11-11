@@ -98,6 +98,22 @@ test("cerrar sesión (en Perfil) vuelve a la pantalla de inicio de sesión", asy
   expect(window.location.hash).toBe("#/");
 });
 
+test("al entrenar no hay pestañas; en el resumen final vuelven", async () => {
+  const RUTINA = { id: 7, nombre: "Pecho", predefinida: false, ejercicios: [] };
+  window.location.hash = "#/rutinas/7/entrenar/0";
+  simularFetch({ status: 200, body: ANA }, { status: 200, body: RUTINA }, { status: 200, body: [] });
+  const { unmount } = render(<App />);
+  await screen.findByText(/no tiene ejercicios/);
+  expect(screen.queryByRole("navigation", { name: "Secciones" })).toBeNull();
+  unmount();
+
+  window.location.hash = "#/rutinas/7/entrenar/fin";
+  simularFetch({ status: 200, body: ANA }, { status: 200, body: RUTINA }, { status: 200, body: [] });
+  render(<App />);
+  await screen.findByText(/no tiene ejercicios/);
+  expect(screen.getByRole("navigation", { name: "Secciones" })).toBeTruthy();
+});
+
 test("si la sesión caduca al cargar el diario, vuelve al inicio de sesión", async () => {
   window.location.hash = "#/diario";
   simularFetch({ status: 200, body: ANA }, { status: 401, body: { error: "Inicia sesión" } });

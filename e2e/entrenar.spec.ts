@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { irA, nombreUnico, registrar } from "./cuentas";
+import { irA, listaEntreno, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("entr"));
@@ -17,7 +17,7 @@ const hechas = (paso: Locator) =>
 async function guardar(paso: Locator, peso: string, reps: string) {
   await paso.getByLabel("Peso (kg)").fill(peso);
   await paso.getByLabel("Repeticiones").fill(reps);
-  await paso.getByRole("button", { name: "Guardar serie" }).click();
+  await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
 }
 
 test("desde «Pecho» registrar press de banca y verlo en su historial", async ({ page }) => {
@@ -52,9 +52,10 @@ test("pasar al siguiente, recargar a mitad y terminar con el resumen", async ({ 
 
   await page.reload();
   await expect(aperturas).toBeVisible();
-  await expect(page.getByRole("list", { name: "Ejercicios del entrenamiento" })).toContainText(
+  await expect(await listaEntreno(page)).toContainText(
     "Press de banca 1/3",
   );
+  await page.getByRole("button", { name: "Cerrar" }).click();
   await guardar(aperturas, "14", "12");
   await expect(hechas(aperturas)).toHaveCount(1);
 
@@ -71,4 +72,60 @@ test("pasar al siguiente, recargar a mitad y terminar con el resumen", async ({ 
   await resumen.getByRole("link", { name: "Ver en el diario" }).click();
   await expect(page.getByRole("article", { name: "Press de banca" })).toContainText("60 kg × 10");
   await expect(page.getByRole("article", { name: "Aperturas con mancuernas" })).toContainText("14 kg × 12");
+});
+
+test("entrenar «Pecho» entero solo con los botones − / +, sin teclado", async ({ page }) => {
+  const sumar = (paso: Locator, veces: number) =>
+    Array.from({ length: veces }).reduce<Promise<void>>(
+      (p) => p.then(() => paso.getByRole("button", { name: "Sumar 2,5 kg" }).click()),
+      Promise.resolve(),
+    );
+  const hecha = (paso: Locator) => paso.getByRole("button", { name: "Hecha · empezar descanso" });
+
+  // Primera vez: el peso empieza vacío y las repeticiones en el mínimo del objetivo (8)
+  const banca = page.getByRole("article", { name: "Press de banca" });
+  await sumar(banca, 4);
+  await expect(banca.getByLabel("Peso (kg)")).toHaveValue("10");
+  for (let i = 1; i <= 3; i++) {
+    await hecha(banca).click();
+    await expect(hechas(banca)).toHaveCount(i);
+  }
+  await expect(page.getByText("Serie guardada: 10 kg × 8")).toBeVisible();
+  await page.getByRole("link", { name: "Siguiente ejercicio" }).click();
+
+  const aperturas = page.getByRole("article", { name: "Aperturas con mancuernas" });
+  await sumar(aperturas, 2);
+  await aperturas.getByRole("button", { name: "Sumar 1 rep." }).click();
+  for (let i = 1; i <= 3; i++) {
+    await hecha(aperturas).click();
+    await expect(hechas(aperturas)).toHaveCount(i);
+  }
+  await expect(hechas(aperturas)).toHaveText([
+    "✓ Serie 1 · 5 kg × 9",
+    "✓ Serie 2 · 5 kg × 9",
+    "✓ Serie 3 · 5 kg × 9",
+  ]);
+  await page.getByRole("link", { name: "Terminar entreno" }).click();
+
+  const resumen = page.getByRole("article", { name: "Resumen del entrenamiento" });
+  await expect(resumen.getByRole("heading", { name: "¡Entreno hecho!" })).toBeVisible();
+  await expect(resumen).toContainText("6 series en total.");
+  await expect(resumen).toContainText("Volumen375 kg"); // 3 × 10×8 + 3 × 5×9
+  await resumen.getByRole("button", { name: "Guardar en el diario" }).click();
+  await expect(resumen.getByRole("status")).toContainText("Guardado en el diario.");
+});
+
+test("la foto en círculo abre la hoja del ejercicio y «Deshacer» quita la serie", async ({ page }) => {
+  const banca = page.getByRole("article", { name: "Press de banca" });
+  await banca.getByRole("button", { name: "Ver foto de Press de banca" }).click();
+  const hoja = page.getByRole("dialog", { name: "Press de banca" });
+  await expect(hoja).toContainText("Mejor serie");
+  await hoja.getByRole("button", { name: "Cerrar" }).click();
+
+  await guardar(banca, "50", "10");
+  await expect(hechas(banca)).toHaveCount(1);
+  await page.getByRole("button", { name: "Deshacer" }).click();
+  await expect(hechas(banca)).toHaveCount(0);
+  await page.reload();
+  await expect(hechas(banca)).toHaveCount(0);
 });

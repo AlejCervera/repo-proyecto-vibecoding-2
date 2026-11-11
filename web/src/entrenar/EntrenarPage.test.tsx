@@ -40,31 +40,62 @@ function pintar(paso: number | "fin", rutina: object, todas: unknown[], ...extra
   return fetch;
 }
 
-const casillas = (paso: HTMLElement) =>
+const puntos = (paso: HTMLElement) =>
   within(within(paso).getByRole("list", { name: "Series de hoy" }))
     .getAllByRole("listitem")
     .map((li) => li.textContent?.replace(/\s+/g, " ").trim());
+const campo = (paso: HTMLElement, etiqueta: string) => within(paso).getByLabelText(etiqueta) as HTMLInputElement;
+const hecha = () => screen.getByRole("button", { name: "Hecha · empezar descanso" });
 
-test("muestra objetivo, la última vez y las casillas con la siguiente rellena", async () => {
+/** Abre la hoja con la lista de ejercicios y la devuelve. */
+function abrirLista() {
+  fireEvent.click(screen.getByRole("button", { name: "Ejercicios" }));
+  return screen.getByRole("list", { name: "Ejercicios del entrenamiento" });
+}
+
+test("muestra objetivo, la última vez, las series de hoy y los valores de la última serie", async () => {
   pintar(0, RUTINA, BANCA_ANTES, historial(10, "Press de banca", BANCA_ANTES));
   const paso = await screen.findByRole("article", { name: "Press de banca" });
 
   expect(paso.textContent).toContain("Objetivo: 2 × 8-12");
   expect(paso.textContent).toContain("La última vez (15/01/2020): 80 kg × 8 · 80 kg × 6");
-  expect(casillas(paso)).toEqual([expect.stringContaining("▶ Serie 1"), "Serie 2"]);
-  expect((within(paso).getByLabelText("Peso (kg)") as HTMLInputElement).value).toBe("80");
-  expect((within(paso).getByLabelText("Repeticiones") as HTMLInputElement).value).toBe("6");
+  expect(puntos(paso)).toEqual(["Ahora: serie 1", "Serie 2"]);
+  expect(campo(paso, "Peso (kg)").value).toBe("80");
+  expect(campo(paso, "Repeticiones").value).toBe("6");
+  expect(paso.textContent).toContain("Si completas todas a 12 repeticiones, la próxima vez 82,5 kg.");
 });
 
-test("primera vez: el formulario propone el mínimo del objetivo", async () => {
+test("primera vez: propone el mínimo del objetivo y lo dice", async () => {
   pintar(0, RUTINA, [], historial(10, "Press de banca", []));
   const paso = await screen.findByRole("article", { name: "Press de banca" });
-  expect((within(paso).getByLabelText("Peso (kg)") as HTMLInputElement).value).toBe("");
-  expect((within(paso).getByLabelText("Repeticiones") as HTMLInputElement).value).toBe("8");
+  expect(campo(paso, "Peso (kg)").value).toBe("");
+  expect(campo(paso, "Repeticiones").value).toBe("8");
+  expect(paso.textContent).toContain("Primera vez con este ejercicio.");
 });
 
-test("guardar todas las series marca el ejercicio como completado", async () => {
-  const fetch = pintar(
+test("con − / + se cambia el peso sin teclado y se guarda lo que se ve", async () => {
+  const fetch = pintar(0, RUTINA, BANCA_ANTES, historial(10, "Press de banca", BANCA_ANTES), {
+    status: 201,
+    body: serie(20, HOY, 10, 82.5, 6),
+  });
+  const paso = await screen.findByRole("article", { name: "Press de banca" });
+  fireEvent.click(within(paso).getByRole("button", { name: "Sumar 2,5 kg" }));
+  fireEvent.click(within(paso).getByRole("button", { name: "Sumar 1 rep." }));
+  expect(campo(paso, "Peso (kg)").value).toBe("82,5");
+  expect(campo(paso, "Repeticiones").value).toBe("7");
+
+  fireEvent.click(hecha());
+  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("✓ Serie 1 · 82,5 kg × 6"));
+  expect(JSON.parse(fetch.mock.calls[3][1].body)).toEqual({
+    fecha: HOY,
+    ejercicio_id: 10,
+    peso_kg: "82,5",
+    repeticiones: "7",
+  });
+});
+
+test("completar el ejercicio cambia el botón a «Siguiente ejercicio» y la lista lo marca", async () => {
+  pintar(
     0,
     RUTINA,
     [],
@@ -73,23 +104,30 @@ test("guardar todas las series marca el ejercicio como completado", async () => 
     { status: 201, body: serie(21, HOY, 10, 60, 9) },
   );
   const paso = await screen.findByRole("article", { name: "Press de banca" });
-  const indice = screen.getByRole("list", { name: "Ejercicios del entrenamiento" });
-  expect(within(indice).getAllByRole("listitem")[0].textContent).toBe("Press de banca 0/2");
+  expect(within(abrirLista()).getAllByRole("listitem")[0].textContent).toBe("Press de banca 0/2");
+  fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
 
-  fireEvent.change(within(paso).getByLabelText("Peso (kg)"), { target: { value: "60" } });
-  fireEvent.change(within(paso).getByLabelText("Repeticiones"), { target: { value: "10" } });
-  fireEvent.click(within(paso).getByRole("button", { name: "Guardar serie" }));
-  await vi.waitFor(() => expect(casillas(paso)[0]).toBe("✓ Serie 1 · 60 kg × 10"));
-  expect(JSON.parse(fetch.mock.calls[3][1].body)).toMatchObject({ fecha: HOY, ejercicio_id: 10 });
+  fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(hecha());
+  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("✓ Serie 1 · 60 kg × 10"));
+  fireEvent.click(hecha());
+  await vi.waitFor(() => expect(puntos(paso)).toEqual(["✓ Serie 1 · 60 kg × 10", "✓ Serie 2 · 60 kg × 9"]));
 
-  fireEvent.change(within(paso).getByLabelText("Repeticiones"), { target: { value: "9" } });
-  fireEvent.click(within(paso).getByRole("button", { name: "Guardar serie" }));
-  await vi.waitFor(() =>
-    expect(casillas(paso)).toEqual(["✓ Serie 1 · 60 kg × 10", "✓ Serie 2 · 60 kg × 9"]),
+  expect(within(paso).getByText("¡Ejercicio completado!").getAttribute("role")).toBe("status");
+  expect(screen.queryByRole("button", { name: "Hecha · empezar descanso" })).toBeNull();
+  expect(screen.getByRole("link", { name: "Siguiente ejercicio" }).getAttribute("href")).toBe(
+    "#/rutinas/7/entrenar/1",
   );
-  expect(within(paso).getByRole("status").textContent).toBe("¡Ejercicio completado!");
-  expect(within(paso).queryByRole("button", { name: "Guardar serie" })).toBeNull();
-  expect(within(indice).getAllByRole("listitem")[0].textContent).toBe("Press de banca 2/2 ✓");
+  expect(within(abrirLista()).getAllByRole("listitem")[0].textContent).toBe("Press de banca 2/2 ✓");
+});
+
+test("en el último ejercicio, al completarlo el botón es «Terminar entreno»", async () => {
+  const hoy = [serie(30, HOY, 11, 12, 12), serie(31, HOY, 11, 12, 12), serie(32, HOY, 11, 12, 12)];
+  pintar(1, RUTINA, hoy, historial(11, "Aperturas", hoy));
+  await screen.findByRole("article", { name: "Aperturas" });
+  expect(screen.getByRole("link", { name: "Terminar entreno" }).getAttribute("href")).toBe(
+    "#/rutinas/7/entrenar/fin",
+  );
 });
 
 test("guardar una serie arranca el descanso con la última duración elegida", async () => {
@@ -101,12 +139,34 @@ test("guardar una serie arranca el descanso con la última duración elegida", a
   const paso = await screen.findByRole("article", { name: "Press de banca" });
   expect(screen.queryByRole("timer")).toBeNull();
 
-  fireEvent.change(within(paso).getByLabelText("Peso (kg)"), { target: { value: "60" } });
-  fireEvent.click(within(paso).getByRole("button", { name: "Guardar serie" }));
+  fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(hecha());
 
   const reloj = await screen.findByRole("timer");
   expect(reloj.textContent).toMatch(/^(2:00|1:59)$/);
   expect(JSON.parse(sessionStorage.getItem("gymlog-cronometro")!).duracion).toBe(120_000);
+});
+
+test("«Deshacer» borra la serie recién guardada y para el descanso", async () => {
+  const fetch = pintar(
+    0,
+    RUTINA,
+    [],
+    historial(10, "Press de banca", []),
+    { status: 201, body: serie(20, HOY, 10, 60, 10) },
+    { status: 204, body: null },
+  );
+  const paso = await screen.findByRole("article", { name: "Press de banca" });
+  fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(hecha());
+
+  const aviso = await screen.findByText("Serie guardada: 60 kg × 10");
+  expect(screen.getByRole("timer")).toBeTruthy();
+  fireEvent.click(within(aviso.closest(".aviso") as HTMLElement).getByRole("button", { name: "Deshacer" }));
+
+  await vi.waitFor(() => expect(puntos(paso)).toEqual(["Ahora: serie 1", "Serie 2"]));
+  expect(fetch).toHaveBeenLastCalledWith("/api/series/20", { method: "DELETE" });
+  expect(screen.queryByRole("timer")).toBeNull();
 });
 
 test("elegir una duración la recuerda para las siguientes series", async () => {
@@ -120,16 +180,92 @@ test("elegir una duración la recuerda para las siguientes series", async () => 
 test("añadir y quitar series para hoy; no se puede quitar por debajo de las hechas", async () => {
   pintar(0, RUTINA, [serie(30, HOY, 10, 60, 10)], historial(10, "Press de banca", [serie(30, HOY, 10, 60, 10)]));
   const paso = await screen.findByRole("article", { name: "Press de banca" });
-  const quitar = within(paso).getByRole("button", { name: "− Quitar serie" }) as HTMLButtonElement;
+  const quitar = within(paso).getByRole("button", { name: "Quitar serie" }) as HTMLButtonElement;
 
-  fireEvent.click(within(paso).getByRole("button", { name: "+ Añadir serie" }));
-  expect(casillas(paso)).toHaveLength(3);
+  fireEvent.click(within(paso).getByRole("button", { name: "Añadir serie" }));
+  expect(puntos(paso)).toHaveLength(3);
   expect(paso.textContent).toContain("Objetivo: 3 × 8-12");
 
   fireEvent.click(quitar);
   fireEvent.click(quitar);
-  expect(casillas(paso)).toEqual(["✓ Serie 1 · 60 kg × 10"]);
+  expect(puntos(paso)).toEqual(["✓ Serie 1 · 60 kg × 10"]);
   expect(quitar.disabled).toBe(true);
+});
+
+test("la foto en círculo abre la hoja con la mejor serie, la última vez y el historial", async () => {
+  pintar(0, RUTINA, BANCA_ANTES, historial(10, "Press de banca", BANCA_ANTES));
+  await screen.findByRole("article", { name: "Press de banca" });
+  fireEvent.click(screen.getByRole("button", { name: "Ver foto de Press de banca" }));
+
+  const hoja = screen.getByRole("dialog", { name: "Press de banca" });
+  expect(hoja.textContent).toContain("Mejor serie80 kg × 8");
+  expect(hoja.textContent).toContain("La última vez80 kg × 8 · 80 kg × 6");
+  expect(within(hoja).getByRole("link", { name: "Ver historial" }).getAttribute("href")).toBe(
+    "#/ejercicios/10/historial",
+  );
+});
+
+test("cabecera: salir vuelve a la rutina y la lista lleva a cada ejercicio y a terminar", async () => {
+  pintar(1, RUTINA, [], historial(11, "Aperturas", []));
+  await screen.findByRole("article", { name: "Aperturas" });
+  expect(screen.getByRole("link", { name: "Salir del entreno" }).getAttribute("href")).toBe("#/rutinas/7");
+
+  const lista = abrirLista();
+  const enlaces = within(lista).getAllByRole("link");
+  expect(enlaces.map((a) => a.getAttribute("href"))).toEqual(["#/rutinas/7/entrenar/0", "#/rutinas/7/entrenar/1"]);
+  expect(within(lista).getByRole("link", { current: "step" }).textContent).toBe("Aperturas");
+  expect(screen.getByRole("link", { name: "Terminar entreno" }).getAttribute("href")).toBe(
+    "#/rutinas/7/entrenar/fin",
+  );
+  // Elegir un ejercicio cierra la hoja
+  fireEvent.click(enlaces[0]);
+  expect(screen.queryByRole("dialog")).toBeNull();
+});
+
+test("navegación entre pasos", async () => {
+  pintar(1, RUTINA, [], historial(11, "Aperturas", []));
+  await screen.findByRole("article", { name: "Aperturas" });
+  const pasos = screen.getByRole("navigation", { name: "Pasos" });
+  expect(within(pasos).getByRole("link", { name: "← Anterior" }).getAttribute("href")).toBe("#/rutinas/7/entrenar/0");
+  expect(within(pasos).getByRole("link", { name: "Terminar" }).getAttribute("href")).toBe("#/rutinas/7/entrenar/fin");
+});
+
+test("resumen: cifras, comparación con la vez anterior y récords", async () => {
+  localStorage.setItem(`gymlog-inicio-7-${HOY}`, String(Date.now() - 47 * 60_000));
+  const todas = [...BANCA_ANTES, serie(40, HOY, 10, 85, 5), serie(41, HOY, 10, 80, 8)];
+  pintar("fin", RUTINA, todas);
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+
+  expect(within(resumen).getByRole("heading", { name: "¡Entreno hecho!" })).toBeTruthy();
+  const cifras = resumen.querySelector(".cifras")!.textContent;
+  expect(cifras).toContain("Duración47 min");
+  expect(cifras).toContain("Volumen1065 kg"); // 85×5 + 80×8
+  expect(cifras).toContain("Series2");
+  // La vez anterior: 80×8 + 80×6 = 1120 kg
+  expect(resumen.textContent).toContain("Has movido 55 kg menos que la vez anterior (1120 kg).");
+  const records = within(resumen).getByRole("region", { name: "Récords nuevos" });
+  expect(records.textContent).toContain("Press de banca: 85 kg × 5 (antes 80 kg)");
+});
+
+test("resumen: si hoy solo hiciste parte de la rutina, compara solo esos ejercicios", async () => {
+  const todas = [
+    ...BANCA_ANTES, // la vez anterior, press de banca: 1120 kg
+    serie(5, ANTES, 11, 20, 10), // y aperturas: 200 kg (hoy no se han hecho)
+    serie(40, HOY, 10, 80, 8),
+    serie(41, HOY, 10, 80, 8),
+  ];
+  pintar("fin", RUTINA, todas);
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+  expect(resumen.textContent).toContain("Has movido 160 kg más que la vez anterior (1120 kg).");
+});
+
+test("resumen: sin la cabecera del entreno (ni reloj ni lista), con vuelta a la rutina y al inicio", async () => {
+  pintar("fin", RUTINA, [serie(3, HOY, 11, 12, 12)]);
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+  expect(screen.queryByRole("button", { name: "Ejercicios" })).toBeNull();
+  expect(document.querySelector(".tiempo-entreno")).toBeNull();
+  expect(within(resumen).getByRole("link", { name: "Volver a la rutina" }).getAttribute("href")).toBe("#/rutinas/7");
+  expect(within(resumen).getByRole("link", { name: "Ir al inicio" }).getAttribute("href")).toBe("#/");
 });
 
 test("resumen: si cambiaste las series de una rutina tuya, ofrece guardarlas", async () => {
@@ -140,6 +276,9 @@ test("resumen: si cambiaste las series de una rutina tuya, ofrece guardarlas", a
   const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
   expect(resumen.textContent).toContain("1 serie en total.");
   expect(resumen.textContent).toContain("Aperturas: 12 kg × 12");
+  // Primera vez con todo: ni comparación ni récords
+  expect(resumen.textContent).not.toContain("vez anterior");
+  expect(within(resumen).queryByRole("region", { name: "Récords nuevos" })).toBeNull();
   const cambios = within(resumen).getByRole("complementary", { name: "Cambios en la rutina" });
   expect(cambios.textContent).toContain("Press de banca: 2 → 4 series");
 
@@ -168,10 +307,11 @@ test("resumen: guardar en el diario", async () => {
   expect(JSON.parse(init.body)).toEqual({ rutina_id: 7, fecha: HOY });
 });
 
-test("resumen sin series de hoy: no ofrece guardar en el diario", async () => {
+test("resumen sin series de hoy: ni cifras ni guardar en el diario", async () => {
   pintar("fin", RUTINA, []);
   const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
   expect(within(resumen).queryByRole("button", { name: "Guardar en el diario" })).toBeNull();
+  expect(resumen.querySelector(".cifras")).toBeNull();
 });
 
 test("resumen de una predefinida: no ofrece guardar cambios", async () => {
@@ -179,14 +319,6 @@ test("resumen de una predefinida: no ofrece guardar cambios", async () => {
   pintar("fin", { ...RUTINA, predefinida: true }, []);
   const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
   expect(within(resumen).queryByRole("complementary")).toBeNull();
-});
-
-test("navegación entre pasos", async () => {
-  pintar(1, RUTINA, [], historial(11, "Aperturas", []));
-  await screen.findByRole("article", { name: "Aperturas" });
-  const pasos = screen.getByRole("navigation", { name: "Pasos" });
-  expect(within(pasos).getByRole("link", { name: "← Anterior" }).getAttribute("href")).toBe("#/rutinas/7/entrenar/0");
-  expect(within(pasos).getByRole("link", { name: "Terminar" }).getAttribute("href")).toBe("#/rutinas/7/entrenar/fin");
 });
 
 test("rutina sin ejercicios: aviso", async () => {

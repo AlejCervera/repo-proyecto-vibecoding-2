@@ -99,7 +99,11 @@ export function App() {
           {ruta.pantalla === "ejercicios" && (
             <MisEjerciciosPage key={usuario.id} onSesionCaducada={sinSesion} />
           )}
-          <BarraPestanas actual={ruta.pantalla} />
+          {/* Mientras se entrena no hay pestañas, para no distraer (se sale con la ✕);
+              en el resumen final vuelven. */}
+          {!(ruta.pantalla === "entrenar" && ruta.paso !== "fin") && (
+            <BarraPestanas actual={ruta.pantalla} />
+          )}
         </>
       )}
     </main>

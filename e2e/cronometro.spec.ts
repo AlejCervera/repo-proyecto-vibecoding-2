@@ -15,7 +15,7 @@ async function guardarSerie(page: Page) {
   const paso = page.getByRole("article", { name: "Press de banca" });
   await paso.getByLabel("Peso (kg)").fill("60");
   await paso.getByLabel("Repeticiones").fill("10");
-  await paso.getByRole("button", { name: "Guardar serie" }).click();
+  await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
 }
 
 const reloj = (page: Page) => page.getByRole("timer", { name: "Tiempo de descanso" });

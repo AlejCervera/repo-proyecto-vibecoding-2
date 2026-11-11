@@ -29,6 +29,8 @@ test("una respuesta que llega tarde no pisa lo que el usuario ya ha escrito", as
         repsMax={12}
         onCambiarPrevistas={vi.fn()}
         onGuardada={vi.fn()}
+        onBorrada={vi.fn()}
+        siguiente={{ href: "#/rutinas/1/entrenar/1", texto: "Siguiente ejercicio" }}
       />
     </StrictMode>,
   );

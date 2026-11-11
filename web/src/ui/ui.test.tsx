@@ -95,23 +95,43 @@ test("al cerrarse devuelve el foco a donde estaba", () => {
 
 // --- Contador − / + ----------------------------------------------------------------------
 
-function Kilos({ inicial }: { inicial: number }) {
+function Kilos({ inicial }: { inicial: string }) {
   const [v, setV] = useState(inicial);
-  return <ContadorBotones etiqueta="Kilos" unidad="kg" paso={2.5} min={0} max={500} valor={v} onCambio={setV} />;
+  return (
+    <ContadorBotones
+      etiqueta="Peso (kg)"
+      unidad="kg"
+      modoTeclado="decimal"
+      paso={2.5}
+      min={0}
+      max={500}
+      valor={v}
+      onCambio={setV}
+    />
+  );
 }
 
+const campo = () => screen.getByLabelText("Peso (kg)") as HTMLInputElement;
+
 test("el contador suma y resta su paso y lo muestra con coma", () => {
-  render(<Kilos inicial={60} />);
-  const grupo = screen.getByRole("group", { name: "Kilos" });
+  render(<Kilos inicial="60" />);
   fireEvent.click(screen.getByRole("button", { name: "Sumar 2,5 kg" }));
-  expect(grupo.querySelector("output")!.textContent).toBe("62,5");
+  expect(campo().value).toBe("62,5");
   fireEvent.click(screen.getByRole("button", { name: "Restar 2,5 kg" }));
   fireEvent.click(screen.getByRole("button", { name: "Restar 2,5 kg" }));
-  expect(grupo.querySelector("output")!.textContent).toBe("57,5");
+  expect(campo().value).toBe("57,5");
+});
+
+test("el número también se puede escribir y los botones siguen desde ahí", () => {
+  render(<Kilos inicial="60" />);
+  expect(campo().getAttribute("inputmode")).toBe("decimal");
+  fireEvent.change(campo(), { target: { value: "100" } });
+  fireEvent.click(screen.getByRole("button", { name: "Sumar 2,5 kg" }));
+  expect(campo().value).toBe("102,5");
 });
 
 test("en el mínimo, «Restar» está desactivado", () => {
-  render(<Kilos inicial={0} />);
+  render(<Kilos inicial="0" />);
   expect(screen.getByRole("button", { name: "Restar 2,5 kg" }).hasAttribute("disabled")).toBe(true);
   expect(screen.getByRole("button", { name: "Sumar 2,5 kg" }).hasAttribute("disabled")).toBe(false);
 });

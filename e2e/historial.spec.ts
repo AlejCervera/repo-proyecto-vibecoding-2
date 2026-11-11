@@ -34,7 +34,7 @@ test("80×8 y 85×6 salen como dos filas, la más reciente primero, sin mezclar 
 
 test("desde la rutina, el ejercicio lleva a su historial", async ({ page }) => {
   await entrenar(page, "Pierna", [["Sentadilla", "100", "5"]]);
-  await page.getByRole("link", { name: "← Volver a la rutina" }).click();
+  await page.getByRole("link", { name: "Volver a la rutina" }).click();
   await page.getByRole("list", { name: "Ejercicios de la rutina" }).getByRole("link", { name: "Sentadilla" }).click();
   await expect(page.getByRole("heading", { name: "Historial: Sentadilla" })).toBeVisible();
   await expect(page.getByRole("list", { name: "Historial" }).getByRole("listitem")).toHaveCount(1);
