@@ -32,7 +32,7 @@ test("con sesión, la primera pantalla es el inicio y la navegación lo marca", 
     { status: 200, body: [] },
   );
   render(<App />);
-  expect(await screen.findByRole("link", { name: "▶ Iniciar entrenamiento" })).toBeTruthy();
+  expect(await screen.findByRole("link", { name: "Elegir rutina" })).toBeTruthy();
   expect(document.querySelector(".saludo")!.textContent).toBe("Hola, ana");
   const nav = screen.getByRole("navigation", { name: "Secciones" });
   expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([

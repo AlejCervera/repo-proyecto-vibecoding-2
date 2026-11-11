@@ -67,10 +67,17 @@ export async function anadirARutina(page: Page, busqueda: string, nombre = busqu
 /** Crea una rutina propia con esos ejercicios; queda en su pantalla. */
 export async function crearRutina(page: Page, nombre: string, ejercicios: string[]) {
   await irA(page, "Entrenar");
-  await page.getByLabel("Nueva rutina").fill(nombre);
-  await page.getByRole("button", { name: "Crear", exact: true }).click();
-  await expect(page.getByRole("heading", { name: nombre, exact: true })).toBeVisible();
+  await nuevaRutina(page, nombre);
   for (const e of ejercicios) await anadirARutina(page, e);
+}
+
+/** En la lista de rutinas: el botón + flotante y la hoja para crearla; queda en su pantalla. */
+export async function nuevaRutina(page: Page, nombre: string) {
+  await page.getByRole("button", { name: "Crear rutina" }).click();
+  const hoja = page.getByRole("dialog", { name: "Nueva rutina" });
+  await hoja.getByLabel("Nombre de la rutina").fill(nombre);
+  await hoja.getByRole("button", { name: "Crear", exact: true }).click();
+  await expect(page.getByRole("heading", { name: nombre, exact: true })).toBeVisible();
 }
 
 /** Abre una rutina predefinida. */
@@ -112,7 +119,7 @@ export async function terminarYGuardar(page: Page) {
 /** Atajo: crea una rutina con esos ejercicios, entrena las series y lo guarda en el diario. */
 export async function entrenar(page: Page, rutina: string, series: [string, string, string][]) {
   await crearRutina(page, rutina, [...new Set(series.map(([e]) => e))]);
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   for (const [ejercicio, peso, reps] of series) await serieEntrenando(page, ejercicio, peso, reps);
   await terminarYGuardar(page);
 }

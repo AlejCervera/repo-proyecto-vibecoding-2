@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { irA, nombreUnico, registrar } from "./cuentas";
+import { irA, nombreUnico, nuevaRutina, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("rut"));
@@ -21,9 +21,7 @@ async function anadir(page: Page, busqueda: string, nombre: string) {
 }
 
 test("«Pecho» con press de banca y aperturas, renombrar, reordenar y recargar", async ({ page }) => {
-  await page.getByLabel("Nueva rutina").fill("Pecho");
-  await page.getByRole("button", { name: "Crear" }).click();
-  await expect(page.getByRole("heading", { name: "Pecho", exact: true })).toBeVisible();
+  await nuevaRutina(page, "Pecho");
 
   await anadir(page, "press de", "Press de banca");
   await anadir(page, "apertur", "Aperturas con mancuernas");
@@ -32,6 +30,7 @@ test("«Pecho» con press de banca y aperturas, renombrar, reordenar y recargar"
   await page.getByRole("button", { name: "Subir Aperturas con mancuernas" }).click();
   await expect(ejercicios(page)).toHaveText(["Aperturas con mancuernas", "Press de banca"]);
 
+  await page.getByRole("button", { name: "Opciones de la rutina" }).click();
   await page.getByRole("button", { name: "Renombrar" }).click();
   await page.getByLabel("Nuevo nombre").fill("Pecho del lunes");
   await page.getByRole("button", { name: "Guardar nombre" }).click();
@@ -43,21 +42,21 @@ test("«Pecho» con press de banca y aperturas, renombrar, reordenar y recargar"
 
   await page.getByRole("link", { name: "← Rutinas" }).click();
   await expect(page.getByRole("list", { name: "Mis rutinas" })).toContainText(
-    "Pecho del lunes (2 ejercicios)",
+    "Pecho del lunes2 ejercicios · Aperturas con mancuernas y Press de banca",
   );
 });
 
 test("la predefinida «Pecho» no se edita; su copia sí", async ({ page }) => {
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
-    .getByRole("link", { name: "Pecho" })
+    .getByRole("link", { name: "Pecho", exact: true })
     .click();
   await expect(page.getByText("Rutina predefinida: no se puede modificar.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Añadir ejercicio" })).toHaveCount(0);
   await expect(ejercicios(page)).toHaveText(["Press de banca", "Aperturas con mancuernas"]);
 
   await page.getByRole("button", { name: "Copiar a mis rutinas" }).click();
-  await expect(page.getByRole("button", { name: "Renombrar" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Opciones de la rutina" })).toBeVisible();
   await anadir(page, "militar", "Press militar");
   await expect(ejercicios(page)).toHaveText([
     "Press de banca",
@@ -68,7 +67,7 @@ test("la predefinida «Pecho» no se edita; su copia sí", async ({ page }) => {
   // La predefinida sigue igual
   await page.getByRole("link", { name: "← Rutinas" }).click();
   await expect(page.getByRole("list", { name: "Rutinas predefinidas" })).toContainText(
-    "Pecho (2 ejercicios)",
+    "Pecho2 ejercicios · Press de banca y Aperturas con mancuernas",
   );
-  await expect(page.getByRole("list", { name: "Mis rutinas" })).toContainText("Pecho (3 ejercicios)");
+  await expect(page.getByRole("list", { name: "Mis rutinas" })).toContainText("Pecho3 ejercicios · Press de banca, Aperturas con mancuernas y 1 más");
 });

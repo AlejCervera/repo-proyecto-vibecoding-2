@@ -6,9 +6,9 @@ async function empezarPecho(page: Page) {
   await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
-    .getByRole("link", { name: "Pecho" })
+    .getByRole("link", { name: "Pecho", exact: true })
     .click();
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
 }
 
 const paso = (page: Page) => page.getByRole("article", { name: "Press de banca" });

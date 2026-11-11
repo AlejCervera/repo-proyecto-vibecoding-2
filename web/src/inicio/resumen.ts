@@ -41,6 +41,34 @@ export function fechaCorta(iso: string): string {
   return `${NOMBRES_DIA[f.getDay()]} ${d}/${m}`;
 }
 
+const DIAS_LARGOS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const MESES = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** «Martes, 11 de noviembre» */
+export function fechaLarga(iso: string): string {
+  const f = aFecha(iso);
+  const dia = DIAS_LARGOS[f.getDay()];
+  return `${dia.charAt(0).toUpperCase()}${dia.slice(1)}, ${f.getDate()} de ${MESES[f.getMonth()]}`;
+}
+
+/** Días enteros entre dos fechas AAAA-MM-DD (sin líos con el cambio de hora). */
+export function diasEntre(desde: string, hasta: string): number {
+  const [a1, m1, d1] = desde.split("-").map(Number);
+  const [a2, m2, d2] = hasta.split("-").map(Number);
+  return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / 86_400_000);
+}
+
+/** «hoy», «ayer», «hace 3 días». */
+export function haceDias(fecha: string, hoy: string): string {
+  const n = diasEntre(fecha, hoy);
+  if (n <= 0) return "hoy";
+  if (n === 1) return "ayer";
+  return `hace ${n} días`;
+}
+
 // --- Última rutina usada (se recuerda en este móvil) ---------------------------------------
 
 export type RutinaUsada = { id: number; nombre: string };

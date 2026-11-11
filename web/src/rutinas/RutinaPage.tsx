@@ -13,19 +13,23 @@ import {
 import type { Ejercicio } from "../ejercicios/ejercicio";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { enlace, ir } from "../navegacion";
+import { BotonFijo } from "../ui/BotonFijo";
 import { HojaInferior } from "../ui/HojaInferior";
+import { IconoEntrenar, IconoMas, IconoOpciones } from "../ui/iconos";
 import { EjercicioRutinaFila } from "./EjercicioRutinaFila";
 import { RecomendacionesPanel } from "./RecomendacionesPanel";
-import { mover, type Rutina } from "./rutina";
+import { mover, resumen, type EjercicioRutina, type Rutina } from "./rutina";
 
 type Props = { rutinaId: number; onSesionCaducada: () => void };
-type Modo = "ver" | "renombrar" | "anadir" | "borrar";
+/** Qué hoja inferior está abierta (o ninguna, «ver»). */
+type Modo = "ver" | "opciones" | "renombrar" | "anadir" | "borrar";
 
 export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
   const [rutina, setRutina] = useState<Rutina | null>(null);
   const [modo, setModo] = useState<Modo>("ver");
   const [nombre, setNombre] = useState("");
   const [elegido, setElegido] = useState<Ejercicio | null>(null);
+  const [quitando, setQuitando] = useState<EjercicioRutina | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState(false);
 
@@ -48,6 +52,7 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
         setRutina(actualizada);
         setModo("ver");
         setElegido(null);
+        setQuitando(null);
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado");
@@ -75,11 +80,15 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
 
   const ids = rutina.ejercicios.map((e) => e.id);
   const editable = !rutina.predefinida;
+  const cerrar = () => cambiarModo("ver");
   const cancelar = (
-    <button type="button" onClick={() => cambiarModo("ver")}>
+    <button type="button" onClick={cerrar}>
       Cancelar
     </button>
   );
+  // El error se ve dentro de la hoja abierta o, si no hay ninguna, en la pantalla.
+  const hojaAbierta = modo !== "ver" || quitando !== null;
+  const aviso = error && <p role="alert">{error}</p>;
 
   const renombrar = (e: FormEvent) => {
     e.preventDefault();
@@ -87,19 +96,30 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
   };
 
   return (
-    <section>
+    <section className="con-boton-fijo">
       {volver}
-      <h2>{rutina.nombre}</h2>
-      {rutina.ejercicios.length > 0 && (
-        <p>
-          <a href={enlace({ pantalla: "entrenar", rutinaId: rutina.id, paso: 0 })}>
-            <strong>▶ Empezar entrenamiento</strong>
-          </a>
-        </p>
-      )}
+      <div className="cabecera-pantalla">
+        <div>
+          <h2>{rutina.nombre}</h2>
+          <p className="subtitulo">{resumen(rutina)}</p>
+        </div>
+        {editable && (
+          <button
+            type="button"
+            className="boton-redondo"
+            aria-label="Opciones de la rutina"
+            onClick={() => cambiarModo("opciones")}
+          >
+            <IconoOpciones />
+          </button>
+        )}
+      </div>
+
       {rutina.predefinida && (
-        <p>
-          <small>Rutina predefinida: no se puede modificar.</small>{" "}
+        <div className="tarjeta aviso-predefinida">
+          <p>
+            <small>Rutina predefinida: no se puede modificar.</small>
+          </p>
           <button
             type="button"
             disabled={ocupado}
@@ -112,35 +132,84 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
           >
             Copiar a mis rutinas
           </button>
-        </p>
+        </div>
       )}
 
-      {editable && modo === "ver" && (
-        <p>
-          <button type="button" onClick={() => cambiarModo("renombrar")}>
-            Renombrar
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("borrar")}>
-            Borrar rutina
-          </button>
-        </p>
+      {rutina.ejercicios.length === 0 ? (
+        <p className="vacio">Esta rutina aún no tiene ejercicios.</p>
+      ) : (
+        <ol aria-label="Ejercicios de la rutina" className="lista-ejercicios-rutina">
+          {rutina.ejercicios.map((e, i) => (
+            <EjercicioRutinaFila
+              key={e.id}
+              ejercicio={e}
+              editable={editable}
+              primero={i === 0}
+              ultimo={i === ids.length - 1}
+              ocupado={ocupado}
+              onMover={(d) => ejecutar(() => reordenarRutina(rutina.id, mover(ids, i, d)))}
+              onQuitar={() => {
+                setError(null);
+                setQuitando(e);
+              }}
+              onConfigurar={(cambios) => ejecutar(() => configurarEjercicio(rutina.id, e.id, cambios))}
+            />
+          ))}
+        </ol>
       )}
+
+      {editable && (
+        <button type="button" className="boton-anadir" onClick={() => cambiarModo("anadir")}>
+          <IconoMas tamano={18} />
+          Añadir ejercicio
+        </button>
+      )}
+      {!hojaAbierta && aviso}
+      {editable && !hojaAbierta && (
+        <RecomendacionesPanel rutina={rutina} onRutina={setRutina} onSesionCaducada={onSesionCaducada} />
+      )}
+
+      {rutina.ejercicios.length > 0 && (
+        <BotonFijo>
+          <a className="boton primario" href={enlace({ pantalla: "entrenar", rutinaId: rutina.id, paso: 0 })}>
+            <IconoEntrenar />
+            Empezar entrenamiento
+          </a>
+        </BotonFijo>
+      )}
+
+      {modo === "opciones" && (
+        <HojaInferior titulo={rutina.nombre} onCerrar={cerrar}>
+          <div className="hoja-acciones">
+            <button type="button" onClick={() => cambiarModo("renombrar")}>
+              Renombrar
+            </button>
+            <button type="button" className="peligro" onClick={() => cambiarModo("borrar")}>
+              Borrar rutina
+            </button>
+          </div>
+        </HojaInferior>
+      )}
+
       {modo === "renombrar" && (
-        <form onSubmit={renombrar} aria-label="Renombrar rutina">
-          <label>
-            Nuevo nombre
-            <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
-          </label>{" "}
-          <button type="submit" disabled={ocupado}>
-            Guardar nombre
-          </button>{" "}
-          {cancelar}
-        </form>
+        <HojaInferior titulo="Renombrar rutina" onCerrar={cerrar}>
+          <form onSubmit={renombrar} aria-label="Renombrar rutina" className="formulario-hoja">
+            <label>
+              Nuevo nombre
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            </label>
+            {aviso}
+            <button type="submit" className="grande" disabled={ocupado}>
+              Guardar nombre
+            </button>
+          </form>
+        </HojaInferior>
       )}
+
       {modo === "borrar" && (
-        <HojaInferior titulo="Borrar rutina" onCerrar={() => cambiarModo("ver")}>
+        <HojaInferior titulo="Borrar rutina" onCerrar={cerrar}>
           <p>¿Borrar la rutina «{rutina.nombre}»? Tus series no se borran.</p>
-          {error && <p role="alert">{error}</p>}
+          {aviso}
           <div className="hoja-acciones">
             <button
               type="button"
@@ -160,47 +229,44 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
         </HojaInferior>
       )}
 
-      {rutina.ejercicios.length === 0 ? (
-        <p>Esta rutina aún no tiene ejercicios.</p>
-      ) : (
-        <ol aria-label="Ejercicios de la rutina">
-          {rutina.ejercicios.map((e, i) => (
-            <EjercicioRutinaFila
-              key={e.id}
-              ejercicio={e}
-              editable={editable}
-              primero={i === 0}
-              ultimo={i === ids.length - 1}
-              ocupado={ocupado}
-              onMover={(d) => ejecutar(() => reordenarRutina(rutina.id, mover(ids, i, d)))}
-              onQuitar={() => ejecutar(() => quitarEjercicio(rutina.id, e.id))}
-              onConfigurar={(cambios) => ejecutar(() => configurarEjercicio(rutina.id, e.id, cambios))}
-            />
-          ))}
-        </ol>
+      {modo === "anadir" && (
+        <HojaInferior titulo="Añadir a la rutina" onCerrar={cerrar}>
+          <EjercicioPicker compacto etiqueta="Ejercicio a añadir" value={elegido} onChange={setElegido} />
+          {aviso}
+          <div className="hoja-acciones">
+            <button
+              type="button"
+              className="primario"
+              disabled={!elegido || ocupado}
+              onClick={() => elegido && ejecutar(() => anadirEjercicio(rutina.id, elegido.id))}
+            >
+              Añadir a la rutina
+            </button>
+            {cancelar}
+          </div>
+        </HojaInferior>
       )}
 
-      {editable && modo === "ver" && (
-        <button type="button" onClick={() => cambiarModo("anadir")}>
-          Añadir ejercicio
-        </button>
-      )}
-      {modo === "anadir" && (
-        <div>
-          <EjercicioPicker compacto etiqueta="Ejercicio a añadir" value={elegido} onChange={setElegido} />
-          <button
-            type="button"
-            disabled={!elegido || ocupado}
-            onClick={() => elegido && ejecutar(() => anadirEjercicio(rutina.id, elegido.id))}
-          >
-            Añadir a la rutina
-          </button>{" "}
-          {cancelar}
-        </div>
-      )}
-      {modo !== "borrar" && error && <p role="alert">{error}</p>}
-      {editable && modo === "ver" && (
-        <RecomendacionesPanel rutina={rutina} onRutina={setRutina} onSesionCaducada={onSesionCaducada} />
+      {quitando && (
+        <HojaInferior titulo="Quitar ejercicio" onCerrar={() => setQuitando(null)}>
+          <p>
+            ¿Quitar «{quitando.nombre}» de la rutina? Sus series siguen en el historial.
+          </p>
+          {aviso}
+          <div className="hoja-acciones">
+            <button
+              type="button"
+              className="peligro"
+              disabled={ocupado}
+              onClick={() => ejecutar(() => quitarEjercicio(rutina.id, quitando.id))}
+            >
+              Sí, quitar
+            </button>
+            <button type="button" onClick={() => setQuitando(null)}>
+              Cancelar
+            </button>
+          </div>
+        </HojaInferior>
       )}
     </section>
   );

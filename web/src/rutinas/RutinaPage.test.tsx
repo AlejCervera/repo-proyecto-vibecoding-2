@@ -37,10 +37,20 @@ const nombres = () =>
 test("predefinida: muestra sus ejercicios en orden, sin botones de edición", async () => {
   await pintar(PREDEFINIDA);
   expect(nombres()).toEqual(["Press de banca", "Aperturas"]);
-  for (const nombre of ["Renombrar", "Borrar rutina", "Añadir ejercicio", /Quitar/, /Subir/]) {
+  for (const nombre of ["Opciones de la rutina", "Añadir ejercicio", /Quitar/, /Subir/]) {
     expect(screen.queryByRole("button", { name: nombre })).toBeNull();
   }
   expect(screen.getByText("Rutina predefinida: no se puede modificar.")).toBeTruthy();
+  // Se puede entrenar igualmente: botón fijo abajo
+  expect(screen.getByRole("link", { name: "Empezar entrenamiento" }).getAttribute("href")).toBe(
+    "#/rutinas/1/entrenar/0",
+  );
+});
+
+test("sin ejercicios no hay botón de empezar", async () => {
+  await pintar({ ...MIA, ejercicios: [] });
+  expect(screen.getByText("Esta rutina aún no tiene ejercicios.")).toBeTruthy();
+  expect(screen.queryByRole("link", { name: "Empezar entrenamiento" })).toBeNull();
 });
 
 test("predefinida: copiar lleva a la copia", async () => {
@@ -63,10 +73,15 @@ test("propia: bajar un ejercicio envía el nuevo orden", async () => {
   expect(JSON.parse(init.body)).toEqual({ ejercicios: [11, 10] });
 });
 
-test("propia: quitar un ejercicio", async () => {
+test("propia: quitar un ejercicio pide confirmación", async () => {
   const fetch = await pintar(MIA, { status: 200, body: { ...MIA, ejercicios: [ej(10, "Press de banca")] } });
   fireEvent.click(screen.getByRole("button", { name: "Quitar Aperturas" }));
+  const hoja = screen.getByRole("dialog", { name: "Quitar ejercicio" });
+  expect(hoja.textContent).toContain("¿Quitar «Aperturas» de la rutina?");
+  expect(fetch).toHaveBeenCalledTimes(1);
+  fireEvent.click(within(hoja).getByRole("button", { name: "Sí, quitar" }));
   await vi.waitFor(() => expect(nombres()).toEqual(["Press de banca"]));
+  expect(screen.queryByRole("dialog")).toBeNull();
   expect(fetch).toHaveBeenLastCalledWith("/api/rutinas/7/ejercicios/11", { method: "DELETE" });
 });
 
@@ -102,9 +117,11 @@ test("propia: añadir uno repetido muestra el aviso", async () => {
   expect((await screen.findByRole("alert")).textContent).toBe("Ese ejercicio ya está en la rutina");
 });
 
-test("propia: renombrar", async () => {
+test("propia: renombrar desde el menú ⋯", async () => {
   await pintar(MIA, { status: 200, body: { ...MIA, nombre: "Pecho y tríceps" } });
+  fireEvent.click(screen.getByRole("button", { name: "Opciones de la rutina" }));
   fireEvent.click(screen.getByRole("button", { name: "Renombrar" }));
+  expect((screen.getByLabelText("Nuevo nombre") as HTMLInputElement).value).toBe("Mi pecho");
   fireEvent.change(screen.getByLabelText("Nuevo nombre"), { target: { value: "Pecho y tríceps" } });
   fireEvent.click(screen.getByRole("button", { name: "Guardar nombre" }));
   expect(await screen.findByRole("heading", { name: "Pecho y tríceps" })).toBeTruthy();
@@ -112,6 +129,7 @@ test("propia: renombrar", async () => {
 
 test("propia: borrar pide confirmación y vuelve a la lista", async () => {
   const fetch = await pintar(MIA, { status: 204, body: null });
+  fireEvent.click(screen.getByRole("button", { name: "Opciones de la rutina" }));
   fireEvent.click(screen.getByRole("button", { name: "Borrar rutina" }));
   expect(screen.getByText(/Tus series no se borran/)).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Sí, borrar" }));
@@ -122,8 +140,10 @@ test("propia: borrar pide confirmación y vuelve a la lista", async () => {
 test("muestra el plan de cada ejercicio", async () => {
   await pintar({ ...MIA, ejercicios: [ej(10, "Press de banca"), ej(11, "Aperturas", 4, null, null)] });
   const filas = within(screen.getByRole("list", { name: "Ejercicios de la rutina" })).getAllByRole("listitem");
-  expect(filas[0].textContent).toContain("Press de banca — 3 × 8-12");
-  expect(filas[1].textContent).toContain("Aperturas — 4 series");
+  expect(filas[0].textContent).toContain("Press de banca3 × 8-12");
+  expect(filas[0].textContent).toContain("8-12 reps");
+  expect(filas[1].textContent).toContain("Aperturas4 series");
+  expect(filas[1].textContent).toContain("Sin objetivo");
 });
 
 test("propia: [+] guarda una serie más al momento", async () => {

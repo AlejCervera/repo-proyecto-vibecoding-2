@@ -37,6 +37,16 @@ export function resumen(r: Rutina): string {
   return n === 1 ? "1 ejercicio" : `${n} ejercicios`;
 }
 
+/** «Press de banca, Aperturas y 2 más»: los primeros nombres de la rutina, en texto. */
+export function nombresEjercicios(r: Pick<Rutina, "ejercicios">, maximo = 2): string {
+  const nombres = r.ejercicios.map((e) => e.nombre);
+  if (nombres.length === 0) return "Sin ejercicios todavía";
+  if (nombres.length <= maximo) {
+    return nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(", ")} y ${nombres.at(-1)}`;
+  }
+  return `${nombres.slice(0, maximo).join(", ")} y ${nombres.length - maximo} más`;
+}
+
 /** «8-12», «10» o "" si no hay objetivo. */
 export function textoReps(e: Pick<EjercicioRutina, "reps_min" | "reps_max">): string {
   if (e.reps_min === null || e.reps_max === null) return "";

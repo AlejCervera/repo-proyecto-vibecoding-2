@@ -42,13 +42,13 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
 
   await abrirPredefinida(page, "Pecho");
   await page.getByRole("button", { name: "Copiar a mis rutinas" }).click();
-  await expect(page.getByRole("button", { name: "Renombrar" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Opciones de la rutina" })).toBeVisible();
   await revisar(page, "rutina propia");
   await irA(page, "Entrenar");
   await revisar(page, "rutinas");
-  await page.getByRole("list", { name: "Mis rutinas" }).getByRole("link", { name: "Pecho" }).click();
+  await page.getByRole("list", { name: "Mis rutinas" }).getByRole("link", { name: "Pecho", exact: true }).click();
 
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   await serieEntrenando(page, "Press de banca", "80", "8");
   await expect(page.getByRole("timer")).toBeVisible();
   await revisar(page, "entrenar");

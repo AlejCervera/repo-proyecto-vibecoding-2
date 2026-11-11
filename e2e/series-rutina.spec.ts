@@ -7,10 +7,10 @@ test.beforeEach(async ({ page }) => {
   await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
-    .getByRole("link", { name: "Pecho" })
+    .getByRole("link", { name: "Pecho", exact: true })
     .click();
   await page.getByRole("button", { name: "Copiar a mis rutinas" }).click();
-  await expect(page.getByRole("button", { name: "Renombrar" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Opciones de la rutina" })).toBeVisible();
 });
 
 const fila = (page: Page, nombre: string) =>
@@ -31,7 +31,7 @@ test("4 × 8-10 en press de banca se guarda, sigue tras recargar y se completa a
   await expect(fila(page, "Press de banca")).toContainText("4 × 8-10");
   await expect(fila(page, "Aperturas con mancuernas")).toContainText("3 × 8-12");
 
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   const paso = page.getByRole("article", { name: "Press de banca" });
   await expect(paso).toContainText("Objetivo: 4 × 8-10");
   for (const reps of ["10", "9", "8", "8"]) {
@@ -47,7 +47,7 @@ test("4 × 8-10 en press de banca se guarda, sigue tras recargar y se completa a
 });
 
 test("añadir una serie durante el entrenamiento y guardarla en la rutina al terminar", async ({ page }) => {
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   const paso = page.getByRole("article", { name: "Press de banca" });
   await paso.getByRole("button", { name: "Añadir serie" }).click();
   await expect(paso).toContainText("Objetivo: 4 × 8-12");

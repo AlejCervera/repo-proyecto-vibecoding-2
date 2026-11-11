@@ -216,7 +216,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Rediseño (Fases 9 a 9c)
+## Rediseño (Fases 9 a 9d)
 
 Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
 
@@ -259,32 +259,50 @@ Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claud
 
 **Objetivo:** que Inicio, Rutinas, Ejercicios, Historial y Perfil sigan el mismo estilo y sean fáciles de usar con una mano.
 
+Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits dentro de la fase, cada uno con todas las pruebas en verde: (1) Inicio, Entrenar y Rutina; (2) Ejercicios, Historial y Perfil.
+
 **Tareas:**
-- [ ] Inicio: tarjeta grande «Hoy toca: <rutina>» con «Empezar», la semana en 7 puntos y la última sesión con lo que mejoraste.
-- [ ] Rutinas: tarjetas con los círculos de sus ejercicios y «Empezar» en cada una; crear con botón + flotante y hoja inferior; renombrar y borrar en un menú ⋯; series y repeticiones con − / +; reordenar con ↑ ↓ grandes.
-- [ ] Ejercicios: buscador fijo arriba, pestañas «Míos / Catálogo»; al tocar uno, hoja inferior con foto, récord e historial.
-- [ ] Historial de un ejercicio: récord destacado y series agrupadas por día; al tocar una serie, se edita en la hoja inferior.
-- [ ] Perfil: altura y peso con − / + y «Cerrar sesión».
+- [x] Inicio: saludo con la fecha; tarjeta grande «Hoy toca: <última rutina>» con «4 ejercicios · la última vez hace 3 días», «Empezar» y «elegir otra»; la semana en 7 círculos (lima los entrenados, anillo en hoy); último entrenamiento con sus récords. (En la 9c, «Hoy toca» pasa a salir del plan semanal.)
+- [x] Entrenar (lista de rutinas): una tarjeta por rutina con nombre, nº de ejercicios y sus nombres en texto, y «Empezar» en cada una; primero las mías y debajo las predefinidas; botón + flotante «Nueva rutina» con hoja inferior.
+- [x] Rutina: botón fijo «Empezar entrenamiento»; menú ⋯ con Renombrar y Borrar (predefinida: «Copiar a mis rutinas»); cada ejercicio en tarjeta con foto pequeña, series con − / +, objetivo de repeticiones, ↑ ↓ grandes y quitar con confirmación; «Añadir ejercicio» en hoja con buscador; recomendaciones de la IA en tarjeta.
+- [ ] Ejercicios: buscador fijo arriba, pestañas «Míos / Catálogo» (la API ya busca en ambos); al tocar uno, hoja con foto, mejor serie, última vez y «Ver historial» (en los míos, también renombrar y borrar); «+ Nuevo ejercicio» en hoja.
+- [ ] Historial de un ejercicio: cabecera con foto pequeña, récord destacado y series agrupadas por día; al tocar una serie, se edita o borra en la hoja inferior (también en el detalle del diario, que usa la misma fila).
+- [ ] Perfil: altura y peso con − / + (1 cm, 0,5 kg; también se pueden escribir), cuenta, cerrar sesión y créditos.
 
 **Pruebas:**
-- Web de cada pantalla; e2e existentes ajustados (rutinas, ejercicios, historial, editar y borrar, perfil).
+- Web de cada pantalla y del cálculo de «hace N días»; e2e existentes ajustados (rutinas, ejercicios, imágenes, historial, editar y borrar, recomendaciones, inicio, cuentas).
 
-**Hecho cuando:** todas las pantallas siguen la maqueta y los e2e pasan en tamaño iPhone.
+**Hecho cuando:** todas las pantallas siguen el nuevo estilo y los e2e pasan en tamaño iPhone.
 
-## Fase 9c · Diario con gráficas
+## Fase 9c · Plan semanal y calendario
+
+**Objetivo:** decidir qué rutina toca cada día de la semana y ver en un calendario lo planeado frente a lo hecho.
+
+**Tareas:**
+- [ ] Plan semanal por usuario: para cada día (L … D) una rutina propia o predefinida, o «Descanso» (migración 009 y API para leerlo y guardarlo; solo rutinas visibles para el usuario; si se borra una rutina, ese día pasa a descanso).
+- [ ] Cambiar solo un día concreto («hoy hago Pierna» o «hoy descanso») sin tocar el plan semanal.
+- [ ] El Diario abre con el calendario del mes: días pasados con lo hecho (✓ hecho, ✗ no hecho, otra rutina, descanso), hoy destacado y días futuros con lo que toca; al tocar un día, su entreno o lo que toca. El plan semanal se edita desde ahí.
+- [ ] Inicio: «Hoy toca» sale del plan («Hoy toca descanso» con la opción de entrenar igualmente; sin plan, la última rutina como ahora) y el cumplimiento de la semana («3 de 4 entrenos») con la racha.
+
+**Pruebas:**
+- API (guardar y leer el plan, aislamiento entre usuarios, rutina de otro usuario → 400, borrar rutina → descanso, cambio de un día); unitarias de la lógica del calendario (planeado frente a hecho, cambio de mes y de año); web del calendario y de Inicio; e2e: planificar Push el día de hoy, verlo en Inicio, entrenarlo y verlo hecho en el calendario.
+
+**Hecho cuando:** el plan semanal se guarda, Inicio dice qué toca hoy y el calendario muestra lo planeado y lo hecho.
+
+## Fase 9d · Diario con gráficas
 
 **Objetivo:** ver el progreso de un vistazo.
 
 **Tareas:**
-- [ ] Cálculos en funciones puras (sin tocar la API): entrenos por semana, volumen semanal (kg × reps), días entrenados del mes y racha, récords (peso máximo y 1RM estimado por Epley).
-- [ ] Gráficas en SVG propio (sin librerías), arriba del diario en tarjetas deslizables: entrenos por semana (12 semanas), volumen semanal, calendario de constancia del mes y récords recientes.
+- [ ] Cálculos en funciones puras (sin tocar la API): entrenos por semana, volumen semanal (kg × reps), récords (peso máximo y 1RM estimado por Epley).
+- [ ] Gráficas en SVG propio (sin librerías), en el diario debajo del calendario (fase 9c), en tarjetas deslizables: entrenos por semana (12 semanas), volumen semanal y récords recientes. El calendario de constancia que estaba previsto aquí lo cubre el de la 9c.
 - [ ] Gráfica de progreso en el historial de cada ejercicio: peso máximo y 1RM estimado por sesión.
 - [ ] La lista de entrenamientos pasa a tarjetas.
 
 **Pruebas:**
 - Unitarias de todos los cálculos (semanas sin datos, cambio de año, una sola sesión); web de las gráficas (con texto accesible); e2e: tras entrenar, el diario muestra la semana con un entreno.
 
-**Hecho cuando:** el diario enseña las cuatro tarjetas con datos reales y el historial de un ejercicio su gráfica de progreso.
+**Hecho cuando:** el diario enseña las tres tarjetas con datos reales y el historial de un ejercicio su gráfica de progreso.
 
 ## Fase 10 · Preparar para producción (en local)
 
@@ -319,6 +337,24 @@ Elección (2026-11-11): **Render** (servicio web gratis: sin tarjeta, HTTPS, des
 - [ ] Instalar en los iPhone desde Safari («Añadir a pantalla de inicio»); con HTTPS funciona también la pantalla encendida al entrenar.
 
 **Hecho cuando:** hay permiso explícito y la app funciona en los tres móviles.
+
+## Fase 12 · Aviso de fin de descanso con el móvil bloqueado (Web Push)
+
+**Objetivo:** que el móvil avise al acabar el descanso aunque esté bloqueado o en otra app.
+
+Requiere la app publicada (fase 11): en iPhone las notificaciones web solo funcionan con HTTPS y la app añadida a la pantalla de inicio (iOS 16.4+). Con el móvil bloqueado Safari congela la página, así que el aviso lo envía el servidor. Encaja con Render gratis: un descanso dura como mucho 10 min y el servidor acaba de recibir la serie, así que está despierto.
+
+**Tareas:**
+- [ ] Service worker en la web y permiso de notificaciones (pedido en el momento oportuno, no al abrir la app).
+- [ ] Guardar la suscripción push de cada móvil en la base de datos (migración) y claves VAPID en `.env` (nombres en `.env.example`). Antes de añadir la librería de Web Push para Python, decir cuál y para qué.
+- [ ] Al guardar una serie con descanso, la API programa el aviso para la hora de fin; −15 s / +15 s, pausa y «Saltar» lo reprograman o cancelan.
+- [ ] Si la app está abierta, no duplicar el aviso (sonido y vibración como ahora).
+- [ ] Aviso por la mañana con lo que toca hoy según el plan semanal de la 9c («Hoy toca: Push»; los días de descanso, nada), con la hora elegida en Perfil y la opción de desactivarlo. Nota: con Render gratis el servidor puede estar dormido a esa hora; habrá que despertarlo con una tarea programada externa gratuita o aceptar que el aviso llegue con retraso (decidirlo al planificar la fase).
+
+**Pruebas:**
+- API (suscribirse, programar, cancelar, sin enviar nada real: el envío se simula); web (permiso, suscripción); prueba manual en los iPhone reales.
+
+**Hecho cuando:** con el móvil bloqueado, al acabar el descanso llega la notificación.
 
 ## Mejoras futuras (fuera de este plan)
 

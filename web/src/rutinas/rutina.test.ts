@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { mover, parsearReps, resumen, separar, textoPlan, textoReps, type Rutina } from "./rutina";
+import { mover, nombresEjercicios, parsearReps, resumen, separar, textoPlan, textoReps, type Rutina } from "./rutina";
 
 test("mover sube y baja un ejercicio", () => {
   expect(mover([1, 2, 3], 2, -1)).toEqual([1, 3, 2]);
@@ -56,4 +56,14 @@ test("resumen con singular y plural", () => {
   expect(resumen(r(1, false, 1))).toBe("1 ejercicio");
   expect(resumen(r(1, false, 0))).toBe("0 ejercicios");
   expect(resumen(r(1, false, 5))).toBe("5 ejercicios");
+});
+
+test("nombres de los ejercicios de una rutina, en texto", () => {
+  const r = (...nombres: string[]) => ({ ejercicios: nombres.map((nombre) => ({ nombre })) }) as Rutina;
+  expect(nombresEjercicios(r())).toBe("Sin ejercicios todavía");
+  expect(nombresEjercicios(r("Sentadilla"))).toBe("Sentadilla");
+  expect(nombresEjercicios(r("Press de banca", "Aperturas"))).toBe("Press de banca y Aperturas");
+  expect(nombresEjercicios(r("Press de banca", "Aperturas", "Fondos", "Cruces"))).toBe(
+    "Press de banca, Aperturas y 2 más",
+  );
 });

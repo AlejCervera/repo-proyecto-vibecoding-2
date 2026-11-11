@@ -1,7 +1,10 @@
 import { expect, test } from "vitest";
 import type { Serie } from "../series/serie";
 import {
+  diasEntre,
   fechaCorta,
+  fechaLarga,
+  haceDias,
   guardarUltimaRutina,
   leerUltimaRutina,
   lunesDe,
@@ -51,4 +54,21 @@ test("recuerda la última rutina usada", () => {
   expect(leerUltimaRutina()).toBeNull();
   guardarUltimaRutina({ id: 3, nombre: "Pecho" });
   expect(leerUltimaRutina()).toEqual({ id: 3, nombre: "Pecho" });
+});
+
+test("fecha larga en español", () => {
+  expect(fechaLarga("2026-11-11")).toBe("Miércoles, 11 de noviembre");
+  expect(fechaLarga("2027-01-03")).toBe("Domingo, 3 de enero");
+});
+
+test("días entre dos fechas, también al cambiar de mes, de año y de hora", () => {
+  expect(diasEntre("2026-11-08", "2026-11-11")).toBe(3);
+  expect(diasEntre("2026-12-30", "2027-01-02")).toBe(3);
+  expect(diasEntre("2026-10-24", "2026-10-26")).toBe(2); // cambio de hora en España el 25/10
+});
+
+test("«hoy», «ayer» y «hace N días»", () => {
+  expect(haceDias("2026-11-11", "2026-11-11")).toBe("hoy");
+  expect(haceDias("2026-11-10", "2026-11-11")).toBe("ayer");
+  expect(haceDias("2026-11-04", "2026-11-11")).toBe("hace 7 días");
 });

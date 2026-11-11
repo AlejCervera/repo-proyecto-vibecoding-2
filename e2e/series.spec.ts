@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 
 test("entrenar «Pecho», guardarlo en el diario y ver sus ejercicios y series", async ({ page }) => {
   await abrirPredefinida(page, "Pecho");
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   await serieEntrenando(page, "Press de banca", "80", "8");
   await serieEntrenando(page, "Press de banca", "85", "6");
   await serieEntrenando(page, "Aperturas con mancuernas", "14", "12");
@@ -31,7 +31,7 @@ test("entrenar «Pecho», guardarlo en el diario y ver sus ejercicios y series",
 
 test("quitar del diario no borra las series del historial", async ({ page }) => {
   await abrirPredefinida(page, "Pecho");
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   await serieEntrenando(page, "Press de banca", "80", "8");
   await terminarYGuardar(page);
   await page.getByRole("link", { name: "Ver en el diario" }).click();
@@ -51,7 +51,7 @@ test("quitar del diario no borra las series del historial", async ({ page }) => 
 
 test("con el peso vacío sale el aviso y no se guarda", async ({ page }) => {
   await abrirPredefinida(page, "Pecho");
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   const paso = page.getByRole("article", { name: "Press de banca" });
   await paso.getByLabel("Peso (kg)").fill("");
   await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();

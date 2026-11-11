@@ -7,13 +7,14 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
     "Aún no hay entrenamientos en el diario.",
   );
 
-  // Sin rutina usada: «Iniciar entrenamiento» lleva a elegir rutina
-  await page.getByRole("link", { name: "▶ Iniciar entrenamiento" }).click();
+  // Sin rutina usada: «Elegir rutina» lleva a la lista
+  await expect(page.getByRole("heading", { name: "¿Qué entrenas hoy?" })).toBeVisible();
+  await page.getByRole("link", { name: "Elegir rutina" }).click();
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
-    .getByRole("link", { name: "Pecho" })
+    .getByRole("link", { name: "Pecho", exact: true })
     .click();
-  await page.getByRole("link", { name: "▶ Empezar entrenamiento" }).click();
+  await page.getByRole("link", { name: "Empezar entrenamiento" }).click();
   await serieEntrenando(page, "Press de banca", "80", "8");
   await serieEntrenando(page, "Aperturas con mancuernas", "14", "12");
   await terminarYGuardar(page);
@@ -24,9 +25,11 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
   await expect(ultimo).toContainText("Pecho");
   await expect(ultimo).toContainText("2 ejercicios · 2 series");
 
-  // Ahora el inicio ofrece continuar con «Pecho»
-  await expect(page.getByRole("article", { name: "Entrenar" })).toContainText("Continuar con «Pecho»");
-  await page.getByRole("link", { name: "▶ Iniciar entrenamiento" }).click();
+  // Ahora el inicio dice que hoy toca «Pecho», entrenada hoy mismo
+  const entrenar = page.getByRole("article", { name: "Entrenar" });
+  await expect(entrenar.getByRole("heading", { name: "Pecho" })).toBeVisible();
+  await expect(entrenar).toContainText("2 ejercicios · la última vez hoy");
+  await entrenar.getByRole("link", { name: "Empezar" }).click();
   await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
 
   // El atajo del icono del móvil (#/empezar) hace lo mismo
