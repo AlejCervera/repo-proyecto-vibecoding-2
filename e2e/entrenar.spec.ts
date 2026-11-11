@@ -36,9 +36,11 @@ test("desde «Pecho» registrar press de banca y verlo en su historial", async (
 
   await paso.getByRole("link", { name: "Ver historial" }).click();
   await expect(page.getByRole("heading", { name: "Historial: Press de banca" })).toBeVisible();
-  const filas = page.getByRole("list", { name: "Historial" }).getByRole("listitem");
+  // Mismo día: en el orden en que se hicieron
+  const filas = page.getByRole("list", { name: /^Series del / }).getByRole("listitem");
   await expect(filas).toHaveCount(2);
-  await expect(filas.nth(0)).toContainText("80 kg × 7");
+  await expect(filas.nth(0)).toContainText("80 kg × 8");
+  await expect(filas.nth(1)).toContainText("80 kg × 7");
 });
 
 test("pasar al siguiente, recargar a mitad y terminar con el resumen", async ({ page }) => {

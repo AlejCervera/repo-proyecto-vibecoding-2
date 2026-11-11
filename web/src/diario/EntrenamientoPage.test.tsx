@@ -51,7 +51,8 @@ test("borrar una serie recarga el entrenamiento", async () => {
     { status: 200, body: { ...DETALLE, ejercicios: [DETALLE.ejercicios[0]] } },
   );
   const aperturas = screen.getByRole("article", { name: "Aperturas" });
-  fireEvent.click(within(aperturas).getByRole("button", { name: "Borrar" }));
+  fireEvent.click(within(aperturas).getByRole("button", { name: "Editar" }));
+  fireEvent.click(within(aperturas).getByRole("button", { name: "Borrar serie" }));
   fireEvent.click(within(aperturas).getByRole("button", { name: "Sí, borrar" }));
   await vi.waitFor(() => expect(screen.queryByRole("article", { name: "Aperturas" })).toBeNull());
   expect(fetch).toHaveBeenNthCalledWith(2, "/api/series/3", { method: "DELETE" });

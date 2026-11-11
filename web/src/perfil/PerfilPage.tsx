@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ApiError } from "../api/http";
 import { guardarPerfil, obtenerPerfil } from "../api/perfil";
 import type { Usuario } from "../api/auth";
+import { ContadorBotones } from "../ui/ContadorBotones";
 import { leerNumero } from "./perfil";
 
 type Props = {
@@ -59,16 +60,32 @@ export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
         </small>
       </p>
       {cargado && (
-        <form onSubmit={guardar} aria-label="Mi perfil">
-          <label>
-            Altura (cm)
-            <input inputMode="numeric" value={altura} onChange={(e) => setAltura(e.target.value)} />
-          </label>
-          <label>
-            Peso corporal (kg)
-            <input inputMode="decimal" value={peso} onChange={(e) => setPeso(e.target.value)} />
-          </label>
-          <button type="submit">Guardar perfil</button>
+        <form onSubmit={guardar} aria-label="Mi perfil" className="formulario-perfil">
+          <div className="contadores">
+            <ContadorBotones
+              etiqueta="Altura (cm)"
+              unidad="cm"
+              modoTeclado="numeric"
+              valor={altura}
+              onCambio={setAltura}
+              paso={1}
+              min={100}
+              max={250}
+            />
+            <ContadorBotones
+              etiqueta="Peso corporal (kg)"
+              unidad="kg"
+              modoTeclado="decimal"
+              valor={peso}
+              onCambio={setPeso}
+              paso={0.5}
+              min={30}
+              max={300}
+            />
+          </div>
+          <button type="submit" className="grande">
+            Guardar perfil
+          </button>
         </form>
       )}
       {guardado && <p role="status">Perfil guardado.</p>}

@@ -73,6 +73,18 @@ test("al editar, un error de la API se muestra y el formulario sigue abierto", a
   expect(onCambiada).not.toHaveBeenCalled();
 });
 
+test("editar se hace en la hoja inferior", () => {
+  simularFetch();
+  pintar();
+  fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+  expect(within(screen.getByRole("dialog", { name: "Editar serie" })).getByRole("form", { name: "Editar serie" })).toBeTruthy();
+});
+
+test("en el historial (agrupado por día) no repite la fecha", () => {
+  pintar({ mostrarEjercicio: false, mostrarFecha: false });
+  expect(screen.getByRole("listitem").textContent).toBe("80 kg × 8");
+});
+
 test("cancelar la edición no envía nada", () => {
   const fetch = simularFetch();
   pintar();
@@ -86,7 +98,8 @@ test("borrar pide confirmación en la hoja inferior y solo borra al confirmar", 
   const fetch = simularFetch({ status: 204, body: null });
   const { onBorrada } = pintar();
 
-  fireEvent.click(screen.getByRole("button", { name: "Borrar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Borrar serie" }));
   const hoja = screen.getByRole("dialog", { name: "Borrar serie" });
   expect(hoja.textContent).toContain("¿Borrar la serie de 80 kg × 8 del 09/11/2026?");
   expect(fetch).not.toHaveBeenCalled();
@@ -99,7 +112,8 @@ test("borrar pide confirmación en la hoja inferior y solo borra al confirmar", 
 test("cancelar el borrado cierra la hoja sin borrar", () => {
   const fetch = simularFetch();
   pintar();
-  fireEvent.click(screen.getByRole("button", { name: "Borrar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Editar" }));
+  fireEvent.click(screen.getByRole("button", { name: "Borrar serie" }));
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancelar" }));
   expect(screen.queryByRole("dialog")).toBeNull();
   expect(fetch).not.toHaveBeenCalled();

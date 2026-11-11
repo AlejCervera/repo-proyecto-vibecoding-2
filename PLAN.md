@@ -216,7 +216,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Rediseño (Fases 9 a 9d)
+## Rediseño (Fases 9 a 9e)
 
 Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
 
@@ -265,9 +265,9 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 - [x] Inicio: saludo con la fecha; tarjeta grande «Hoy toca: <última rutina>» con «4 ejercicios · la última vez hace 3 días», «Empezar» y «elegir otra»; la semana en 7 círculos (lima los entrenados, anillo en hoy); último entrenamiento con sus récords. (En la 9c, «Hoy toca» pasa a salir del plan semanal.)
 - [x] Entrenar (lista de rutinas): una tarjeta por rutina con nombre, nº de ejercicios y sus nombres en texto, y «Empezar» en cada una; primero las mías y debajo las predefinidas; botón + flotante «Nueva rutina» con hoja inferior.
 - [x] Rutina: botón fijo «Empezar entrenamiento»; menú ⋯ con Renombrar y Borrar (predefinida: «Copiar a mis rutinas»); cada ejercicio en tarjeta con foto pequeña, series con − / +, objetivo de repeticiones, ↑ ↓ grandes y quitar con confirmación; «Añadir ejercicio» en hoja con buscador; recomendaciones de la IA en tarjeta.
-- [ ] Ejercicios: buscador fijo arriba, pestañas «Míos / Catálogo» (la API ya busca en ambos); al tocar uno, hoja con foto, mejor serie, última vez y «Ver historial» (en los míos, también renombrar y borrar); «+ Nuevo ejercicio» en hoja.
-- [ ] Historial de un ejercicio: cabecera con foto pequeña, récord destacado y series agrupadas por día; al tocar una serie, se edita o borra en la hoja inferior (también en el detalle del diario, que usa la misma fila).
-- [ ] Perfil: altura y peso con − / + (1 cm, 0,5 kg; también se pueden escribir), cuenta, cerrar sesión y créditos.
+- [x] Ejercicios: buscador fijo arriba, pestañas «Míos / Catálogo» (la API ya busca en ambos); al tocar uno, hoja con foto, mejor serie, última vez y «Ver historial» (en los míos, también renombrar y borrar); «+ Nuevo ejercicio» en hoja.
+- [x] Historial de un ejercicio: cabecera con foto pequeña (al tocarla, la imagen grande y subirla en la hoja), mejor serie, nº de sesiones y de series, y series agrupadas por día (el día más reciente primero; dentro del día, en el orden en que se hicieron); «Editar» abre la hoja para corregir o borrar la serie (también en el detalle del diario, que usa la misma fila).
+- [x] Perfil: altura y peso con − / + (1 cm, 0,5 kg; también se pueden escribir), cuenta, cerrar sesión y créditos.
 
 **Pruebas:**
 - Web de cada pantalla y del cálculo de «hace N días»; e2e existentes ajustados (rutinas, ejercicios, imágenes, historial, editar y borrar, recomendaciones, inicio, cuentas).
@@ -303,6 +303,21 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 - Unitarias de todos los cálculos (semanas sin datos, cambio de año, una sola sesión); web de las gráficas (con texto accesible); e2e: tras entrenar, el diario muestra la semana con un entreno.
 
 **Hecho cuando:** el diario enseña las tres tarjetas con datos reales y el historial de un ejercicio su gráfica de progreso.
+
+## Fase 9e · Microanimaciones
+
+**Objetivo:** que la app se sienta viva sin distraer: animaciones cortas (≤ 300 ms), solo CSS (sin librerías) y desactivadas si el móvil tiene activado «Reducir movimiento».
+
+**Tareas:**
+- [ ] Al entrenar: la píldora de la serie guardada aparece con un pequeño «pop» y el ✓ se dibuja; la barra de progreso se rellena suave; el número de kilos o repeticiones da un ligero salto al pulsar − / +; el anillo del descanso late en lima al llegar a 0.
+- [ ] Resumen y récords: en «¡Entreno hecho!» las cifras (duración, volumen, series) cuentan hacia arriba y los récords nuevos entran con un destello lima.
+- [ ] Navegación y botones: cambio de pantalla con un fundido corto; los botones se hunden un poco al tocarlos; los avisos entran deslizando desde abajo.
+- [ ] Inicio y calendario: los círculos de la semana y los días del calendario (9c) se rellenan en cascada al entrar.
+
+**Pruebas:**
+- Unitarias de la cuenta hacia arriba (lógica pura, con reloj simulado); web: con «Reducir movimiento» no se anima (se muestra el valor final directamente); e2e completos en verde (las animaciones no deben retrasar ni tapar ningún clic).
+
+**Hecho cuando:** las animaciones se ven en el iPhone, son cortas y con «Reducir movimiento» desaparecen.
 
 ## Fase 10 · Preparar para producción (en local)
 

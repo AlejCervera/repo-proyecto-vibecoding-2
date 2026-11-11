@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import { obtenerHistorial, type Historial } from "../api/historial";
 import { ApiError } from "../api/http";
+import { urlImagen } from "../api/imagenes";
 import { EjercicioImagen } from "../ejercicios/EjercicioImagen";
+import { mejorSerie } from "../entrenar/estadisticas";
+import { fechaCorta } from "../inicio/resumen";
 import { enlace } from "../navegacion";
-import { reemplazarSerie } from "../series/serie";
-import { SeriesList } from "../series/SeriesList";
+import { pesoPorReps, reemplazarSerie, type Serie } from "../series/serie";
+import { SerieFila } from "../series/SerieFila";
+import { FotoCirculo } from "../ui/FotoCirculo";
+import { HojaInferior } from "../ui/HojaInferior";
+import { agruparPorDia } from "./agrupar";
 
 type Props = { ejercicioId: number; onSesionCaducada: () => void };
 
+/** «Lun 09/11/2026» */
+const fechaDia = (iso: string) => `${fechaCorta(iso)}/${iso.slice(0, 4)}`;
+
+/** Historial de un ejercicio: foto pequeña, récord y las series agrupadas por día. */
 export function HistorialPage({ ejercicioId, onSesionCaducada }: Props) {
   const [historial, setHistorial] = useState<Historial | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fotoAbierta, setFotoAbierta] = useState(false);
+  const [versionFoto, setVersionFoto] = useState(0);
 
   useEffect(() => {
     obtenerHistorial(ejercicioId)
@@ -34,33 +46,81 @@ export function HistorialPage({ ejercicioId, onSesionCaducada }: Props) {
   if (!historial) return <p>Cargando…</p>;
 
   const { ejercicio, series } = historial;
+  const dias = agruparPorDia(series);
+  const mejor = mejorSerie(series);
+
+  const cambiada = (s: Serie) =>
+    setHistorial({
+      ...historial,
+      // si se cambia a otro ejercicio, ya no pertenece a este historial
+      series: s.ejercicio_id === ejercicio.id ? reemplazarSerie(series, s) : series.filter((x) => x.id !== s.id),
+    });
+  const borrada = (id: number) => setHistorial({ ...historial, series: series.filter((x) => x.id !== id) });
+
   return (
-    <section>
+    <section className="historial">
       {volver}
-      <h2>Historial: {ejercicio.nombre}</h2>
-      <EjercicioImagen
-        ejercicio={ejercicio}
-        onCambio={(e) => setHistorial({ ...historial, ejercicio: e })}
-      />
-      <SeriesList
-        series={series}
-        etiqueta="Historial"
-        mostrarEjercicio={false}
-        vacio="Aún no has registrado series de este ejercicio."
-        onCambiada={(s) =>
-          setHistorial({
-            ...historial,
-            // si se cambia a otro ejercicio, ya no pertenece a este historial
-            series:
-              s.ejercicio_id === ejercicio.id
-                ? reemplazarSerie(series, s)
-                : series.filter((x) => x.id !== s.id),
-          })
-        }
-        onBorrada={(id) =>
-          setHistorial({ ...historial, series: series.filter((x) => x.id !== id) })
-        }
-      />
+      <div className="historial-cabecera">
+        <FotoCirculo
+          nombre={ejercicio.nombre}
+          src={ejercicio.imagen ? urlImagen(ejercicio.id, versionFoto) : null}
+          onAbrir={() => setFotoAbierta(true)}
+        />
+        <h2>
+          <span className="oculto">Historial:</span> {ejercicio.nombre}
+        </h2>
+      </div>
+
+      {mejor && (
+        <dl className="cifras" aria-label="Resumen del ejercicio">
+          <div className="destacada">
+            <dt>Mejor serie</dt>
+            <dd>{pesoPorReps(mejor)}</dd>
+          </div>
+          <div>
+            <dt>Sesiones</dt>
+            <dd>{dias.length}</dd>
+          </div>
+          <div>
+            <dt>Series</dt>
+            <dd>{series.length}</dd>
+          </div>
+        </dl>
+      )}
+
+      {dias.length === 0 ? (
+        <p className="vacio">Aún no has registrado series de este ejercicio.</p>
+      ) : (
+        dias.map((d) => (
+          <section key={d.fecha} className="dia" aria-label={fechaDia(d.fecha)}>
+            <h3>{fechaDia(d.fecha)}</h3>
+            <ul aria-label={`Series del ${fechaDia(d.fecha)}`} className="series-dia">
+              {d.series.map((s) => (
+                <SerieFila
+                  key={s.id}
+                  serie={s}
+                  mostrarEjercicio={false}
+                  mostrarFecha={false}
+                  onCambiada={cambiada}
+                  onBorrada={borrada}
+                />
+              ))}
+            </ul>
+          </section>
+        ))
+      )}
+
+      {fotoAbierta && (
+        <HojaInferior titulo={ejercicio.nombre} onCerrar={() => setFotoAbierta(false)}>
+          <EjercicioImagen
+            ejercicio={ejercicio}
+            onCambio={(e) => {
+              setHistorial({ ...historial, ejercicio: e });
+              setVersionFoto(Date.now());
+            }}
+          />
+        </HojaInferior>
+      )}
     </section>
   );
 }

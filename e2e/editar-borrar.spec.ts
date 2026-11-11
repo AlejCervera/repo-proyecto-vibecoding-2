@@ -22,7 +22,8 @@ test("en el diario: corregir un peso y borrar una serie; persiste al recargar", 
 
   // Borrar la de sentadilla, con confirmación
   const sentadilla = page.getByRole("article", { name: "Sentadilla" });
-  await sentadilla.getByRole("button", { name: "Borrar", exact: true }).click();
+  await sentadilla.getByRole("button", { name: "Editar" }).click();
+  await sentadilla.getByRole("button", { name: "Borrar serie" }).click();
   await sentadilla.getByRole("button", { name: "Sí, borrar" }).click();
   await expect(page.getByRole("article", { name: "Sentadilla" })).toHaveCount(0);
 
@@ -43,16 +44,18 @@ test("renombrar un ejercicio propio y borrarlo pasando sus series a otro", async
   await irA(page, "Ejercicios");
   const mis = page.getByRole("list", { name: "Mis ejercicios" });
   const remo = mis.getByRole("listitem").filter({ hasText: "Remo maquina" });
-  await expect(remo).toContainText("(2 series)");
+  await expect(remo).toContainText("2 series");
 
   // Renombrar «Remo en polea» → «Remo polea baja»
   const polea = mis.getByRole("listitem").filter({ hasText: "Remo en polea" });
+  await polea.getByRole("button", { name: "Opciones de Remo en polea" }).click();
   await polea.getByRole("button", { name: "Renombrar" }).click();
   await page.getByLabel("Nuevo nombre").fill("Remo polea baja");
   await page.getByRole("button", { name: "Guardar nombre" }).click();
   await expect(mis.getByRole("link", { name: "Remo polea baja" })).toBeVisible();
 
   // Borrar «Remo maquina» pasando sus 2 series a «Remo polea baja»
+  await remo.getByRole("button", { name: "Opciones de Remo maquina" }).click();
   await remo.getByRole("button", { name: "Borrar", exact: true }).click();
   await expect(remo).toContainText("tiene 2 series");
   await remo.getByRole("button", { name: "Pasarlas a otro ejercicio…" }).click();
@@ -60,10 +63,10 @@ test("renombrar un ejercicio propio y borrarlo pasando sus series a otro", async
   await remo.getByRole("button", { name: "Remo polea baja", exact: true }).click();
   await remo.getByRole("button", { name: "Pasar las series y borrar «Remo maquina»" }).click();
   await expect(mis.getByRole("listitem")).toHaveCount(1);
-  await expect(mis).toContainText("Remo polea baja (3 series)");
+  await expect(mis).toContainText("Remo polea baja3 series");
 
   // El historial del destino tiene las 3 series y persiste tras recargar
   await mis.getByRole("link", { name: "Remo polea baja" }).click();
   await page.reload();
-  await expect(page.getByRole("list", { name: "Historial" }).getByRole("listitem")).toHaveCount(3);
+  await expect(page.getByRole("list", { name: /^Series del / }).getByRole("listitem")).toHaveCount(3);
 });

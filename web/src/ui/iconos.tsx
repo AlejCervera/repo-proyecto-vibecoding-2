@@ -63,6 +63,19 @@ export const IconoCerrar = (p: Props) => (
   </Icono>
 );
 
+export const IconoEditar = (p: Props) => (
+  <Icono {...p}>
+    <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
+  </Icono>
+);
+
+export const IconoBuscar = (p: Props) => (
+  <Icono {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M16 16l4.5 4.5" />
+  </Icono>
+);
+
 export const IconoOpciones = (p: Props) => (
   <Icono {...p}>
     <circle cx="5" cy="12" r="1.3" fill="currentColor" />

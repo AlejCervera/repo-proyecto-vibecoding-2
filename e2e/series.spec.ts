@@ -46,7 +46,7 @@ test("quitar del diario no borra las series del historial", async ({ page }) => 
     .getByRole("list", { name: "Ejercicios de la rutina" })
     .getByRole("link", { name: "Press de banca" })
     .click();
-  await expect(page.getByRole("list", { name: "Historial" }).getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("list", { name: /^Series del / }).getByRole("listitem")).toHaveCount(1);
 });
 
 test("con el peso vacío sale el aviso y no se guarda", async ({ page }) => {

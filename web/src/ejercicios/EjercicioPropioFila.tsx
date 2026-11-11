@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { borrarEjercicio, renombrarEjercicio, type OpcionBorrado } from "../api/ejercicios";
 import { enlaceHistorial } from "../navegacion";
+import { FotoCirculo } from "../ui/FotoCirculo";
 import { HojaInferior } from "../ui/HojaInferior";
+import { IconoOpciones } from "../ui/iconos";
 import type { Ejercicio, EjercicioPropio } from "./ejercicio";
 import { EjercicioPicker } from "./EjercicioPicker";
 
@@ -11,10 +13,12 @@ type Props = {
   onBorrado: (id: number) => void;
 };
 
-type Modo = "ver" | "renombrar" | "borrar" | "mover";
+/** «ver»: solo la fila; el resto, la hoja inferior correspondiente. */
+type Modo = "ver" | "opciones" | "renombrar" | "borrar" | "mover";
 
 const plural = (n: number) => (n === 1 ? "1 serie" : `${n} series`);
 
+/** Un ejercicio propio: nombre (lleva a su historial), nº de series y menú ⋯. */
 export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Props) {
   const [modo, setModo] = useState<Modo>("ver");
   const [nombre, setNombre] = useState(ejercicio.nombre);
@@ -60,47 +64,61 @@ export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Prop
       onBorrado(ejercicio.id);
     });
 
+  const cerrar = () => cambiarModo("ver");
   const cancelar = (
-    <button type="button" onClick={() => cambiarModo("ver")}>
+    <button type="button" onClick={cerrar}>
       Cancelar
     </button>
   );
   const aviso = error && <p role="alert">{error}</p>;
-
-  if (modo === "renombrar") {
-    return (
-      <li>
-        <form onSubmit={renombrar} aria-label={`Renombrar ${ejercicio.nombre}`}>
-          <label>
-            Nuevo nombre
-            <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
-          </label>{" "}
-          <button type="submit" disabled={ocupado}>
-            Guardar nombre
-          </button>{" "}
-          {cancelar}
-        </form>
-        {aviso}
-      </li>
-    );
-  }
-
   const n = ejercicio.num_series;
+
   return (
-    <li>
-      <a href={enlaceHistorial(ejercicio.id)}>{ejercicio.nombre}</a> <small>({plural(n)})</small>{" "}
-      {modo === "ver" && (
-        <>
-          <button type="button" onClick={() => cambiarModo("renombrar")}>
-            Renombrar
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("borrar")}>
-            Borrar
-          </button>
-        </>
+    <li className="fila-ejercicio">
+      <FotoCirculo nombre={ejercicio.nombre} tamano={32} />
+      <span className="fila-ejercicio-texto">
+        <a href={enlaceHistorial(ejercicio.id)}>{ejercicio.nombre}</a>
+        <small>{plural(n)}</small>
+      </span>
+      <button
+        type="button"
+        className="boton-redondo discreto"
+        aria-label={`Opciones de ${ejercicio.nombre}`}
+        onClick={() => cambiarModo("opciones")}
+      >
+        <IconoOpciones />
+      </button>
+
+      {modo === "opciones" && (
+        <HojaInferior titulo={ejercicio.nombre} onCerrar={cerrar}>
+          <div className="hoja-acciones">
+            <button type="button" onClick={() => cambiarModo("renombrar")}>
+              Renombrar
+            </button>
+            <button type="button" className="peligro" onClick={() => cambiarModo("borrar")}>
+              Borrar
+            </button>
+          </div>
+        </HojaInferior>
       )}
+
+      {modo === "renombrar" && (
+        <HojaInferior titulo="Renombrar ejercicio" onCerrar={cerrar}>
+          <form onSubmit={renombrar} aria-label={`Renombrar ${ejercicio.nombre}`} className="formulario-hoja">
+            <label>
+              Nuevo nombre
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} />
+            </label>
+            {aviso}
+            <button type="submit" className="grande" disabled={ocupado}>
+              Guardar nombre
+            </button>
+          </form>
+        </HojaInferior>
+      )}
+
       {modo === "borrar" && n === 0 && (
-        <HojaInferior titulo="Borrar ejercicio" onCerrar={() => cambiarModo("ver")}>
+        <HojaInferior titulo="Borrar ejercicio" onCerrar={cerrar}>
           <p>¿Borrar «{ejercicio.nombre}»?</p>
           {aviso}
           <div className="hoja-acciones">
@@ -111,8 +129,9 @@ export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Prop
           </div>
         </HojaInferior>
       )}
+
       {modo === "borrar" && n > 0 && (
-        <HojaInferior titulo="Borrar ejercicio" onCerrar={() => cambiarModo("ver")}>
+        <HojaInferior titulo="Borrar ejercicio" onCerrar={cerrar}>
           <p>
             «{ejercicio.nombre}» tiene {plural(n)}. ¿Qué hacemos con ellas?
           </p>
@@ -133,8 +152,9 @@ export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Prop
           </div>
         </HojaInferior>
       )}
+
       {modo === "mover" && (
-        <HojaInferior titulo="Pasar las series" onCerrar={() => cambiarModo("ver")}>
+        <HojaInferior titulo="Pasar las series" onCerrar={cerrar}>
           <EjercicioPicker compacto etiqueta="Pasar a" value={destino} onChange={setDestino} />
           {aviso}
           <div className="hoja-acciones">
@@ -150,7 +170,6 @@ export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Prop
           </div>
         </HojaInferior>
       )}
-      {modo === "ver" && aviso}
     </li>
   );
 }

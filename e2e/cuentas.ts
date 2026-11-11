@@ -43,8 +43,10 @@ export async function irA(page: Page, seccion: "Inicio" | "Entrenar" | "Diario" 
 /** Crea un ejercicio propio desde «Mis ejercicios». */
 export async function crearEjercicioPropio(page: Page, nombre: string) {
   await irA(page, "Ejercicios");
-  await page.getByLabel("Nuevo ejercicio").fill(nombre);
-  await page.getByRole("button", { name: "Crear", exact: true }).click();
+  await page.getByRole("button", { name: "Crear ejercicio" }).click();
+  const hoja = page.getByRole("dialog", { name: "Nuevo ejercicio" });
+  await hoja.getByLabel("Nombre del ejercicio").fill(nombre);
+  await hoja.getByRole("button", { name: "Crear", exact: true }).click();
   await expect(
     page.getByRole("list", { name: "Mis ejercicios" }).getByRole("link", { name: nombre, exact: true }),
   ).toBeVisible();

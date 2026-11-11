@@ -3,6 +3,7 @@ import { actualizarSerie, borrarSerie } from "../api/series";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { enlaceHistorial } from "../navegacion";
 import { HojaInferior } from "../ui/HojaInferior";
+import { IconoEditar } from "../ui/iconos";
 import {
   aPeticion,
   formatearFecha,
@@ -16,13 +17,17 @@ type Props = {
   serie: Serie;
   /** En el diario se enlaza el ejercicio; en su historial no hace falta. */
   mostrarEjercicio: boolean;
+  /** En el historial las series van agrupadas por día: la fecha ya está en el grupo. */
+  mostrarFecha?: boolean;
   onCambiada: (s: Serie) => void;
   onBorrada: (id: number) => void;
 };
 
+/** «ver»: solo la fila; «editar» y «confirmar»: la hoja inferior correspondiente. */
 type Modo = "ver" | "editar" | "confirmar";
 
-export function SerieFila({ serie, mostrarEjercicio, onCambiada, onBorrada }: Props) {
+/** Una serie en una fila compacta; «Editar» abre una hoja para corregirla o borrarla. */
+export function SerieFila({ serie, mostrarEjercicio, mostrarFecha = true, onCambiada, onBorrada }: Props) {
   const [modo, setModo] = useState<Modo>("ver");
   const [form, setForm] = useState<FormularioSerie>(() => formularioDesde(serie));
   const [error, setError] = useState<string | null>(null);
@@ -68,59 +73,62 @@ export function SerieFila({ serie, mostrarEjercicio, onCambiada, onBorrada }: Pr
 
   const aviso = error && <p role="alert">{error}</p>;
 
-  if (modo === "editar") {
-    return (
-      <li>
-        <form onSubmit={guardar} noValidate aria-label="Editar serie">
-          <label>
-            Fecha
-            <input type="date" {...campo("fecha")} />
-          </label>
-          <EjercicioPicker
-            compacto
-            value={form.ejercicio}
-            onChange={(ejercicio) => setForm((f) => ({ ...f, ejercicio }))}
-          />
-          <label>
-            Peso (kg)
-            <input inputMode="decimal" {...campo("peso")} />
-          </label>
-          <label>
-            Repeticiones
-            <input inputMode="numeric" {...campo("repeticiones")} />
-          </label>
-          {aviso}
-          <button type="submit" disabled={ocupado}>
-            Guardar cambios
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("ver")}>
-            Cancelar
-          </button>
-        </form>
-      </li>
-    );
-  }
-
   return (
-    <li>
-      <time dateTime={serie.fecha}>{formatearFecha(serie.fecha)}</time>
-      {mostrarEjercicio && (
-        <>
-          {" — "}
-          <a href={enlaceHistorial(serie.ejercicio_id)}>{serie.ejercicio}</a>
-        </>
-      )}{" "}
-      · {pesoPorReps(serie)}{" "}
-      {modo === "ver" ? (
-        <>
-          <button type="button" onClick={() => cambiarModo("editar")}>
-            Editar
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("confirmar")}>
-            Borrar
-          </button>
-        </>
-      ) : (
+    <li className="fila-serie">
+      <span className="fila-serie-texto">
+        {mostrarFecha && <time dateTime={serie.fecha}>{formatearFecha(serie.fecha)}</time>}
+        {mostrarEjercicio && (
+          <>
+            {" — "}
+            <a href={enlaceHistorial(serie.ejercicio_id)}>{serie.ejercicio}</a>
+          </>
+        )}
+        {(mostrarFecha || mostrarEjercicio) && " · "}
+        <strong>{pesoPorReps(serie)}</strong>
+      </span>
+      <button type="button" className="boton-redondo discreto" aria-label="Editar" onClick={() => cambiarModo("editar")}>
+        <IconoEditar tamano={18} />
+      </button>
+
+      {modo === "editar" && (
+        <HojaInferior titulo="Editar serie" onCerrar={() => cambiarModo("ver")}>
+          <form onSubmit={guardar} noValidate aria-label="Editar serie" className="formulario-hoja">
+            <label>
+              Fecha
+              <input type="date" {...campo("fecha")} />
+            </label>
+            <EjercicioPicker
+              compacto
+              value={form.ejercicio}
+              onChange={(ejercicio) => setForm((f) => ({ ...f, ejercicio }))}
+            />
+            <div className="campos-en-fila">
+              <label>
+                Peso (kg)
+                <input inputMode="decimal" {...campo("peso")} />
+              </label>
+              <label>
+                Repeticiones
+                <input inputMode="numeric" {...campo("repeticiones")} />
+              </label>
+            </div>
+            {aviso}
+            <button type="submit" className="grande" disabled={ocupado}>
+              Guardar cambios
+            </button>
+            <div className="hoja-acciones">
+              <button type="button" className="peligro" onClick={() => cambiarModo("confirmar")}>
+                Borrar serie
+              </button>
+              <button type="button" onClick={() => cambiarModo("ver")}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </HojaInferior>
+      )}
+
+      {modo === "confirmar" && (
         <HojaInferior titulo="Borrar serie" onCerrar={() => cambiarModo("ver")}>
           <p>
             ¿Borrar la serie de {pesoPorReps(serie)} del {formatearFecha(serie.fecha)}?
@@ -136,7 +144,6 @@ export function SerieFila({ serie, mostrarEjercicio, onCambiada, onBorrada }: Pr
           </div>
         </HojaInferior>
       )}
-      {modo === "ver" && aviso}
     </li>
   );
 }

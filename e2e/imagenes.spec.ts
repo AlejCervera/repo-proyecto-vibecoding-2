@@ -8,11 +8,12 @@ test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("img"));
 });
 
-/** Crea un ejercicio propio y abre su historial (donde se ve y se sube su imagen). */
+/** Crea un ejercicio propio, abre su historial y toca su foto en círculo (donde se sube la imagen). */
 async function abrirPropio(page: Page, nombre: string) {
   await crearEjercicioPropio(page, nombre);
   await page.getByRole("list", { name: "Mis ejercicios" }).getByRole("link", { name: nombre }).click();
   await expect(page.getByRole("heading", { name: `Historial: ${nombre}` })).toBeVisible();
+  await page.getByRole("button", { name: `Ver foto de ${nombre}` }).click();
 }
 
 test("subir una imagen a un ejercicio propio y verla también tras recargar", async ({ page }) => {
@@ -26,6 +27,7 @@ test("subir una imagen a un ejercicio propio y verla también tras recargar", as
   await expect(page.getByLabel("Cambiar imagen")).toBeVisible();
 
   await page.reload();
+  await page.getByRole("button", { name: "Ver foto de Remo con goma" }).click();
   await expect
     .poll(() => imagen.evaluate((i: HTMLImageElement) => i.naturalWidth))
     .toBeGreaterThan(0);

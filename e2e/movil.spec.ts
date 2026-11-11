@@ -37,7 +37,7 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await revisar(page, "inicio");
 
   await irA(page, "Ejercicios");
-  await expect(page.getByRole("heading", { name: "Mis ejercicios" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Ejercicios" })).toBeVisible();
   await revisar(page, "mis ejercicios");
 
   await abrirPredefinida(page, "Pecho");
