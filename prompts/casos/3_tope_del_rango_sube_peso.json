@@ -1,0 +1,99 @@
+{
+  "descripcion": "Con historial: 80 kg × 12, 12, 12 con objetivo 8-12 (y antes 80 × 11, 10, 10). Llegó al tope: debe subir a 82-85 kg.",
+  "entrada": {
+    "perfil": {
+      "altura_cm": 180,
+      "peso_corporal_kg": 85
+    },
+    "rutina": {
+      "nombre": "Empuje",
+      "ejercicios": [
+        {
+          "nombre": "Press de banca",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        }
+      ]
+    },
+    "historial": {
+      "Press de banca": [
+        {
+          "fecha": "2026-11-08",
+          "series": [
+            [
+              80,
+              12
+            ],
+            [
+              80,
+              12
+            ],
+            [
+              80,
+              12
+            ]
+          ]
+        },
+        {
+          "fecha": "2026-11-05",
+          "series": [
+            [
+              80,
+              11
+            ],
+            [
+              80,
+              10
+            ],
+            [
+              80,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    "catalogo": [
+      "Press de banca",
+      "Press inclinado con mancuernas",
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Press militar",
+      "Elevaciones laterales",
+      "Extensión de tríceps en polea",
+      "Sentadilla",
+      "Prensa de piernas",
+      "Peso muerto rumano",
+      "Curl femoral",
+      "Dominadas",
+      "Remo con barra",
+      "Jalón al pecho",
+      "Curl de bíceps con barra",
+      "Plancha"
+    ]
+  },
+  "respuesta_simulada": {
+    "resumen": "Has completado el rango en press de banca: toca subir peso.",
+    "anadir": [],
+    "sustituir": [],
+    "objetivos": [
+      {
+        "ejercicio": "Press de banca",
+        "peso_kg": 82.5,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Hiciste 80 kg × 12 en las tres series: sube a 82,5 kg."
+      }
+    ]
+  },
+  "esperado": {
+    "valida": true,
+    "objetivos": {
+      "Press de banca": {
+        "peso_min": 82,
+        "peso_max": 85
+      }
+    }
+  }
+}

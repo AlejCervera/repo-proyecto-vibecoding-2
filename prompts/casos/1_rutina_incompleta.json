@@ -1,0 +1,127 @@
+{
+  "descripcion": "Rutina de pecho con solo dos press: debe sugerir añadir un ejercicio que falte (aperturas, fondos o tríceps) y mantener pesos razonables.",
+  "entrada": {
+    "perfil": {
+      "altura_cm": 178,
+      "peso_corporal_kg": 80
+    },
+    "rutina": {
+      "nombre": "Pecho",
+      "ejercicios": [
+        {
+          "nombre": "Press de banca",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        },
+        {
+          "nombre": "Press inclinado con mancuernas",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        }
+      ]
+    },
+    "historial": {
+      "Press de banca": [
+        {
+          "fecha": "2026-11-09",
+          "series": [
+            [
+              60,
+              10
+            ],
+            [
+              60,
+              10
+            ],
+            [
+              60,
+              9
+            ]
+          ]
+        }
+      ],
+      "Press inclinado con mancuernas": [
+        {
+          "fecha": "2026-11-09",
+          "series": [
+            [
+              20,
+              10
+            ],
+            [
+              20,
+              10
+            ],
+            [
+              20,
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    "catalogo": [
+      "Press de banca",
+      "Press inclinado con mancuernas",
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Press militar",
+      "Elevaciones laterales",
+      "Extensión de tríceps en polea",
+      "Sentadilla",
+      "Prensa de piernas",
+      "Peso muerto rumano",
+      "Curl femoral",
+      "Dominadas",
+      "Remo con barra",
+      "Jalón al pecho",
+      "Curl de bíceps con barra",
+      "Plancha"
+    ]
+  },
+  "respuesta_simulada": {
+    "resumen": "Te falta trabajo de tríceps y un ejercicio de aislamiento de pecho.",
+    "anadir": [
+      {
+        "ejercicio": "Extensión de tríceps en polea",
+        "series": 3,
+        "reps_min": 10,
+        "reps_max": 12,
+        "motivo": "Los press trabajan el tríceps, pero no tienes ningún ejercicio específico."
+      }
+    ],
+    "sustituir": [],
+    "objetivos": [
+      {
+        "ejercicio": "Press de banca",
+        "peso_kg": 60,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Hiciste 60 kg × 10, 10, 9: dentro del rango, intenta llegar a 12."
+      },
+      {
+        "ejercicio": "Press inclinado con mancuernas",
+        "peso_kg": 20,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Dentro del rango con 20 kg: suma repeticiones."
+      }
+    ]
+  },
+  "esperado": {
+    "valida": true,
+    "anadir_alguno_de": [
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Extensión de tríceps en polea"
+    ],
+    "objetivos": {
+      "Press de banca": {
+        "peso_min": 57.5,
+        "peso_max": 62.5
+      }
+    }
+  }
+}

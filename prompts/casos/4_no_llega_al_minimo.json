@@ -1,0 +1,130 @@
+{
+  "descripcion": "Con historial: press militar 50 kg × 6, 5, 5 y 50 × 6, 6, 5 con objetivo 8-12. No llega al mínimo dos veces: mantener o bajar peso.",
+  "entrada": {
+    "perfil": {
+      "altura_cm": 172,
+      "peso_corporal_kg": 70
+    },
+    "rutina": {
+      "nombre": "Hombro",
+      "ejercicios": [
+        {
+          "nombre": "Press militar",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        },
+        {
+          "nombre": "Elevaciones laterales",
+          "series": 3,
+          "reps_min": 12,
+          "reps_max": 15
+        }
+      ]
+    },
+    "historial": {
+      "Press militar": [
+        {
+          "fecha": "2026-11-09",
+          "series": [
+            [
+              50,
+              6
+            ],
+            [
+              50,
+              5
+            ],
+            [
+              50,
+              5
+            ]
+          ]
+        },
+        {
+          "fecha": "2026-11-06",
+          "series": [
+            [
+              50,
+              6
+            ],
+            [
+              50,
+              6
+            ],
+            [
+              50,
+              5
+            ]
+          ]
+        }
+      ],
+      "Elevaciones laterales": [
+        {
+          "fecha": "2026-11-09",
+          "series": [
+            [
+              8,
+              15
+            ],
+            [
+              8,
+              14
+            ],
+            [
+              8,
+              13
+            ]
+          ]
+        }
+      ]
+    },
+    "catalogo": [
+      "Press de banca",
+      "Press inclinado con mancuernas",
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Press militar",
+      "Elevaciones laterales",
+      "Extensión de tríceps en polea",
+      "Sentadilla",
+      "Prensa de piernas",
+      "Peso muerto rumano",
+      "Curl femoral",
+      "Dominadas",
+      "Remo con barra",
+      "Jalón al pecho",
+      "Curl de bíceps con barra",
+      "Plancha"
+    ]
+  },
+  "respuesta_simulada": {
+    "resumen": "En press militar el peso es demasiado alto para tu rango: bájalo un poco.",
+    "anadir": [],
+    "sustituir": [],
+    "objetivos": [
+      {
+        "ejercicio": "Press militar",
+        "peso_kg": 45,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Con 50 kg te quedas en 5-6 repeticiones dos sesiones seguidas: baja a 45 kg."
+      },
+      {
+        "ejercicio": "Elevaciones laterales",
+        "peso_kg": 8,
+        "reps_min": 12,
+        "reps_max": 15,
+        "motivo": "Dentro del rango: mantén 8 kg."
+      }
+    ]
+  },
+  "esperado": {
+    "valida": true,
+    "objetivos": {
+      "Press militar": {
+        "peso_max": 50
+      }
+    }
+  }
+}

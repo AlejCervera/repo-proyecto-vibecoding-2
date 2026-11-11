@@ -1,0 +1,63 @@
+{
+  "descripcion": "La IA inventa un ejercicio que no está en el catálogo: la respuesta se rechaza y se avisa al usuario. Solo se prueba con la respuesta simulada.",
+  "solo_simulado": true,
+  "entrada": {
+    "perfil": {
+      "altura_cm": 175,
+      "peso_corporal_kg": 75
+    },
+    "rutina": {
+      "nombre": "Espalda",
+      "ejercicios": [
+        {
+          "nombre": "Dominadas",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        },
+        {
+          "nombre": "Remo con barra",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        }
+      ]
+    },
+    "historial": {},
+    "catalogo": [
+      "Press de banca",
+      "Press inclinado con mancuernas",
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Press militar",
+      "Elevaciones laterales",
+      "Extensión de tríceps en polea",
+      "Sentadilla",
+      "Prensa de piernas",
+      "Peso muerto rumano",
+      "Curl femoral",
+      "Dominadas",
+      "Remo con barra",
+      "Jalón al pecho",
+      "Curl de bíceps con barra",
+      "Plancha"
+    ]
+  },
+  "respuesta_simulada": {
+    "resumen": "Añade un remo diferente.",
+    "anadir": [
+      {
+        "ejercicio": "Remo cuántico con kettlebell",
+        "series": 3,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Variedad."
+      }
+    ],
+    "sustituir": [],
+    "objetivos": []
+  },
+  "esperado": {
+    "valida": false
+  }
+}

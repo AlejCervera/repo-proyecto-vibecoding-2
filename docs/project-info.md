@@ -15,12 +15,14 @@ Dos personas (yo y mi novia). Cada una tiene su cuenta y su propio historial, y 
 - Crear rutinas con nombre y añadirles ejercicios; renombrarlas y quitar ejercicios.
 - Editar y borrar series, ejercicios propios y rutinas.
 - Catálogo base importado una vez desde la API pública de wger.
+- Perfil con altura y peso corporal.
+- Recomendaciones con IA (Gemini) en las rutinas propias: ejercicios que añadir o sustituir y peso y repeticiones objetivo según el perfil y las últimas series; cada sugerencia se puede aplicar. Son sugerencias, no planes automáticos.
 
 ## Fuera de alcance
 - Recuperar contraseña por email, inicio de sesión con terceros (Google, etc.).
 - Funcionamiento sin conexión y sincronización offline (no hay PWA offline por ahora).
 - Gráficas, récords personales y estadísticas (posible fase futura).
-- Planes de entrenamiento automáticos, nutrición, compartir con otros y conexión con relojes o apps.
+- Planes de entrenamiento automáticos (la IA solo sugiere cambios en rutinas existentes), nutrición, compartir con otros y conexión con relojes o apps.
 - Unidades distintas de kg.
 - Despliegue en un servidor real: por ahora solo desarrollo local.
 
@@ -36,11 +38,12 @@ Dos personas (yo y mi novia). Cada una tiene su cuenta y su propio historial, y 
 - **Producción:** alojar el servidor para los dos móviles es una acción de producción; no se hará sin permiso explícito.
 
 ## Datos y claves
-- Usuario: nombre de usuario y hash de contraseña.
+- Usuario: nombre de usuario, hash de contraseña y, opcionalmente, altura y peso corporal.
 - Ejercicio: nombre; del catálogo base (compartido) o propio de un usuario.
 - Serie: usuario, fecha, ejercicio, peso en kg y repeticiones.
 - Rutina: usuario, nombre y lista ordenada de ejercicios.
-- Claves en `.env` (nunca en git), con nombres en `.env.example`: `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SESSION_SECRET`, `INVITE_CODE`, `COOKIE_SECURE`.
+- Claves en `.env` (nunca en git), con nombres en `.env.example`: `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `SESSION_SECRET`, `INVITE_CODE`, `COOKIE_SECURE`, `GEMINI_API_KEY`, `GEMINI_MODEL`.
+- Al pedir recomendaciones se envían a Google Gemini la altura, el peso, la rutina y las últimas series (sin nombre de usuario).
 - En desarrollo se usan valores inventados; las claves de producción no se tocan sin permiso.
 
 ## Cómo se prueba

@@ -1,0 +1,85 @@
+{
+  "descripcion": "Sin historial: pesos iniciales conservadores según altura y peso corporal (165 cm, 58 kg).",
+  "entrada": {
+    "perfil": {
+      "altura_cm": 165,
+      "peso_corporal_kg": 58
+    },
+    "rutina": {
+      "nombre": "Pierna",
+      "ejercicios": [
+        {
+          "nombre": "Sentadilla",
+          "series": 3,
+          "reps_min": 8,
+          "reps_max": 12
+        },
+        {
+          "nombre": "Prensa de piernas",
+          "series": 3,
+          "reps_min": 10,
+          "reps_max": 12
+        }
+      ]
+    },
+    "historial": {},
+    "catalogo": [
+      "Press de banca",
+      "Press inclinado con mancuernas",
+      "Aperturas con mancuernas",
+      "Fondos en paralelas",
+      "Press militar",
+      "Elevaciones laterales",
+      "Extensión de tríceps en polea",
+      "Sentadilla",
+      "Prensa de piernas",
+      "Peso muerto rumano",
+      "Curl femoral",
+      "Dominadas",
+      "Remo con barra",
+      "Jalón al pecho",
+      "Curl de bíceps con barra",
+      "Plancha"
+    ]
+  },
+  "respuesta_simulada": {
+    "resumen": "Empieza con pesos ligeros para aprender la técnica.",
+    "anadir": [
+      {
+        "ejercicio": "Curl femoral",
+        "series": 3,
+        "reps_min": 10,
+        "reps_max": 12,
+        "motivo": "Equilibra el trabajo de cuádriceps con isquiotibiales."
+      }
+    ],
+    "sustituir": [],
+    "objetivos": [
+      {
+        "ejercicio": "Sentadilla",
+        "peso_kg": 30,
+        "reps_min": 8,
+        "reps_max": 12,
+        "motivo": "Sin historial: empieza con unos 30 kg y buena técnica."
+      },
+      {
+        "ejercicio": "Prensa de piernas",
+        "peso_kg": 60,
+        "reps_min": 10,
+        "reps_max": 12,
+        "motivo": "Peso inicial moderado, cerca de tu peso corporal."
+      }
+    ]
+  },
+  "esperado": {
+    "valida": true,
+    "objetivos": {
+      "Sentadilla": {
+        "peso_max": 58
+      },
+      "Prensa de piernas": {
+        "peso_max": 116
+      }
+    }
+  }
+}

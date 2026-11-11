@@ -7,6 +7,7 @@ import { HistorialPage } from "./historial/HistorialPage";
 import { Empezar } from "./inicio/Empezar";
 import { InicioPage } from "./inicio/InicioPage";
 import { enlace, useRuta, type Ruta } from "./navegacion";
+import { PerfilPage } from "./perfil/PerfilPage";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
 import { DiarioPage } from "./diario/DiarioPage";
@@ -47,6 +48,7 @@ export function App() {
         {usuario && (
           <p className="usuario">
             Hola, <strong>{usuario.nombre_usuario}</strong>{" "}
+            <a href={enlace({ pantalla: "perfil" })}>Mi perfil</a>{" "}
             <button type="button" className="discreto" onClick={salir}>
               Cerrar sesión
             </button>
@@ -101,6 +103,7 @@ export function App() {
               onSesionCaducada={sinSesion}
             />
           )}
+          {ruta.pantalla === "perfil" && <PerfilPage key={usuario.id} onSesionCaducada={sinSesion} />}
           {ruta.pantalla === "ejercicios" && (
             <MisEjerciciosPage key={usuario.id} onSesionCaducada={sinSesion} />
           )}

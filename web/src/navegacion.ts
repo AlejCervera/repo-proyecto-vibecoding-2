@@ -8,6 +8,7 @@ export type Ruta =
   | { pantalla: "diario" }
   | { pantalla: "entrenamiento"; entrenamientoId: number }
   | { pantalla: "ejercicios" }
+  | { pantalla: "perfil" }
   | { pantalla: "historial"; ejercicioId: number }
   | { pantalla: "rutinas" }
   | { pantalla: "rutina"; rutinaId: number }
@@ -35,6 +36,7 @@ export function leerRuta(hash: string): Ruta {
   if (hash === "#/rutinas") return { pantalla: "rutinas" };
   if (hash === "#/diario") return { pantalla: "diario" };
   if (hash === "#/empezar") return { pantalla: "empezar" };
+  if (hash === "#/perfil") return { pantalla: "perfil" };
   return { pantalla: "inicio" };
 }
 
@@ -56,6 +58,8 @@ export function enlace(ruta: Ruta): string {
       return `#/diario/${ruta.entrenamientoId}`;
     case "empezar":
       return "#/empezar";
+    case "perfil":
+      return "#/perfil";
     default:
       return "#/";
   }

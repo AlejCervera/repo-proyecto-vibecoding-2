@@ -14,6 +14,7 @@ import type { Ejercicio } from "../ejercicios/ejercicio";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { enlace, ir } from "../navegacion";
 import { EjercicioRutinaFila } from "./EjercicioRutinaFila";
+import { RecomendacionesPanel } from "./RecomendacionesPanel";
 import { mover, type Rutina } from "./rutina";
 
 type Props = { rutinaId: number; onSesionCaducada: () => void };
@@ -193,6 +194,9 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
         </div>
       )}
       {error && <p role="alert">{error}</p>}
+      {editable && modo === "ver" && (
+        <RecomendacionesPanel rutina={rutina} onRutina={setRutina} onSesionCaducada={onSesionCaducada} />
+      )}
     </section>
   );
 }

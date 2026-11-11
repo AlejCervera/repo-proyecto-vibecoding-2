@@ -15,6 +15,11 @@ services:
     environment:
       # Los e2e lo sustituyen por su propio código; si no, se usa el de .env.
       INVITE_CODE: ${INVITE_CODE:-}
+      # Los e2e la vacían para no llamar nunca a Gemini; si no, se usa la de .env.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PROMPTS_DIR: /srv/prompts
+    volumes:
+      - ./prompts:/srv/prompts:ro
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:

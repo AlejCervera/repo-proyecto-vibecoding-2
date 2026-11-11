@@ -21,6 +21,16 @@ def invite_code() -> str:
     return os.environ.get("INVITE_CODE", "")
 
 
+def gemini_api_key() -> str:
+    """Clave de Gemini. Vacía = recomendaciones desactivadas."""
+    return os.environ.get("GEMINI_API_KEY", "").strip()
+
+
+def gemini_model() -> str:
+    """Modelo de Gemini, p. ej. gemini-3.1-flash-lite. Vacío = recomendaciones desactivadas."""
+    return os.environ.get("GEMINI_MODEL", "").strip()
+
+
 def cookie_secure() -> bool:
     """True cuando la app se sirva por HTTPS."""
     return os.environ.get("COOKIE_SECURE", "").lower() in ("1", "true", "yes")

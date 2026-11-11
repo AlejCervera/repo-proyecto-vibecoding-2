@@ -198,6 +198,24 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** tras entrenar una rutina y guardarla, el diario la muestra con sus ejercicios y series, y quitarla del diario no cambia el historial.
 
+## Fase 8c · Recomendaciones con IA (Gemini)
+
+**Objetivo:** en una rutina propia, pedir a Gemini ejercicios que añadir o sustituir y el peso y las repeticiones objetivo según la altura, el peso corporal y las series anteriores.
+
+**Tareas:**
+- [x] «Mi perfil» (enlace en la cabecera): altura (cm) y peso corporal (kg) de cada cuenta (migración 008).
+- [x] `POST /rutinas/{id}/recomendaciones` con el SDK `google-genai`; clave y modelo en `.env` (`GEMINI_API_KEY`, `GEMINI_MODEL`; el más barato: `gemini-3.1-flash-lite`). Respuesta en JSON con esquema y pocos tokens.
+- [x] El prompt (`prompts/recomendar_rutina.md`) lleva perfil, rutina, catálogo y las 3 últimas sesiones de cada ejercicio con peso y repeticiones de cada serie.
+- [x] Validación de la respuesta: JSON, ejercicios del catálogo o de la rutina, series 1-10, repeticiones 1-50 y subida de peso como mucho +10 % (o 2,5 kg) sobre la última sesión. Si falla → 502 y aviso; 429 → aviso de límite; sin perfil → 400 con enlace a «Mi perfil»; sin clave → 503.
+- [x] Panel en la rutina con «Aplicar» por sugerencia: añadir (con su plan), sustituir (en el mismo sitio y con el mismo plan) y objetivo de repeticiones. El peso recomendado se muestra (la rutina no guarda pesos).
+- [x] 5 casos de prueba con su resultado esperado en `prompts/casos/`; `python -m app.recomendaciones.probar_casos` los lanza contra el Gemini real (manual, gasta cuota).
+- [x] Arreglado: en «Mi perfil», una carga que llegaba tarde borraba lo escrito y se guardaba vacío.
+
+**Pruebas:**
+- API (perfil, prompt, validación, cliente con 429 simulado, ruta con IA falsa, los 5 casos); web (perfil, panel, aplicar); e2e con la IA simulada en el navegador (los e2e nunca llaman a Gemini).
+
+**Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
+
 ## Fase 9 · Despliegue (solo con permiso explícito)
 
 **Objetivo:** que los dos móviles usen la app sin depender de tu PC.

@@ -14,13 +14,14 @@ export async function borrarRutina(id: number): Promise<void> {
   await pedir(`/rutinas/${id}`, { method: "DELETE" });
 }
 
-export const anadirEjercicio = (id: number, ejercicio_id: number) =>
-  pedir<Rutina>(`/rutinas/${id}/ejercicios`, enviarJson({ ejercicio_id }));
+export type CambiosPlan = Partial<{ series: number; reps_min: number | null; reps_max: number | null }>;
+
+/** Lo añade al final; sin plan, la API pone 3 series sin objetivo. */
+export const anadirEjercicio = (id: number, ejercicio_id: number, plan: CambiosPlan = {}) =>
+  pedir<Rutina>(`/rutinas/${id}/ejercicios`, enviarJson({ ejercicio_id, ...plan }));
 
 export const quitarEjercicio = (id: number, ejercicioId: number) =>
   pedir<Rutina>(`/rutinas/${id}/ejercicios/${ejercicioId}`, { method: "DELETE" });
-
-export type CambiosPlan = Partial<{ series: number; reps_min: number | null; reps_max: number | null }>;
 
 export const configurarEjercicio = (id: number, ejercicioId: number, cambios: CambiosPlan) =>
   pedir<Rutina>(`/rutinas/${id}/ejercicios/${ejercicioId}`, enviarJson(cambios, "PUT"));

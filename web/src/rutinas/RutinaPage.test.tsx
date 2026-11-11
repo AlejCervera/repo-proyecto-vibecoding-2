@@ -179,3 +179,25 @@ test("rutina que no existe: aviso", async () => {
   render(<RutinaPage rutinaId={99} onSesionCaducada={vi.fn()} />);
   expect((await screen.findByRole("alert")).textContent).toBe("La rutina no existe");
 });
+
+test("recomendaciones con IA: solo en rutinas propias, y aplicar actualiza la lista", async () => {
+  const recos = {
+    resumen: "Añade fondos.",
+    anadir: [{ ejercicio_id: 3, nombre: "Fondos", series: 3, reps_min: 8, reps_max: 10, motivo: "Tríceps." }],
+    sustituir: [],
+    objetivos: [],
+  };
+  await pintar(
+    MIA,
+    { status: 200, body: recos },
+    { status: 200, body: { ...MIA, ejercicios: [...MIA.ejercicios, ej(3, "Fondos", 3, 8, 10)] } },
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Pedir recomendaciones" }));
+  fireEvent.click(await screen.findByRole("button", { name: "Aplicar: añadir Fondos" }));
+  await vi.waitFor(() => expect(nombres()).toEqual(["Press de banca", "Aperturas", "Fondos"]));
+});
+
+test("predefinida: sin recomendaciones con IA", async () => {
+  await pintar(PREDEFINIDA);
+  expect(screen.queryByRole("region", { name: "Recomendaciones de la IA" })).toBeNull();
+});

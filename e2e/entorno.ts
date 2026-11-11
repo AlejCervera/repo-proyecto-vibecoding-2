@@ -11,4 +11,6 @@ export const envDocker = {
   WEB_PORT,
   API_PORT,
   INVITE_CODE: CODIGO,
+  // Los e2e nunca llaman a Gemini: las respuestas de la IA se simulan en el navegador.
+  GEMINI_API_KEY: "",
 };

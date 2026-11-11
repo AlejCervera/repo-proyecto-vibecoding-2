@@ -52,3 +52,8 @@ test("enlace y leerRuta son inversos", () => {
   expect(enlaceHistorial(7)).toBe("#/ejercicios/7/historial");
   expect(leerRuta(enlaceHistorial(7))).toEqual({ pantalla: "historial", ejercicioId: 7 });
 });
+
+test("mi perfil", () => {
+  expect(leerRuta("#/perfil")).toEqual({ pantalla: "perfil" });
+  expect(enlace({ pantalla: "perfil" })).toBe("#/perfil");
+});
