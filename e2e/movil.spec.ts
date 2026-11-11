@@ -16,7 +16,7 @@ async function sinScrollHorizontal(page: Page, pantalla: string) {
 /** Todos los botones y enlaces-botón visibles miden al menos 44 px de alto. */
 async function botonesGrandes(page: Page, pantalla: string) {
   const bajos = await page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>("button, .boton, .secciones a, nav[aria-label=Pasos] a")]
+    [...document.querySelectorAll<HTMLElement>("button, .boton, .pestanas a, nav[aria-label=Pasos] a")]
       .filter((b) => b.offsetParent !== null)
       .map((b) => ({ texto: b.textContent?.trim(), alto: b.getBoundingClientRect().height }))
       .filter((b) => b.alto < 44),
@@ -36,7 +36,7 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await registrar(page, nombreUnico("movil"));
   await revisar(page, "inicio");
 
-  await irA(page, "Mis ejercicios");
+  await irA(page, "Ejercicios");
   await expect(page.getByRole("heading", { name: "Mis ejercicios" })).toBeVisible();
   await revisar(page, "mis ejercicios");
 
@@ -44,7 +44,7 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await page.getByRole("button", { name: "Copiar a mis rutinas" }).click();
   await expect(page.getByRole("button", { name: "Renombrar" })).toBeVisible();
   await revisar(page, "rutina propia");
-  await irA(page, "Rutinas");
+  await irA(page, "Entrenar");
   await revisar(page, "rutinas");
   await page.getByRole("list", { name: "Mis rutinas" }).getByRole("link", { name: "Pecho" }).click();
 
@@ -72,4 +72,21 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await irA(page, "Diario");
   await expect(page.getByRole("list", { name: "Entrenamientos" })).toBeVisible();
   await revisar(page, "diario");
+
+  await irA(page, "Perfil");
+  await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+  await revisar(page, "perfil");
+});
+
+test("la barra de pestañas queda fija abajo y no tapa el final de la pantalla", async ({ page }) => {
+  await registrar(page, nombreUnico("barra"));
+  await irA(page, "Perfil");
+  const barra = page.getByRole("navigation", { name: "Secciones" });
+  const caja = (await barra.boundingBox())!;
+  expect(caja.y + caja.height).toBeCloseTo(844, 0);
+
+  // Al bajar del todo, el último botón queda por encima de la barra
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const salir = (await page.getByRole("button", { name: "Cerrar sesión" }).boundingBox())!;
+  expect(salir.y + salir.height).toBeLessThanOrEqual(caja.y);
 });

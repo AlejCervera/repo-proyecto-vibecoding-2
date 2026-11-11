@@ -82,17 +82,27 @@ test("cancelar la edición no envía nada", () => {
   expect(fetch).not.toHaveBeenCalled();
 });
 
-test("borrar pide confirmación y solo borra al confirmar", async () => {
+test("borrar pide confirmación en la hoja inferior y solo borra al confirmar", async () => {
   const fetch = simularFetch({ status: 204, body: null });
   const { onBorrada } = pintar();
 
   fireEvent.click(screen.getByRole("button", { name: "Borrar" }));
-  expect(screen.getByText("¿Borrar esta serie?")).toBeTruthy();
+  const hoja = screen.getByRole("dialog", { name: "Borrar serie" });
+  expect(hoja.textContent).toContain("¿Borrar la serie de 80 kg × 8 del 09/11/2026?");
   expect(fetch).not.toHaveBeenCalled();
 
-  fireEvent.click(screen.getByRole("button", { name: "Sí, borrar" }));
+  fireEvent.click(within(hoja).getByRole("button", { name: "Sí, borrar" }));
   await vi.waitFor(() => expect(onBorrada).toHaveBeenCalledWith(7));
   expect(fetch).toHaveBeenCalledWith("/api/series/7", { method: "DELETE" });
+});
+
+test("cancelar el borrado cierra la hoja sin borrar", () => {
+  const fetch = simularFetch();
+  pintar();
+  fireEvent.click(screen.getByRole("button", { name: "Borrar" }));
+  fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Cancelar" }));
+  expect(screen.queryByRole("dialog")).toBeNull();
+  expect(fetch).not.toHaveBeenCalled();
 });
 
 test("en el historial no repite el nombre del ejercicio", () => {

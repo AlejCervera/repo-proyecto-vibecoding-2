@@ -13,13 +13,25 @@ test("leerNumero", () => {
 });
 
 const valor = (etiqueta: string) => (screen.getByLabelText(etiqueta) as HTMLInputElement).value;
+const CUENTA = { usuario: { id: 1, nombre_usuario: "ana" }, onSalir: vi.fn() };
+
+test("muestra la cuenta y «Cerrar sesión» llama a onSalir", async () => {
+  simularFetch({ status: 200, body: { altura_cm: null, peso_corporal_kg: null } });
+  const onSalir = vi.fn();
+  render(<PerfilPage usuario={CUENTA.usuario} onSalir={onSalir} onSesionCaducada={vi.fn()} />);
+  expect(screen.getByText("ana").tagName).toBe("STRONG");
+  expect(screen.getByRole("link", { name: "wger.de" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" }));
+  expect(onSalir).toHaveBeenCalledOnce();
+  await screen.findByLabelText("Altura (cm)");
+});
 
 test("muestra el perfil guardado y guarda los cambios", async () => {
   const fetch = simularFetch(
     { status: 200, body: { altura_cm: 178, peso_corporal_kg: 80.5 } },
     { status: 200, body: { altura_cm: 178, peso_corporal_kg: 79 } },
   );
-  render(<PerfilPage onSesionCaducada={vi.fn()} />);
+  render(<PerfilPage {...CUENTA} onSesionCaducada={vi.fn()} />);
   await screen.findByLabelText("Altura (cm)");
   expect(valor("Altura (cm)")).toBe("178");
   expect(valor("Peso corporal (kg)")).toBe("80,5");
@@ -38,7 +50,7 @@ test("perfil vacío y error de la API", async () => {
     { status: 200, body: { altura_cm: null, peso_corporal_kg: null } },
     { status: 400, body: { error: "La altura debe ser un número entero entre 100 y 250 cm" } },
   );
-  render(<PerfilPage onSesionCaducada={vi.fn()} />);
+  render(<PerfilPage {...CUENTA} onSesionCaducada={vi.fn()} />);
   await screen.findByLabelText("Altura (cm)");
   expect(valor("Altura (cm)")).toBe("");
   fireEvent.change(screen.getByLabelText("Altura (cm)"), { target: { value: "50" } });
@@ -49,7 +61,7 @@ test("perfil vacío y error de la API", async () => {
 test("sin sesión avisa a la app", async () => {
   simularFetch({ status: 401, body: { error: "Inicia sesión para continuar" } });
   const caducada = vi.fn();
-  render(<PerfilPage onSesionCaducada={caducada} />);
+  render(<PerfilPage {...CUENTA} onSesionCaducada={caducada} />);
   await vi.waitFor(() => expect(caducada).toHaveBeenCalled());
 });
 
@@ -64,7 +76,7 @@ test("una carga que llega tarde no borra lo que ya has escrito", async () => {
   vi.stubGlobal("fetch", fetch);
   render(
     <StrictMode>
-      <PerfilPage onSesionCaducada={vi.fn()} />
+      <PerfilPage {...CUENTA} onSesionCaducada={vi.fn()} />
     </StrictMode>,
   );
   await vi.waitFor(() => expect(valor("Altura (cm)")).toBe("178"));

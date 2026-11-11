@@ -1,10 +1,10 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { nombreUnico, registrar } from "./cuentas";
+import { irA, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("plan"));
   // Mi rutina: copia de «Pecho» (3 × 8-12 por ejercicio)
-  await page.getByRole("navigation").getByRole("link", { name: "Rutinas" }).click();
+  await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
     .getByRole("link", { name: "Pecho" })

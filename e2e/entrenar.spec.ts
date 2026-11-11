@@ -1,9 +1,9 @@
 import { expect, test, type Locator } from "@playwright/test";
-import { nombreUnico, registrar } from "./cuentas";
+import { irA, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("entr"));
-  await page.getByRole("navigation").getByRole("link", { name: "Rutinas" }).click();
+  await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
     .getByRole("link", { name: "Pecho" })

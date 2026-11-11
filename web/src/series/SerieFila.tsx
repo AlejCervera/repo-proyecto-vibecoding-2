@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { actualizarSerie, borrarSerie } from "../api/series";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { enlaceHistorial } from "../navegacion";
+import { HojaInferior } from "../ui/HojaInferior";
 import {
   aPeticion,
   formatearFecha,
@@ -120,17 +121,22 @@ export function SerieFila({ serie, mostrarEjercicio, onCambiada, onBorrada }: Pr
           </button>
         </>
       ) : (
-        <span>
-          ¿Borrar esta serie?{" "}
-          <button type="button" onClick={borrar} disabled={ocupado}>
-            Sí, borrar
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("ver")}>
-            Cancelar
-          </button>
-        </span>
+        <HojaInferior titulo="Borrar serie" onCerrar={() => cambiarModo("ver")}>
+          <p>
+            ¿Borrar la serie de {pesoPorReps(serie)} del {formatearFecha(serie.fecha)}?
+          </p>
+          {aviso}
+          <div className="hoja-acciones">
+            <button type="button" className="peligro" onClick={borrar} disabled={ocupado}>
+              Sí, borrar
+            </button>
+            <button type="button" onClick={() => cambiarModo("ver")}>
+              Cancelar
+            </button>
+          </div>
+        </HojaInferior>
       )}
-      {aviso}
+      {modo === "ver" && aviso}
     </li>
   );
 }

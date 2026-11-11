@@ -1,36 +1,50 @@
-/* Gym Log — estilos pensados primero para el móvil (probado a 390 px). Sin librerías. */
+/* Gym Log — estilo «Pizarra»: solo modo oscuro, pensado para el iPhone (390 px). Sin librerías.
+   Las piezas comunes (barra de pestañas, hoja inferior, foto en círculo…) están en ui/ui.css. */
 
-:root {
-  --fondo: #f5f6f8;
-  --superficie: #ffffff;
-  --texto: #1b1e23;
-  --suave: #5f6670;
-  --borde: #d9dde3;
-  --primario: #1f6feb;
-  --primario-texto: #ffffff;
-  --exito: #1a7f37;
-  --exito-fondo: #e6f4ea;
-  --error: #b42318;
-  --error-fondo: #fdecea;
-  --radio: 12px;
-  --toque: 44px; /* tamaño mínimo cómodo para el dedo */
-  color-scheme: light dark;
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fuentes/archivo-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fondo: #111418;
-    --superficie: #1b1f24;
-    --texto: #e8eaed;
-    --suave: #9aa3ad;
-    --borde: #2f353d;
-    --primario: #4c8dff;
-    --primario-texto: #0b0d10;
-    --exito: #4ac26b;
-    --exito-fondo: #12301b;
-    --error: #ff7b72;
-    --error-fondo: #3a1714;
-  }
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fuentes/archivo-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --fondo: #121413;
+  --superficie: #1c1f1d;
+  --superficie-2: #2a2f2b;
+  --linea: #262a27;
+  --texto: #f2f2ee;
+  --suave: #9ba39d;
+  --acento: #c6f432;
+  --acento-texto: #121413;
+  --hecho-fondo: #2b3a12;
+  --hecho-texto: #b7c79a;
+  --error: #ff8a80;
+  --error-fondo: #3a1a17;
+  --radio: 12px;
+  --radio-grande: 18px;
+  --toque: 44px; /* tamaño mínimo cómodo para el dedo */
+  --alto-pestanas: 64px;
+  /* Nombres antiguos, para las pantallas que aún no se han rediseñado */
+  --primario: var(--acento);
+  --primario-texto: var(--acento-texto);
+  --borde: var(--superficie-2);
+  --exito: var(--acento);
+  --exito-fondo: var(--hecho-fondo);
+  color-scheme: dark;
 }
 
 *,
@@ -41,37 +55,54 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--fondo);
 }
 
 body {
   margin: 0;
   background: var(--fondo);
   color: var(--texto);
-  font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 16px/1.45 "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   overflow-wrap: anywhere;
 }
 
 main {
   max-width: 640px;
   margin: 0 auto;
-  padding: 12px 16px calc(24px + env(safe-area-inset-bottom));
+  padding: calc(12px + env(safe-area-inset-top)) 16px
+    calc(var(--alto-pestanas) + 24px + env(safe-area-inset-bottom));
 }
 
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
 h1 {
-  font-size: 1.4rem;
+  font-size: 1.9rem;
+  font-weight: 800;
   margin: 0;
 }
 h2 {
-  font-size: 1.25rem;
-  margin: 16px 0 8px;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 12px 0 12px;
 }
 h3 {
-  font-size: 1.1rem;
-  margin: 12px 0 8px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 16px 0 8px;
 }
 
 a {
-  color: var(--primario);
+  color: var(--acento);
+  text-underline-offset: 3px;
+}
+
+small {
+  color: var(--suave);
 }
 
 img {
@@ -84,6 +115,16 @@ figure {
   margin: 8px 0;
 }
 
+/* Solo para lectores de pantalla */
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* --- Controles: grandes y fáciles de tocar --------------------------------------------- */
 
 button,
@@ -91,68 +132,87 @@ button,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   min-height: var(--toque);
   min-width: var(--toque);
-  padding: 8px 14px;
+  padding: 8px 16px;
   margin: 2px 0;
-  border: 1px solid var(--borde);
+  border: 0;
   border-radius: var(--radio);
-  background: var(--superficie);
+  background: var(--superficie-2);
   color: var(--texto);
   font: inherit;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   touch-action: manipulation;
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: default;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
 }
 
 button[type="submit"],
 .primario {
-  background: var(--primario);
-  border-color: var(--primario);
-  color: var(--primario-texto);
+  background: var(--acento);
+  color: var(--acento-texto);
+  font-weight: 800;
 }
 
 .grande {
   width: 100%;
   min-height: 56px;
-  font-size: 1.15rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
 }
 
 .discreto {
   padding: 4px 10px;
-  font-weight: 500;
+  font-weight: 600;
   background: transparent;
+  color: var(--suave);
 }
 
 input {
   min-height: var(--toque);
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--borde);
+  border: 0;
   border-radius: var(--radio);
-  background: var(--superficie);
+  background: var(--superficie-2);
   color: var(--texto);
   font: inherit;
   font-size: 16px; /* evita el zoom automático del iPhone */
+  font-weight: 600;
+}
+
+input::placeholder {
+  color: #6e766f;
 }
 
 input[type="file"] {
   min-height: 0;
   padding: 6px;
   font-size: 14px;
+  font-weight: 400;
 }
 
 label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.95rem;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--suave);
 }
 
@@ -160,7 +220,7 @@ form {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 8px 10px;
+  gap: 10px;
   margin: 8px 0;
 }
 
@@ -176,50 +236,6 @@ form > button {
   flex: 0 0 auto;
 }
 
-/* --- Cabecera y navegación ------------------------------------------------------------- */
-
-.cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 12px;
-}
-
-.usuario {
-  margin: 0;
-  color: var(--suave);
-}
-
-.secciones {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  margin: 12px 0;
-}
-
-.secciones a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--toque);
-  padding: 4px;
-  border-radius: var(--radio);
-  background: var(--superficie);
-  border: 1px solid var(--borde);
-  color: var(--texto);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-}
-
-.secciones a[aria-current="page"] {
-  background: var(--primario);
-  border-color: var(--primario);
-  color: var(--primario-texto);
-}
-
 /* --- Listas como tarjetas -------------------------------------------------------------- */
 
 main ul,
@@ -230,15 +246,14 @@ main ol {
 }
 
 main li {
-  padding: 10px 12px;
-  margin: 6px 0;
+  padding: 12px 14px;
+  margin: 8px 0;
   background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: var(--radio);
+  border-radius: 14px;
 }
 
 main li li {
-  border: 0;
+  background: transparent;
   padding: 4px 0;
   margin: 0;
 }
@@ -252,12 +267,13 @@ ul[aria-label="Sugerencias"] button {
   justify-content: flex-start;
   text-align: left;
   font-weight: 500;
+  background: transparent;
 }
 
 /* --- Avisos ---------------------------------------------------------------------------- */
 
 [role="alert"] {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radio);
   background: var(--error-fondo);
   color: var(--error);
@@ -265,14 +281,25 @@ ul[aria-label="Sugerencias"] button {
 }
 
 [role="status"] {
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radio);
-  background: var(--exito-fondo);
-  color: var(--exito);
+  background: var(--hecho-fondo);
+  color: var(--acento);
   font-weight: 600;
 }
 
-/* --- Entrenamiento --------------------------------------------------------------------- */
+/* --- Saludo ----------------------------------------------------------------------------- */
+
+.saludo {
+  margin: 4px 0 0;
+  color: var(--suave);
+}
+
+.saludo strong {
+  color: var(--texto);
+}
+
+/* --- Entrenamiento (se rehace en la Fase 9a) ------------------------------------------- */
 
 /* El descanso queda fijo arriba mientras se hace scroll */
 section[aria-label="Descanso"] {
@@ -280,9 +307,9 @@ section[aria-label="Descanso"] {
   top: 0;
   z-index: 10;
   margin: 8px -16px;
-  padding: 4px 16px;
+  padding: calc(4px + env(safe-area-inset-top)) 16px 4px;
   background: var(--fondo);
-  border-bottom: 1px solid var(--borde);
+  border-bottom: 1px solid var(--linea);
 }
 
 section[aria-label="Descanso"] p {
@@ -295,19 +322,19 @@ section[aria-label="Descanso"] p {
 
 [role="timer"] {
   font-size: 2.4rem;
-  font-weight: 700;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
   min-width: 4ch;
 }
 
 section[aria-label="Descanso"] [role="alert"] {
-  background: var(--exito-fondo);
-  color: var(--exito);
+  background: var(--hecho-fondo);
+  color: var(--acento);
 }
 
 section[aria-label="Descanso"] button[aria-pressed="true"] {
-  border-color: var(--primario);
-  color: var(--primario);
+  background: var(--acento);
+  color: var(--acento-texto);
 }
 
 ol[aria-label="Ejercicios del entrenamiento"] {
@@ -325,7 +352,7 @@ ol[aria-label="Ejercicios del entrenamiento"] li {
 }
 
 ol[aria-label="Series de hoy"] li[aria-current="step"] {
-  border: 2px solid var(--primario);
+  outline: 2px solid var(--acento);
 }
 
 ol[aria-label="Series de hoy"] li:not([aria-current]) {
@@ -346,24 +373,27 @@ nav[aria-label="Pasos"] a {
   justify-content: center;
   min-height: var(--toque);
   border-radius: var(--radio);
-  border: 1px solid var(--primario);
-  font-weight: 600;
+  background: var(--superficie-2);
+  color: var(--texto);
+  font-weight: 700;
   text-decoration: none;
 }
 
-/* --- Inicio ---------------------------------------------------------------------------- */
+/* --- Inicio (se rehace en la Fase 9b) -------------------------------------------------- */
 
 .tarjeta {
-  padding: 14px 16px;
+  padding: 16px;
   margin: 12px 0;
   background: var(--superficie);
-  border: 1px solid var(--borde);
-  border-radius: 16px;
+  border-radius: var(--radio-grande);
 }
 
 .tarjeta h2 {
   margin-top: 0;
-  font-size: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--suave);
 }
 
@@ -372,8 +402,9 @@ nav[aria-label="Pasos"] a {
 }
 
 .cifra {
-  font-size: 1.3rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .semana {
@@ -388,17 +419,16 @@ nav[aria-label="Pasos"] a {
   align-items: center;
   padding: 4px 0;
   margin: 0;
-  border: 0;
+  background: transparent;
   color: var(--suave);
 }
 
 .semana li.hecho {
-  color: var(--exito);
-  font-weight: 700;
+  color: var(--acento);
+  font-weight: 800;
 }
 
-footer {
+.creditos {
   margin-top: 24px;
   color: var(--suave);
-  text-align: center;
 }

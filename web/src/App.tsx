@@ -6,21 +6,15 @@ import { EntrenarPage } from "./entrenar/EntrenarPage";
 import { HistorialPage } from "./historial/HistorialPage";
 import { Empezar } from "./inicio/Empezar";
 import { InicioPage } from "./inicio/InicioPage";
-import { enlace, useRuta, type Ruta } from "./navegacion";
+import { ir, useRuta } from "./navegacion";
 import { PerfilPage } from "./perfil/PerfilPage";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
 import { DiarioPage } from "./diario/DiarioPage";
 import { EntrenamientoPage } from "./diario/EntrenamientoPage";
+import { BarraPestanas } from "./ui/BarraPestanas";
 
 export const APP_NAME = "Gym Log";
-
-const SECCIONES: { ruta: Ruta; texto: string; activa: Ruta["pantalla"][] }[] = [
-  { ruta: { pantalla: "inicio" }, texto: "Inicio", activa: ["inicio"] },
-  { ruta: { pantalla: "diario" }, texto: "Diario", activa: ["diario", "entrenamiento", "historial"] },
-  { ruta: { pantalla: "rutinas" }, texto: "Rutinas", activa: ["rutinas", "rutina", "entrenar"] },
-  { ruta: { pantalla: "ejercicios" }, texto: "Mis ejercicios", activa: ["ejercicios"] },
-];
 
 export function App() {
   // undefined = comprobando la sesión; null = sin sesión.
@@ -38,38 +32,29 @@ export function App() {
 
   async function salir() {
     await cerrarSesion();
+    // Quien entre después empieza en Inicio, no en el Perfil de la cuenta anterior.
+    ir({ pantalla: "inicio" });
     setUsuario(null);
   }
 
   return (
     <main>
-      <header className="cabecera">
-        <h1>{APP_NAME}</h1>
-        {usuario && (
-          <p className="usuario">
-            Hola, <strong>{usuario.nombre_usuario}</strong>{" "}
-            <a href={enlace({ pantalla: "perfil" })}>Mi perfil</a>{" "}
-            <button type="button" className="discreto" onClick={salir}>
-              Cerrar sesión
-            </button>
-          </p>
-        )}
-      </header>
+      {usuario ? (
+        <h1 className="oculto">{APP_NAME}</h1>
+      ) : (
+        <h1 className="marca">
+          Gym <span>Log</span>
+        </h1>
+      )}
       {error && <p role="alert">{error}</p>}
       {usuario === null && <AuthScreen onEntrar={setUsuario} />}
       {usuario && (
         <>
-          <nav aria-label="Secciones" className="secciones">
-            {SECCIONES.map((s) => (
-              <a
-                key={s.texto}
-                href={enlace(s.ruta)}
-                aria-current={s.activa.includes(ruta.pantalla) ? "page" : undefined}
-              >
-                {s.texto}
-              </a>
-            ))}
-          </nav>
+          {ruta.pantalla === "inicio" && (
+            <p className="saludo">
+              Hola, <strong>{usuario.nombre_usuario}</strong>
+            </p>
+          )}
           {ruta.pantalla === "inicio" && <InicioPage key={usuario.id} onSesionCaducada={sinSesion} />}
           {ruta.pantalla === "empezar" && <Empezar />}
           {ruta.pantalla === "diario" && <DiarioPage key={usuario.id} onSesionCaducada={sinSesion} />}
@@ -103,25 +88,20 @@ export function App() {
               onSesionCaducada={sinSesion}
             />
           )}
-          {ruta.pantalla === "perfil" && <PerfilPage key={usuario.id} onSesionCaducada={sinSesion} />}
+          {ruta.pantalla === "perfil" && (
+            <PerfilPage
+              key={usuario.id}
+              usuario={usuario}
+              onSalir={salir}
+              onSesionCaducada={sinSesion}
+            />
+          )}
           {ruta.pantalla === "ejercicios" && (
             <MisEjerciciosPage key={usuario.id} onSesionCaducada={sinSesion} />
           )}
+          <BarraPestanas actual={ruta.pantalla} />
         </>
       )}
-      <footer>
-        <small>
-          Catálogo de ejercicios:{" "}
-          <a href="https://wger.de" target="_blank" rel="noreferrer">
-            wger.de
-          </a>{" "}
-          (licencia{" "}
-          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
-            CC-BY-SA
-          </a>
-          ).
-        </small>
-      </footer>
     </main>
   );
 }

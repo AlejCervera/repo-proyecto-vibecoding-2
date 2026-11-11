@@ -1,11 +1,16 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ApiError } from "../api/http";
 import { guardarPerfil, obtenerPerfil } from "../api/perfil";
+import type { Usuario } from "../api/auth";
 import { leerNumero } from "./perfil";
 
-type Props = { onSesionCaducada: () => void };
+type Props = {
+  usuario: Usuario;
+  onSalir: () => void;
+  onSesionCaducada: () => void;
+};
 
-export function PerfilPage({ onSesionCaducada }: Props) {
+export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
   const [altura, setAltura] = useState("");
   const [peso, setPeso] = useState("");
   const [cargado, setCargado] = useState(false);
@@ -68,6 +73,28 @@ export function PerfilPage({ onSesionCaducada }: Props) {
       )}
       {guardado && <p role="status">Perfil guardado.</p>}
       {error && <p role="alert">{error}</p>}
+
+      <h3>Cuenta</h3>
+      <p>
+        Has entrado como <strong>{usuario.nombre_usuario}</strong>.
+      </p>
+      <button type="button" className="grande" onClick={onSalir}>
+        Cerrar sesión
+      </button>
+
+      <p className="creditos">
+        <small>
+          Catálogo de ejercicios:{" "}
+          <a href="https://wger.de" target="_blank" rel="noreferrer">
+            wger.de
+          </a>{" "}
+          (licencia{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noreferrer">
+            CC-BY-SA
+          </a>
+          ). Fuente Archivo (licencia OFL).
+        </small>
+      </p>
     </section>
   );
 }

@@ -13,6 +13,7 @@ import {
 import type { Ejercicio } from "../ejercicios/ejercicio";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
 import { enlace, ir } from "../navegacion";
+import { HojaInferior } from "../ui/HojaInferior";
 import { EjercicioRutinaFila } from "./EjercicioRutinaFila";
 import { RecomendacionesPanel } from "./RecomendacionesPanel";
 import { mover, type Rutina } from "./rutina";
@@ -137,22 +138,26 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
         </form>
       )}
       {modo === "borrar" && (
-        <p>
-          ¿Borrar la rutina «{rutina.nombre}»? Tus series no se borran.{" "}
-          <button
-            type="button"
-            disabled={ocupado}
-            onClick={() =>
-              ejecutar(async () => {
-                await borrarRutina(rutina.id);
-                ir({ pantalla: "rutinas" });
-              })
-            }
-          >
-            Sí, borrar
-          </button>{" "}
-          {cancelar}
-        </p>
+        <HojaInferior titulo="Borrar rutina" onCerrar={() => cambiarModo("ver")}>
+          <p>¿Borrar la rutina «{rutina.nombre}»? Tus series no se borran.</p>
+          {error && <p role="alert">{error}</p>}
+          <div className="hoja-acciones">
+            <button
+              type="button"
+              className="peligro"
+              disabled={ocupado}
+              onClick={() =>
+                ejecutar(async () => {
+                  await borrarRutina(rutina.id);
+                  ir({ pantalla: "rutinas" });
+                })
+              }
+            >
+              Sí, borrar
+            </button>
+            {cancelar}
+          </div>
+        </HojaInferior>
       )}
 
       {rutina.ejercicios.length === 0 ? (
@@ -193,7 +198,7 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
           {cancelar}
         </div>
       )}
-      {error && <p role="alert">{error}</p>}
+      {modo !== "borrar" && error && <p role="alert">{error}</p>}
       {editable && modo === "ver" && (
         <RecomendacionesPanel rutina={rutina} onRutina={setRutina} onSesionCaducada={onSesionCaducada} />
       )}

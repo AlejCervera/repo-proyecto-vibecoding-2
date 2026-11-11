@@ -16,7 +16,7 @@ export async function registrar(page: Page, usuario: string) {
   await page.getByLabel("Contraseña").fill(PASSWORD);
   await page.getByLabel("Código de invitación").fill(CODIGO);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
-  await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Secciones" })).toBeVisible();
 }
 
 export async function entrar(page: Page, usuario: string, password = PASSWORD) {
@@ -25,12 +25,15 @@ export async function entrar(page: Page, usuario: string, password = PASSWORD) {
   await page.getByRole("button", { name: "Entrar" }).click();
 }
 
+/** «Cerrar sesión» está en la pestaña Perfil. */
 export async function salir(page: Page) {
+  await irA(page, "Perfil");
   await page.getByRole("button", { name: "Cerrar sesión" }).click();
   await expect(page.getByRole("heading", { name: "Iniciar sesión" })).toBeVisible();
 }
 
-export async function irA(page: Page, seccion: "Inicio" | "Diario" | "Rutinas" | "Mis ejercicios") {
+/** Pestañas de la barra inferior. «Entrenar» abre la lista de rutinas. */
+export async function irA(page: Page, seccion: "Inicio" | "Entrenar" | "Diario" | "Ejercicios" | "Perfil") {
   await page
     .getByRole("navigation", { name: "Secciones" })
     .getByRole("link", { name: seccion, exact: true })
@@ -39,7 +42,7 @@ export async function irA(page: Page, seccion: "Inicio" | "Diario" | "Rutinas" |
 
 /** Crea un ejercicio propio desde «Mis ejercicios». */
 export async function crearEjercicioPropio(page: Page, nombre: string) {
-  await irA(page, "Mis ejercicios");
+  await irA(page, "Ejercicios");
   await page.getByLabel("Nuevo ejercicio").fill(nombre);
   await page.getByRole("button", { name: "Crear", exact: true }).click();
   await expect(
@@ -63,7 +66,7 @@ export async function anadirARutina(page: Page, busqueda: string, nombre = busqu
 
 /** Crea una rutina propia con esos ejercicios; queda en su pantalla. */
 export async function crearRutina(page: Page, nombre: string, ejercicios: string[]) {
-  await irA(page, "Rutinas");
+  await irA(page, "Entrenar");
   await page.getByLabel("Nueva rutina").fill(nombre);
   await page.getByRole("button", { name: "Crear", exact: true }).click();
   await expect(page.getByRole("heading", { name: nombre, exact: true })).toBeVisible();
@@ -72,7 +75,7 @@ export async function crearRutina(page: Page, nombre: string, ejercicios: string
 
 /** Abre una rutina predefinida. */
 export async function abrirPredefinida(page: Page, nombre: string) {
-  await irA(page, "Rutinas");
+  await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
     .getByRole("link", { name: nombre, exact: true })

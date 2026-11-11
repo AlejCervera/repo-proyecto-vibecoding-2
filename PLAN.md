@@ -216,18 +216,102 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Fase 9 · Despliegue (solo con permiso explícito)
+## Rediseño (Fases 9 a 9c)
 
-**Objetivo:** que los dos móviles usen la app sin depender de tu PC.
+Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
+
+## Fase 9 · Rediseño: base común y login
+
+**Objetivo:** que toda la app tenga el nuevo aspecto y se navegue con el pulgar.
 
 **Tareas:**
-- [ ] Explicar dónde y cómo alojarlo, qué claves de producción harían falta y esperar un «adelante» específico antes de tocar nada.
-- [ ] Antes de publicar: limitar intentos de login y de código de invitación, HTTPS con `COOKIE_SECURE=true` y vaciar `INVITE_CODE` cuando existan las dos cuentas.
-- [ ] Con HTTPS funcionarán también: mantener la pantalla encendida al entrenar y abrir la app instalada a pantalla completa (con su atajo) en Android.
+- [x] Hoja de estilos nueva (colores, fuente, tamaños, números de ancho fijo); fuera el modo claro. Fuente Archivo en `web/public/fuentes/` con su licencia `OFL.txt`.
+- [x] Barra de pestañas inferior con iconos: Inicio · Entrenar · Diario · Ejercicios · Perfil. «Entrenar» abre la lista de rutinas. Arriba, solo el título de cada pantalla; el saludo «Hola, …» queda en Inicio. «Cerrar sesión» y la atribución a wger pasan a Perfil; al cerrar sesión se vuelve a Inicio.
+- [x] Piezas comunes en `web/src/ui/`, cada una con su prueba: foto en círculo discreta (pequeña, atenuada, iniciales en gris si no hay foto), hoja inferior, botones − / +, botón principal fijo abajo, aviso breve con «Deshacer». Las que aún no se usan se estrenan en las fases 9a y 9b.
+- [x] Las confirmaciones (borrar rutina, serie y ejercicio, quitar del diario) usan la hoja inferior.
+- [x] Pantalla de login y registro a pantalla completa.
 
-**Hecho cuando:** hay permiso explícito y la app funciona en ambos móviles.
+**Pruebas:**
+- Unitarias de las piezas comunes; web de la navegación; e2e ajustados a la nueva navegación y en tamaño iPhone (WebKit, nuevo proyecto «iphone» de Playwright). Los e2e corren con 2 procesos: con más, WebKit en Windows deja clics colgados al azar.
+
+**Hecho cuando:** todas las pantallas actuales funcionan con la barra inferior y el nuevo aspecto, y todas las pruebas pasan.
+
+## Fase 9a · Rediseño: entrenar en modo foco
+
+**Objetivo:** entrenar como en la maqueta 2B.
+
+**Tareas:**
+- [ ] Un ejercicio por pantalla: foto grande en círculo, puntos de progreso de ejercicios y de series, kilos y repeticiones en grande con − / + (2,5 kg y 1 rep), «la última vez» y lo hecho hoy.
+- [ ] Botón fijo «Hecha · empezar descanso» que guarda la serie y arranca el descanso; «Siguiente ejercicio» al completarlo. Lista de ejercicios accesible desde la cabecera.
+- [ ] Al tocar la foto: hoja inferior con la imagen, su licencia, la mejor serie, la última vez, «Cambiar foto» y «Ver historial».
+- [ ] Resumen final de celebración: duración, volumen, récords nuevos y comparación con la vez anterior, con «Guardar en el diario».
+
+**Pruebas:**
+- Unitarias (pasos de − / +, récords, comparación); web; e2e: entrenar «Pecho» completo solo con los botones − / + y guardarlo en el diario.
+
+**Hecho cuando:** se puede entrenar una rutina entera sin abrir el teclado y el resumen muestra los récords del día.
+
+## Fase 9b · Rediseño: resto de pantallas
+
+**Objetivo:** que Inicio, Rutinas, Ejercicios, Historial y Perfil sigan el mismo estilo y sean fáciles de usar con una mano.
+
+**Tareas:**
+- [ ] Inicio: tarjeta grande «Hoy toca: <rutina>» con «Empezar», la semana en 7 puntos y la última sesión con lo que mejoraste.
+- [ ] Rutinas: tarjetas con los círculos de sus ejercicios y «Empezar» en cada una; crear con botón + flotante y hoja inferior; renombrar y borrar en un menú ⋯; series y repeticiones con − / +; reordenar con ↑ ↓ grandes.
+- [ ] Ejercicios: buscador fijo arriba, pestañas «Míos / Catálogo»; al tocar uno, hoja inferior con foto, récord e historial.
+- [ ] Historial de un ejercicio: récord destacado y series agrupadas por día; al tocar una serie, se edita en la hoja inferior.
+- [ ] Perfil: altura y peso con − / + y «Cerrar sesión».
+
+**Pruebas:**
+- Web de cada pantalla; e2e existentes ajustados (rutinas, ejercicios, historial, editar y borrar, perfil).
+
+**Hecho cuando:** todas las pantallas siguen la maqueta y los e2e pasan en tamaño iPhone.
+
+## Fase 9c · Diario con gráficas
+
+**Objetivo:** ver el progreso de un vistazo.
+
+**Tareas:**
+- [ ] Cálculos en funciones puras (sin tocar la API): entrenos por semana, volumen semanal (kg × reps), días entrenados del mes y racha, récords (peso máximo y 1RM estimado por Epley).
+- [ ] Gráficas en SVG propio (sin librerías), arriba del diario en tarjetas deslizables: entrenos por semana (12 semanas), volumen semanal, calendario de constancia del mes y récords recientes.
+- [ ] Gráfica de progreso en el historial de cada ejercicio: peso máximo y 1RM estimado por sesión.
+- [ ] La lista de entrenamientos pasa a tarjetas.
+
+**Pruebas:**
+- Unitarias de todos los cálculos (semanas sin datos, cambio de año, una sola sesión); web de las gráficas (con texto accesible); e2e: tras entrenar, el diario muestra la semana con un entreno.
+
+**Hecho cuando:** el diario enseña las cuatro tarjetas con datos reales y el historial de un ejercicio su gráfica de progreso.
+
+## Fase 10 · Preparar para producción (en local)
+
+**Objetivo:** que la app esté lista para publicarse sin tocar todavía la nube.
+
+**Tareas:**
+- [ ] Límite de 5 recomendaciones al día por usuario; en la rutina, «Te quedan N hoy» y aviso al llegar a 0 (se mantiene el aviso del 429 de Gemini).
+- [ ] Limitar intentos de login y de código de invitación.
+- [ ] La API bajo `/api` y FastAPI sirviendo el frontend compilado (un solo servicio).
+- [ ] Dockerfile de producción en dos etapas, usuario sin root, `/docs` desactivado; las migraciones como paso aparte del arranque.
+- [ ] `COOKIE_SECURE=true` por defecto y comprobación de que `SESSION_SECRET` es largo.
+
+**Pruebas:**
+- API del límite diario y de intentos; web del contador; la imagen de producción arranca y pasa los e2e en local.
+
+**Hecho cuando:** la imagen de producción funciona en local con todas las pruebas en verde.
+
+## Fase 11 · Despliegue en Google Cloud (solo con permiso explícito)
+
+**Objetivo:** que los móviles usen la app sin depender de tu PC, a coste 0 €.
+
+**Tareas:**
+- [ ] Montaje gratuito: Cloud Run (app) en `us-central1` + Postgres en una VM e2-micro «Always Free» sin IP pública (conexión interna) + Secret Manager + copia diaria con `pg_dump` a Cloud Storage. Revisar precios antes de crear nada.
+- [ ] Alerta de presupuesto (aviso a 1 €).
+- [ ] Cada comando se enseña antes y espera un «adelante» específico para esa acción.
+- [ ] Vaciar `INVITE_CODE` cuando existan las tres cuentas.
+- [ ] Con HTTPS: instalar en iPhone desde Safari («Añadir a pantalla de inicio»), pantalla encendida al entrenar.
+
+**Hecho cuando:** hay permiso explícito y la app funciona en los tres móviles.
 
 ## Mejoras futuras (fuera de este plan)
 
-Exportar copia de seguridad, gráficas y récords, modo sin conexión.
+Exportar copia de seguridad, modo sin conexión.
 

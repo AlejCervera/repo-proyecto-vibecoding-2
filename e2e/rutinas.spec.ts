@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { nombreUnico, registrar } from "./cuentas";
+import { irA, nombreUnico, registrar } from "./cuentas";
 
 test.beforeEach(async ({ page }) => {
   await registrar(page, nombreUnico("rut"));
-  await page.getByRole("navigation").getByRole("link", { name: "Rutinas" }).click();
+  await irA(page, "Entrenar");
 });
 
 const ejercicios = (page: Page) =>

@@ -33,14 +33,18 @@ test("con sesión, la primera pantalla es el inicio y la navegación lo marca", 
   );
   render(<App />);
   expect(await screen.findByRole("link", { name: "▶ Iniciar entrenamiento" })).toBeTruthy();
+  expect(document.querySelector(".saludo")!.textContent).toBe("Hola, ana");
   const nav = screen.getByRole("navigation", { name: "Secciones" });
   expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
     "Inicio",
+    "Entrenar",
     "Diario",
-    "Rutinas",
-    "Mis ejercicios",
+    "Ejercicios",
+    "Perfil",
   ]);
   expect(within(nav).getByRole("link", { current: "page" }).textContent).toBe("Inicio");
+  // Con sesión, el nombre de la app queda solo para lectores de pantalla
+  expect(screen.getByRole("heading", { level: 1, name: "Gym Log" }).className).toBe("oculto");
 });
 
 test("el diario lista los entrenamientos y abre su detalle", async () => {
@@ -76,18 +80,22 @@ test("el diario lista los entrenamientos y abre su detalle", async () => {
   expect(within(nav).getByRole("link", { current: "page" }).textContent).toBe("Diario");
 });
 
-test("cerrar sesión vuelve a la pantalla de inicio de sesión", async () => {
-  window.location.hash = "#/diario";
+test("cerrar sesión (en Perfil) vuelve a la pantalla de inicio de sesión", async () => {
+  window.location.hash = "#/perfil";
   const fetch = simularFetch(
     { status: 200, body: ANA },
-    { status: 200, body: [] },
+    { status: 200, body: { altura_cm: null, peso_corporal_kg: null } },
     { status: 204, body: null },
   );
   render(<App />);
-  await screen.findByText(/Aún no hay entrenamientos en el diario/);
+  expect(await screen.findByText("ana")).toBeTruthy();
+  const nav = screen.getByRole("navigation", { name: "Secciones" });
+  expect(within(nav).getByRole("link", { current: "page" }).textContent).toBe("Perfil");
   fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" }));
   expect(await screen.findByRole("heading", { name: "Iniciar sesión" })).toBeTruthy();
   expect(fetch).toHaveBeenLastCalledWith("/api/auth/logout", { method: "POST" });
+  // Quien entre después empieza en Inicio, no en el Perfil de la cuenta anterior
+  expect(window.location.hash).toBe("#/");
 });
 
 test("si la sesión caduca al cargar el diario, vuelve al inicio de sesión", async () => {

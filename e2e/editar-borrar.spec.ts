@@ -40,7 +40,7 @@ test("renombrar un ejercicio propio y borrarlo pasando sus series a otro", async
     ["Remo en polea", "40", "12"],
   ]);
 
-  await irA(page, "Mis ejercicios");
+  await irA(page, "Ejercicios");
   const mis = page.getByRole("list", { name: "Mis ejercicios" });
   const remo = mis.getByRole("listitem").filter({ hasText: "Remo maquina" });
   await expect(remo).toContainText("(2 series)");

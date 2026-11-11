@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { nombreUnico, registrar } from "./cuentas";
+import { irA, nombreUnico, registrar } from "./cuentas";
 
 async function empezarPecho(page: Page) {
   await registrar(page, nombreUnico("cron"));
-  await page.getByRole("navigation").getByRole("link", { name: "Rutinas" }).click();
+  await irA(page, "Entrenar");
   await page
     .getByRole("list", { name: "Rutinas predefinidas" })
     .getByRole("link", { name: "Pecho" })

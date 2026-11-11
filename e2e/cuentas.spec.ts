@@ -48,6 +48,6 @@ test("dos cuentas no ven las series de la otra", async ({ browser }) => {
   await expect(diarioB).toContainText("Rutina de Bea");
 
   // Ni rutinas ni historial de la otra cuenta
-  await irA(b, "Rutinas");
+  await irA(b, "Entrenar");
   await expect(b.getByRole("list", { name: "Mis rutinas" })).not.toContainText("Rutina de Ana");
 });

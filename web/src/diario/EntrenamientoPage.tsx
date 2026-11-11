@@ -4,6 +4,7 @@ import { ApiError } from "../api/http";
 import { fechaCorta } from "../inicio/resumen";
 import { enlace, enlaceHistorial, ir } from "../navegacion";
 import { SeriesList } from "../series/SeriesList";
+import { HojaInferior } from "../ui/HojaInferior";
 
 type Props = { entrenamientoId: number; onSesionCaducada: () => void };
 
@@ -67,23 +68,27 @@ export function EntrenamientoPage({ entrenamientoId, onSesionCaducada }: Props) 
         </article>
       ))}
 
-      {!confirmando ? (
-        <button type="button" onClick={() => setConfirmando(true)}>
-          Quitar del diario
-        </button>
-      ) : (
-        <p>
-          ¿Quitar este entrenamiento del diario? Sus series se quedan en el historial de cada
-          ejercicio.{" "}
-          <button type="button" onClick={quitar}>
-            Sí, quitar
-          </button>{" "}
-          <button type="button" onClick={() => setConfirmando(false)}>
-            Cancelar
-          </button>
-        </p>
+      <button type="button" onClick={() => setConfirmando(true)}>
+        Quitar del diario
+      </button>
+      {confirmando && (
+        <HojaInferior titulo="Quitar del diario" onCerrar={() => setConfirmando(false)}>
+          <p>
+            ¿Quitar este entrenamiento del diario? Sus series se quedan en el historial de cada
+            ejercicio.
+          </p>
+          {error && <p role="alert">{error}</p>}
+          <div className="hoja-acciones">
+            <button type="button" className="peligro" onClick={quitar}>
+              Sí, quitar
+            </button>
+            <button type="button" onClick={() => setConfirmando(false)}>
+              Cancelar
+            </button>
+          </div>
+        </HojaInferior>
       )}
-      {error && <p role="alert">{error}</p>}
+      {!confirmando && error && <p role="alert">{error}</p>}
     </section>
   );
 }

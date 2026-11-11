@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { crearRutina, nombreUnico, registrar } from "./cuentas";
+import { crearRutina, irA, nombreUnico, registrar } from "./cuentas";
 
 // Los e2e nunca llaman a Gemini (GEMINI_API_KEY vacía en entorno.ts): la respuesta de la IA
 // se simula en el navegador; el perfil, la rutina y «Aplicar» van contra la API real.
@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 const panel = (page: Page) => page.getByRole("region", { name: "Recomendaciones de la IA" });
 
 async function guardarPerfil(page: Page, altura: string, peso: string) {
-  await page.getByRole("link", { name: "Mi perfil" }).click();
+  await irA(page, "Perfil");
   await page.getByLabel("Altura (cm)").fill(altura);
   await page.getByLabel("Peso corporal (kg)").fill(peso);
   await page.getByRole("button", { name: "Guardar perfil" }).click();

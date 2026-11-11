@@ -35,7 +35,8 @@ export function AuthScreen({ onEntrar }: Props) {
   }
 
   return (
-    <section>
+    <section className="acceso">
+      <p className="saludo">Tu cuaderno de gimnasio.</p>
       <h2>{esRegistro ? "Crear cuenta" : "Iniciar sesión"}</h2>
       <form onSubmit={enviar} noValidate aria-label={esRegistro ? "Crear cuenta" : "Iniciar sesión"}>
         <label>
@@ -63,11 +64,11 @@ export function AuthScreen({ onEntrar }: Props) {
           </label>
         )}
         {error && <p role="alert">{error}</p>}
-        <button type="submit" disabled={enviando}>
+        <button type="submit" className="grande" disabled={enviando}>
           {esRegistro ? "Crear cuenta" : "Entrar"}
         </button>
       </form>
-      <button type="button" onClick={cambiarModo}>
+      <button type="button" className="discreto" onClick={cambiarModo}>
         {esRegistro ? "Ya tengo cuenta" : "Crear una cuenta"}
       </button>
     </section>

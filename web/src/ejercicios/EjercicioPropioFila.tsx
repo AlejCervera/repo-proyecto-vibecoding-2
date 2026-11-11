@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { borrarEjercicio, renombrarEjercicio, type OpcionBorrado } from "../api/ejercicios";
 import { enlaceHistorial } from "../navegacion";
+import { HojaInferior } from "../ui/HojaInferior";
 import type { Ejercicio, EjercicioPropio } from "./ejercicio";
 import { EjercicioPicker } from "./EjercicioPicker";
 
@@ -99,40 +100,57 @@ export function EjercicioPropioFila({ ejercicio, onRenombrado, onBorrado }: Prop
         </>
       )}
       {modo === "borrar" && n === 0 && (
-        <p>
-          ¿Borrar «{ejercicio.nombre}»?{" "}
-          <button type="button" onClick={() => borrar(null)} disabled={ocupado}>
-            Sí, borrar
-          </button>{" "}
-          {cancelar}
-        </p>
+        <HojaInferior titulo="Borrar ejercicio" onCerrar={() => cambiarModo("ver")}>
+          <p>¿Borrar «{ejercicio.nombre}»?</p>
+          {aviso}
+          <div className="hoja-acciones">
+            <button type="button" className="peligro" onClick={() => borrar(null)} disabled={ocupado}>
+              Sí, borrar
+            </button>
+            {cancelar}
+          </div>
+        </HojaInferior>
       )}
       {modo === "borrar" && n > 0 && (
-        <p>
-          «{ejercicio.nombre}» tiene {plural(n)}. ¿Qué hacemos con ellas?{" "}
-          <button type="button" onClick={() => borrar({ series: "borrar" })} disabled={ocupado}>
-            Borrarlas también
-          </button>{" "}
-          <button type="button" onClick={() => cambiarModo("mover")}>
-            Pasarlas a otro ejercicio…
-          </button>{" "}
-          {cancelar}
-        </p>
+        <HojaInferior titulo="Borrar ejercicio" onCerrar={() => cambiarModo("ver")}>
+          <p>
+            «{ejercicio.nombre}» tiene {plural(n)}. ¿Qué hacemos con ellas?
+          </p>
+          {aviso}
+          <div className="hoja-acciones">
+            <button
+              type="button"
+              className="peligro"
+              onClick={() => borrar({ series: "borrar" })}
+              disabled={ocupado}
+            >
+              Borrarlas también
+            </button>
+            <button type="button" onClick={() => cambiarModo("mover")}>
+              Pasarlas a otro ejercicio…
+            </button>
+            {cancelar}
+          </div>
+        </HojaInferior>
       )}
       {modo === "mover" && (
-        <div>
+        <HojaInferior titulo="Pasar las series" onCerrar={() => cambiarModo("ver")}>
           <EjercicioPicker compacto etiqueta="Pasar a" value={destino} onChange={setDestino} />
-          <button
-            type="button"
-            disabled={!destino || ocupado}
-            onClick={() => destino && borrar({ mover_a: destino.id })}
-          >
-            Pasar las series y borrar «{ejercicio.nombre}»
-          </button>{" "}
-          {cancelar}
-        </div>
+          {aviso}
+          <div className="hoja-acciones">
+            <button
+              type="button"
+              className="primario"
+              disabled={!destino || ocupado}
+              onClick={() => destino && borrar({ mover_a: destino.id })}
+            >
+              Pasar las series y borrar «{ejercicio.nombre}»
+            </button>
+            {cancelar}
+          </div>
+        </HojaInferior>
       )}
-      {aviso}
+      {modo === "ver" && aviso}
     </li>
   );
 }
