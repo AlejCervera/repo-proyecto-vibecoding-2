@@ -10,13 +10,18 @@ export function formatearTranscurrido(ms: number): string {
   return h > 0 ? `${h}:${dos(m)}:${dos(s)}` : `${m}:${dos(s)}`;
 }
 
-/** Tiempo que llevas entrenando. Se repinta solo él cada segundo, no toda la pantalla. */
-export function TiempoEntreno({ inicio }: { inicio: number }) {
+/**
+ * Tiempo que llevas entrenando, desde la primera serie de hoy («Sin empezar» antes).
+ * Se repinta solo él cada segundo, no toda la pantalla.
+ */
+export function TiempoEntreno({ inicio }: { inicio: number | null }) {
   const [ahora, setAhora] = useState(() => Date.now());
   useEffect(() => {
+    if (inicio === null) return;
     const id = setInterval(() => setAhora(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [inicio]);
+  if (inicio === null) return <span className="tiempo-entreno sin-empezar">Sin empezar</span>;
   return (
     <span className="tiempo-entreno">
       <span className="oculto">Llevas </span>

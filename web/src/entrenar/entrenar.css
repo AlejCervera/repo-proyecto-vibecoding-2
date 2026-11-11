@@ -2,11 +2,27 @@
 
 /* --- Cabecera: salir, rutina y tiempo, lista de ejercicios ------------------------------ */
 
+/* Fija arriba: el reloj del descanso sigue a la vista al bajar por la pantalla */
 .entreno-cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 60px;
+  margin: 0 -16px;
+  padding: calc(4px + env(safe-area-inset-top)) 16px 4px;
+  background: var(--fondo);
+}
+
+.entreno-derecha {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: var(--toque);
 }
 
 .entreno-salir,
@@ -49,6 +65,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tiempo-entreno.sin-empezar {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--suave);
+}
+
 /* Un tramo por ejercicio: el actual en lima, los completos en lima apagado */
 .progreso {
   display: grid;
@@ -72,45 +94,169 @@
   background: var(--acento);
 }
 
-/* --- Descanso, compacto ------------------------------------------------------------------ */
+/* --- Descanso: reloj circular ------------------------------------------------------------ */
 
-.entreno section[aria-label="Descanso"] {
-  margin: 0 -16px 12px;
-  border-bottom: 0;
-}
-
-/* Cada fila del descanso en una sola línea (se desliza si no cabe, sin ensanchar la página) */
-.entreno section[aria-label="Descanso"] p {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-}
-
-.entreno section[aria-label="Descanso"] p > * {
+.anillo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  white-space: nowrap;
-  overflow-wrap: normal;
 }
 
-/* El reloj en lima ya se entiende solo: la palabra «Descanso» queda para lectores de pantalla */
-.entreno section[aria-label="Descanso"] strong {
+.anillo svg {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+  inset: 0;
 }
 
-.entreno section[aria-label="Descanso"] button {
-  flex-shrink: 0;
-  padding: 6px 10px;
-  font-size: 0.85rem;
-  white-space: nowrap;
+.anillo-fondo {
+  stroke: var(--superficie-2);
 }
 
-.entreno [role="timer"] {
-  font-size: 1.8rem;
-  min-width: 3.2ch;
+.anillo-arco {
+  stroke: var(--acento);
+  transition: stroke-dashoffset 0.25s linear;
+}
+
+/* Terminado: el anillo entero en lima */
+.anillo.terminado .anillo-fondo {
+  stroke: var(--acento);
+}
+
+.anillo-centro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* El pequeño de la cabecera: es un botón que abre la hoja */
+.reloj-descanso {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.reloj-descanso:has(.terminado) {
   color: var(--acento);
+}
+
+/* La hoja: reloj grande, −15 s / pausa / +15 s y saltar */
+.descanso-grande {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 20px;
+}
+
+.descanso-tiempo {
+  font-size: 3.4rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.descanso-total {
+  color: var(--suave);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.anillo.terminado .descanso-total {
+  color: var(--acento);
+}
+
+.descanso-controles {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.descanso-controles button {
+  min-height: 56px;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.descanso-grande .grande {
+  margin: 0;
+}
+
+/* Descanso guardado del ejercicio, con − / + de 15 s */
+.descanso-ejercicio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--fondo);
+}
+
+.hoja .descanso-ejercicio p {
+  margin: 0;
+}
+
+.descanso-etiqueta {
+  font-weight: 700;
+}
+
+.descanso-nota {
+  font-size: 0.85rem;
+  color: var(--suave);
+}
+
+.descanso-ajuste {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.descanso-ajuste output {
+  min-width: 3.2ch;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.descanso-ajuste button {
+  padding: 0;
+}
+
+/* «Descanso 1:30» en el ejercicio: una píldora discreta al lado del objetivo; el botón que la
+   rodea mide 44 px de alto para el dedo. */
+.paso-descanso {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  vertical-align: middle;
+}
+
+.paso-descanso .pildora {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--suave);
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- El ejercicio ------------------------------------------------------------------------- */

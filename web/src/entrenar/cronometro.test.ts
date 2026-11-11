@@ -1,8 +1,10 @@
 import { expect, test } from "vitest";
 import {
+  ajustarDuracion,
   enPausa,
-  etiquetaDuracion,
   formatear,
+  fraccion,
+  sumarTiempo,
   guardarCronometro,
   guardarDuracion,
   iniciar,
@@ -52,22 +54,58 @@ test("formatear redondea hacia arriba", () => {
   expect(formatear(0)).toBe("0:00");
 });
 
-test("etiquetas de los botones rápidos", () => {
-  expect([60_000, 90_000, 120_000, 180_000].map(etiquetaDuracion)).toEqual([
-    "60 s",
-    "90 s",
-    "2 min",
-    "3 min",
-  ]);
+test("+15 s / −15 s sobre el descanso en marcha cambian lo que queda y el total", () => {
+  const c = iniciar(90_000, T);
+  const mas = sumarTiempo(c, 15_000, T + 30_000); // quedaban 60 s
+  expect(restante(mas, T + 30_000)).toBe(75_000);
+  expect(mas.duracion).toBe(105_000);
+  const menos = sumarTiempo(c, -15_000, T + 30_000);
+  expect(restante(menos, T + 30_000)).toBe(45_000);
+  expect(menos.duracion).toBe(75_000);
 });
 
-test("recuerda la duración elegida (90 s si no hay o no es válida)", () => {
+test("−15 s nunca deja el descanso por debajo de 0, y funciona en pausa", () => {
+  const casiFin = sumarTiempo(iniciar(60_000, T), -15_000, T + 55_000);
+  expect(restante(casiFin, T + 55_000)).toBe(0);
+  const pausado = pausar(iniciar(60_000, T), T + 10_000); // quedan 50 s
+  const mas = sumarTiempo(pausado, 15_000, T + 99_000);
+  expect(enPausa(mas)).toBe(true);
+  expect(restante(mas, T + 200_000)).toBe(65_000);
+});
+
+test("fracción del anillo: de 1 a 0", () => {
+  const c = iniciar(120_000, T);
+  expect(fraccion(c, T)).toBe(1);
+  expect(fraccion(c, T + 30_000)).toBe(0.75);
+  expect(fraccion(c, T + 999_000)).toBe(0);
+});
+
+test("ajustar la duración: de 15 s en 15 s, entre 15 s y 10 min", () => {
+  expect(ajustarDuracion(90_000, 1)).toBe(105_000);
+  expect(ajustarDuracion(90_000, -1)).toBe(75_000);
+  expect(ajustarDuracion(15_000, -1)).toBe(15_000);
+  expect(ajustarDuracion(600_000, 1)).toBe(600_000);
+});
+
+test("descanso por ejercicio: el suyo, si no el último elegido y, si no, 1:30", () => {
   localStorage.clear();
-  expect(leerDuracion()).toBe(90_000);
-  guardarDuracion(120_000);
-  expect(leerDuracion()).toBe(120_000);
+  expect(leerDuracion(10)).toBe(90_000);
+  guardarDuracion(180_000, 10);
+  expect(leerDuracion(10)).toBe(180_000);
+  // Otro ejercicio sin descanso propio usa el último elegido
+  expect(leerDuracion(11)).toBe(180_000);
+  guardarDuracion(60_000, 11);
+  expect(leerDuracion(10)).toBe(180_000);
+  expect(leerDuracion(11)).toBe(60_000);
+  expect(leerDuracion()).toBe(60_000);
+  localStorage.clear();
+});
+
+test("un descanso guardado fuera de rango o roto no se usa", () => {
+  localStorage.clear();
   localStorage.setItem("gymlog-descanso", "7");
-  expect(leerDuracion()).toBe(90_000);
+  localStorage.setItem("gymlog-descanso-10", "nada");
+  expect(leerDuracion(10)).toBe(90_000);
   localStorage.clear();
 });
 

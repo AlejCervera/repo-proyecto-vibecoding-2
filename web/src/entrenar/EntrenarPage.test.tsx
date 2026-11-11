@@ -169,12 +169,43 @@ test("«Deshacer» borra la serie recién guardada y para el descanso", async ()
   expect(screen.queryByRole("timer")).toBeNull();
 });
 
-test("elegir una duración la recuerda para las siguientes series", async () => {
-  pintar(0, RUTINA, [], historial(10, "Press de banca", []));
-  await screen.findByRole("article", { name: "Press de banca" });
-  fireEvent.click(screen.getByRole("button", { name: "60 s" }));
-  expect(screen.getByRole("timer").textContent).toMatch(/^(1:00|0:59)$/);
-  expect(localStorage.getItem("gymlog-descanso")).toBe("60000");
+test("cada ejercicio recuerda su descanso y «Hecha» lo usa", async () => {
+  pintar(0, RUTINA, [], historial(10, "Press de banca", []), {
+    status: 201,
+    body: serie(20, HOY, 10, 60, 10),
+  });
+  const paso = await screen.findByRole("article", { name: "Press de banca" });
+  // Sin descanso propio: 1:30. Al tocarlo se abre la hoja, sin descanso en marcha.
+  fireEvent.click(within(paso).getByRole("button", { name: "Descanso 1:30: cambiarlo" }));
+  const hoja = screen.getByRole("dialog", { name: "Descanso" });
+  expect(screen.queryByRole("timer")).toBeNull();
+  fireEvent.click(within(hoja).getByRole("button", { name: "Más descanso" }));
+  fireEvent.click(within(hoja).getByRole("button", { name: "Más descanso" }));
+  expect(within(hoja).getByLabelText("Descanso de Press de banca").textContent).toBe("2:00");
+  expect(localStorage.getItem("gymlog-descanso-10")).toBe("120000");
+  fireEvent.click(within(hoja).getByRole("button", { name: "Cerrar" }));
+
+  expect(within(paso).getByRole("button", { name: "Descanso 2:00: cambiarlo" })).toBeTruthy();
+  fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(hecha());
+  expect((await screen.findByRole("timer")).textContent).toMatch(/^(2:00|1:59)$/);
+});
+
+test("el tiempo de arriba no empieza hasta la primera serie", async () => {
+  pintar(0, RUTINA, [], historial(10, "Press de banca", []), {
+    status: 201,
+    body: serie(20, HOY, 10, 60, 10),
+  });
+  const paso = await screen.findByRole("article", { name: "Press de banca" });
+  expect(document.querySelector(".tiempo-entreno")!.textContent).toBe("Sin empezar");
+  expect(localStorage.getItem(`gymlog-inicio-7-${HOY}`)).toBeNull();
+
+  fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
+  fireEvent.click(hecha());
+  await vi.waitFor(() =>
+    expect(document.querySelector(".tiempo-entreno")!.textContent).toMatch(/^Llevas 0:0\d$/),
+  );
+  expect(Number(localStorage.getItem(`gymlog-inicio-7-${HOY}`))).toBeGreaterThan(0);
 });
 
 test("añadir y quitar series para hoy; no se puede quitar por debajo de las hechas", async () => {

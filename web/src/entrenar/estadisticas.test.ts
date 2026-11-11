@@ -4,6 +4,7 @@ import {
   comparacionVolumen,
   formatearDuracion,
   formatearKilos,
+  leerInicio,
   marcarInicio,
   mejorSerie,
   pistaProgresion,
@@ -89,7 +90,9 @@ test("pista de progresión: subir 2,5 kg al llegar al máximo del objetivo", () 
 });
 
 test("la hora de inicio se guarda la primera vez y se reutiliza después", () => {
+  expect(leerInicio(7, HOY)).toBeNull();
   expect(marcarInicio(7, HOY, 1000)).toBe(1000);
+  expect(leerInicio(7, HOY)).toBe(1000);
   expect(marcarInicio(7, HOY, 5000)).toBe(1000);
   expect(marcarInicio(8, HOY, 5000)).toBe(5000);
 });

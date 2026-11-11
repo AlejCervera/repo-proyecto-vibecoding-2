@@ -105,9 +105,22 @@ export function pistaProgresion(peso: number | null, repsMax: number | null): st
   return `Si completas todas a ${repsMax} repeticiones, la próxima vez ${formatearNumero(peso + PASO_KG)} kg.`;
 }
 
-/** Hora de inicio del entreno de hoy con esta rutina: se guarda la primera vez que se abre. */
+/**
+ * Hora de inicio del entreno de hoy con esta rutina: la de la primera serie guardada
+ * (no la de abrir la pantalla, que puede ser horas antes). null si aún no hay ninguna.
+ */
 const claveInicio = (rutinaId: number, hoy: string) => `gymlog-inicio-${rutinaId}-${hoy}`;
 
+export function leerInicio(rutinaId: number, hoy: string): number | null {
+  try {
+    const guardado = Number(localStorage.getItem(claveInicio(rutinaId, hoy)));
+    return guardado > 0 ? guardado : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Marca el inicio si aún no lo tenía y lo devuelve (se llama al guardar cada serie). */
 export function marcarInicio(rutinaId: number, hoy: string, ahora: number): number {
   try {
     const guardado = Number(localStorage.getItem(claveInicio(rutinaId, hoy)));

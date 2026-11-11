@@ -27,6 +27,8 @@ test("una respuesta que llega tarde no pisa lo que el usuario ya ha escrito", as
         previstas={3}
         repsMin={8}
         repsMax={12}
+        descanso={90_000}
+        onAbrirDescanso={vi.fn()}
         onCambiarPrevistas={vi.fn()}
         onGuardada={vi.fn()}
         onBorrada={vi.fn()}

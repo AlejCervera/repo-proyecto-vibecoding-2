@@ -18,10 +18,11 @@ import {
   type Cronometro,
 } from "./cronometro";
 import { CronometroPanel } from "./CronometroPanel";
-import { marcarInicio } from "./estadisticas";
+import { leerInicio, marcarInicio } from "./estadisticas";
 import { guardarAjustes, leerAjustes } from "./plan";
 import { PasoEjercicio } from "./PasoEjercicio";
 import { contarHoy } from "./progreso";
+import { RelojDescanso } from "./RelojDescanso";
 import { ResumenEntreno } from "./ResumenEntreno";
 import { TiempoEntreno } from "./TiempoEntreno";
 
@@ -35,9 +36,14 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
   const [listaEnPaso, setListaEnPaso] = useState<number | "fin" | null>(null);
   const listaAbierta = listaEnPaso === paso;
   const setListaAbierta = (abierta: boolean) => setListaEnPaso(abierta ? paso : null);
+  // Igual con la hoja del descanso
+  const [descansoEnPaso, setDescansoEnPaso] = useState<number | "fin" | null>(null);
+  const descansoAbierto = descansoEnPaso === paso;
   const hoy = useMemo(() => hoyISO(), []);
-  // Hora de inicio del entreno de hoy (para el tiempo de arriba y la duración del resumen)
-  const inicio = useMemo(() => marcarInicio(rutinaId, hoy, Date.now()), [rutinaId, hoy]);
+  // Inicio del entreno de hoy: con la primera serie guardada (no al abrir la pantalla)
+  const [inicio, setInicio] = useState<number | null>(() => leerInicio(rutinaId, hoy));
+  // El descanso de cada ejercicio se guarda en el navegador; esto solo fuerza a repintar.
+  const [, setVersionDescanso] = useState(0);
   // Series previstas para hoy cuando difieren de la rutina (+/− durante el entrenamiento)
   const [ajustes, setAjustes] = useState<Record<number, number>>(() => leerAjustes(rutinaId, hoy));
 
@@ -68,9 +74,9 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
     guardarCronometro(c);
   }
 
-  function elegirDuracion(ms: number) {
-    guardarDuracion(ms);
-    cambiarCronometro(iniciar(ms, Date.now()));
+  function cambiarDescanso(ejercicioId: number, ms: number) {
+    guardarDuracion(ms, ejercicioId);
+    setVersionDescanso((v) => v + 1);
   }
 
   const salir = (
@@ -136,10 +142,13 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
           </h2>
           <TiempoEntreno inicio={inicio} />
         </div>
-        <button type="button" className="entreno-lista" onClick={() => setListaAbierta(true)}>
-          <IconoEjercicios />
-          <span className="oculto">Ejercicios</span>
-        </button>
+        <div className="entreno-derecha">
+          <RelojDescanso cronometro={cronometro} onAbrir={() => setDescansoEnPaso(paso)} />
+          <button type="button" className="entreno-lista" onClick={() => setListaAbierta(true)}>
+            <IconoEjercicios />
+            <span className="oculto">Ejercicios</span>
+          </button>
+        </div>
       </header>
 
       <div className="progreso" aria-hidden="true">
@@ -182,11 +191,16 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
         </HojaInferior>
       )}
 
-      <CronometroPanel
-        cronometro={cronometro}
-        onCambiar={cambiarCronometro}
-        onElegirDuracion={elegirDuracion}
-      />
+      {descansoAbierto && (
+        <CronometroPanel
+          cronometro={cronometro}
+          onCambiar={cambiarCronometro}
+          ejercicio={e.nombre}
+          duracion={leerDuracion(e.id)}
+          onCambiarDuracion={(ms) => cambiarDescanso(e.id, ms)}
+          onCerrar={() => setDescansoEnPaso(null)}
+        />
+      )}
       <PasoEjercicio
         key={e.id}
         ejercicioId={e.id}
@@ -194,10 +208,13 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
         previstas={previstas(e.id, e.series)}
         repsMin={e.reps_min}
         repsMax={e.reps_max}
+        descanso={leerDuracion(e.id)}
+        onAbrirDescanso={() => setDescansoEnPaso(paso)}
         onCambiarPrevistas={(n) => cambiarAjustes({ ...ajustes, [e.id]: n })}
         onGuardada={(s) => {
           setSeries((prev) => [s, ...prev]);
-          cambiarCronometro(iniciar(leerDuracion(), Date.now()));
+          setInicio(marcarInicio(rutinaId, hoy, Date.now()));
+          cambiarCronometro(iniciar(leerDuracion(e.id), Date.now()));
         }}
         onBorrada={(id) => {
           setSeries((prev) => prev.filter((s) => s.id !== id));

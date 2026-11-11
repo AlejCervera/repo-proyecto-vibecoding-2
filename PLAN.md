@@ -244,6 +244,9 @@ Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claud
 - [x] Un ejercicio por pantalla: foto pequeña (36 px) al lado del nombre, barra de progreso de ejercicios, series de hoy como puntos (con + / − serie), kilos y repeticiones en grande con − / + (2,5 kg y 1 rep; el número también se puede escribir), «la última vez» y una pista de progresión (al llegar al máximo del objetivo, +2,5 kg).
 - [x] Botón fijo «Hecha · empezar descanso» que guarda la serie y arranca el descanso, con aviso «Serie guardada · Deshacer»; al completarlo, «Siguiente ejercicio» o, en el último, «Terminar entreno». Cabecera con ✕ (salir a la rutina), rutina y tiempo, y lista de ejercicios en la hoja inferior.
 - [x] Mientras se entrena no hay barra de pestañas; en el resumen final vuelven.
+- [x] Descanso como reloj circular pequeño en la cabecera (fija arriba), solo mientras corre; al tocarlo, hoja con el reloj grande, −15 s / +15 s, pausa y «Saltar». Sustituye a la fila de botones (60 s, 90 s…).
+- [x] Descanso por ejercicio, ajustable con − / + de 15 s (de 15 s a 10 min) desde la píldora «⏱ 1:30» del ejercicio o la hoja; se guarda en el navegador (sin tocar la API). Sin descanso propio, el último elegido; si no, 1:30.
+- [x] El tiempo de arriba y la duración del resumen cuentan desde la primera serie guardada, no desde que se abre la pantalla («Sin empezar» antes).
 - [x] Al tocar la foto: hoja inferior con la imagen y su licencia, la mejor serie, la última vez, subir o cambiar la imagen y «Ver historial».
 - [x] Resumen final de celebración: duración (desde que se abre el entreno ese día; se guarda la hora en el navegador porque las series solo tienen fecha), volumen, récords nuevos (más peso que cualquier día anterior; la primera vez no cuenta) y comparación con la vez anterior solo de los ejercicios hechos hoy, con «Guardar en el diario».
 
@@ -290,25 +293,30 @@ Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claud
 **Tareas:**
 - [ ] Límite de 5 recomendaciones al día por usuario; en la rutina, «Te quedan N hoy» y aviso al llegar a 0 (se mantiene el aviso del 429 de Gemini).
 - [ ] Limitar intentos de login y de código de invitación.
-- [ ] La API bajo `/api` y FastAPI sirviendo el frontend compilado (un solo servicio).
-- [ ] Dockerfile de producción en dos etapas, usuario sin root, `/docs` desactivado; las migraciones como paso aparte del arranque.
+- [ ] La API bajo `/api` y FastAPI sirviendo el frontend compilado: un solo servicio y un solo contenedor.
+- [ ] Dockerfile de producción en dos etapas (Node compila la web, Python la sirve), usuario sin root, `/docs` desactivado. Las migraciones siguen al arrancar (una sola instancia).
 - [ ] `COOKIE_SECURE=true` por defecto y comprobación de que `SESSION_SECRET` es largo.
+- [ ] Conexión a Postgres con SSL (la exige Neon) y que la app aguante la primera conexión lenta cuando la base de datos despierta.
 
 **Pruebas:**
 - API del límite diario y de intentos; web del contador; la imagen de producción arranca y pasa los e2e en local.
 
 **Hecho cuando:** la imagen de producción funciona en local con todas las pruebas en verde.
 
-## Fase 11 · Despliegue en Google Cloud (solo con permiso explícito)
+## Fase 11 · Publicar gratis en Render + Neon (solo con permiso explícito)
 
-**Objetivo:** que los móviles usen la app sin depender de tu PC, a coste 0 €.
+**Objetivo:** que los tres móviles usen la app sin depender de tu PC, a coste 0 €.
+
+Elección (2026-11-11): **Render** (servicio web gratis: sin tarjeta, HTTPS, despliegue desde GitHub; se duerme tras ~15 min sin uso y tarda 30-60 s en despertar) + **Neon** (Postgres gratis sin caducidad, 0,5-1 GB). Descartados: Postgres gratis de Render (caduca a los 30 días), Fly.io (sin nivel gratuito), Koyeb (incierto), Oracle Cloud (tarjeta, capacidad y recortes en 2026), Google Cloud (Cloud SQL no es gratis).
 
 **Tareas:**
-- [ ] Montaje gratuito: Cloud Run (app) en `us-central1` + Postgres en una VM e2-micro «Always Free» sin IP pública (conexión interna) + Secret Manager + copia diaria con `pg_dump` a Cloud Storage. Revisar precios antes de crear nada.
-- [ ] Alerta de presupuesto (aviso a 1 €).
-- [ ] Cada comando se enseña antes y espera un «adelante» específico para esa acción.
+- [ ] Antes de crear nada, comprobar los límites actuales en las páginas oficiales de Render y Neon.
+- [ ] Cada paso se enseña antes y espera un «adelante» específico para esa acción (crear cuentas, conectar GitHub, claves, despliegue).
+- [ ] El usuario hace push del repositorio a GitHub (Render despliega desde ahí).
+- [ ] Claves solo en el panel de Render (`DATABASE_URL` de Neon, `SESSION_SECRET`, `INVITE_CODE`, `GEMINI_API_KEY`, `GEMINI_MODEL`), nunca en git.
+- [ ] Si se quieren conservar los datos actuales: copiarlos de la base de datos local a Neon (con permiso).
 - [ ] Vaciar `INVITE_CODE` cuando existan las tres cuentas.
-- [ ] Con HTTPS: instalar en iPhone desde Safari («Añadir a pantalla de inicio»), pantalla encendida al entrenar.
+- [ ] Instalar en los iPhone desde Safari («Añadir a pantalla de inicio»); con HTTPS funciona también la pantalla encendida al entrenar.
 
 **Hecho cuando:** hay permiso explícito y la app funciona en los tres móviles.
 

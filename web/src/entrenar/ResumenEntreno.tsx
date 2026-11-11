@@ -19,8 +19,8 @@ type Props = {
   /** Todas las series del usuario (las de antes sirven para comparar y ver récords). */
   series: Serie[];
   hoy: string;
-  /** Hora (ms) a la que empezó el entreno de hoy. */
-  inicio: number;
+  /** Hora (ms) de la primera serie de hoy; null si no se sabe. */
+  inicio: number | null;
   ajustes: Record<number, number>;
   onRutinaGuardada: (r: Rutina) => void;
 };
@@ -62,8 +62,8 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
   const hechosHoy = filas.filter((f) => f.deHoy.length > 0).map((f) => f.id);
   const comparacion = comparacionVolumen(series, hechosHoy, hoy);
   const volumenHoy = volumen(filas.flatMap((f) => f.deHoy));
-  // Duración: desde que se abrió el entreno hasta que se ve el resumen
-  const [duracion] = useState(() => Date.now() - inicio);
+  // Duración: desde la primera serie de hoy hasta que se ve el resumen
+  const [duracion] = useState(() => (inicio === null ? null : Date.now() - inicio));
 
   async function guardarEnRutina() {
     setGuardando(true);
@@ -95,7 +95,7 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
         <dl className="cifras" aria-label="Cifras del entreno">
           <div>
             <dt>Duración</dt>
-            <dd>{formatearDuracion(duracion)}</dd>
+            <dd>{duracion === null ? "—" : formatearDuracion(duracion)}</dd>
           </div>
           <div>
             <dt>Volumen</dt>

@@ -1,90 +1,110 @@
-import { useEffect, useRef, useState } from "react";
-import { pitar, vibrar } from "./aviso";
+import { HojaInferior } from "../ui/HojaInferior";
+import { IconoMas, IconoMenos } from "../ui/iconos";
+import { Anillo, useRestante } from "./Anillo";
 import {
-  DURACIONES,
+  ajustarDuracion,
   enPausa,
-  etiquetaDuracion,
   formatear,
+  fraccion,
+  MAX_DESCANSO,
+  MIN_DESCANSO,
   pausar,
+  PASO_DESCANSO,
   reanudar,
-  reiniciar,
-  restante,
+  sumarTiempo,
   type Cronometro,
 } from "./cronometro";
 
 type Props = {
   cronometro: Cronometro | null;
   onCambiar: (c: Cronometro | null) => void;
-  /** Elegir una duración la arranca y la recuerda para las siguientes series. */
-  onElegirDuracion: (ms: number) => void;
+  ejercicio: string;
+  /** Descanso guardado para este ejercicio (ms). */
+  duracion: number;
+  onCambiarDuracion: (ms: number) => void;
+  onCerrar: () => void;
 };
 
-/** Panel del descanso: cuenta atrás, botones rápidos y aviso al terminar. */
-export function CronometroPanel({ cronometro, onCambiar, onElegirDuracion }: Props) {
-  // «tic» solo sirve para repintar; el tiempo se calcula siempre con la hora actual,
-  // así un cronómetro recién arrancado nunca se ve con un segundo de más.
-  const [, setTic] = useState(0);
-  const quedaba = useRef<number | null>(null);
-
-  const queda = cronometro ? restante(cronometro, Date.now()) : null;
-  const corriendo = cronometro !== null && !enPausa(cronometro) && (queda ?? 0) > 0;
-
-  useEffect(() => {
-    if (!corriendo) return;
-    const id = setInterval(() => setTic((n) => n + 1), 250);
-    return () => clearInterval(id);
-  }, [corriendo]);
-
-  // Avisar solo al pasar de >0 a 0 con la app abierta (no al recargar un descanso ya acabado).
-  useEffect(() => {
-    if (queda === 0 && quedaba.current !== null && quedaba.current > 0) {
-      pitar();
-      vibrar();
-    }
-    quedaba.current = queda;
-  }, [queda]);
-
-  const cambiar = (c: Cronometro | null) => onCambiar(c);
+/** Hoja del descanso: el reloj grande con −15 s / +15 s, pausa y saltar, y el descanso del ejercicio. */
+export function CronometroPanel({ cronometro, onCambiar, ejercicio, duracion, onCambiarDuracion, onCerrar }: Props) {
+  const queda = useRestante(cronometro);
+  const ahora = Date.now();
 
   return (
-    <section aria-label="Descanso">
+    <HojaInferior titulo="Descanso" onCerrar={onCerrar}>
       {cronometro && queda !== null && (
-        <p>
-          <strong>Descanso</strong>{" "}
-          <span role="timer" aria-label="Tiempo de descanso">
-            {formatear(queda)}
-          </span>{" "}
-          {queda > 0 && (
+        <div className="descanso-grande">
+          <Anillo fraccion={fraccion(cronometro, ahora)} tamano={200} grosor={10} terminado={queda === 0}>
+            <span className="descanso-tiempo">{formatear(queda)}</span>
+            <span className="descanso-total">
+              {queda === 0 ? "¡Terminado!" : `de ${formatear(cronometro.duracion)}`}
+            </span>
+          </Anillo>
+          <div className="descanso-controles">
             <button
               type="button"
-              onClick={() =>
-                cambiar(enPausa(cronometro) ? reanudar(cronometro, Date.now()) : pausar(cronometro, Date.now()))
-              }
+              aria-label="Restar 15 s"
+              disabled={queda === 0}
+              onClick={() => onCambiar(sumarTiempo(cronometro, -PASO_DESCANSO, Date.now()))}
             >
-              {enPausa(cronometro) ? "Reanudar" : "Pausar"}
+              −15 s
             </button>
-          )}{" "}
-          <button type="button" onClick={() => cambiar(reiniciar(cronometro, Date.now()))}>
-            Reiniciar
-          </button>{" "}
-          <button type="button" onClick={() => cambiar(null)}>
-            Parar
-          </button>
-        </p>
-      )}
-      {queda === 0 && <p role="alert">¡Descanso terminado!</p>}
-      <p>
-        {DURACIONES.map((ms) => (
+            {queda > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  onCambiar(enPausa(cronometro) ? reanudar(cronometro, Date.now()) : pausar(cronometro, Date.now()))
+                }
+              >
+                {enPausa(cronometro) ? "Reanudar" : "Pausar"}
+              </button>
+            )}
+            <button
+              type="button"
+              aria-label="Sumar 15 s"
+              onClick={() => onCambiar(sumarTiempo(cronometro, PASO_DESCANSO, Date.now()))}
+            >
+              +15 s
+            </button>
+          </div>
           <button
-            key={ms}
             type="button"
-            aria-pressed={cronometro?.duracion === ms}
-            onClick={() => onElegirDuracion(ms)}
+            className="primario grande"
+            onClick={() => {
+              onCambiar(null);
+              onCerrar();
+            }}
           >
-            {etiquetaDuracion(ms)}
+            {queda === 0 ? "A por la siguiente" : "Saltar descanso"}
           </button>
-        ))}
-      </p>
-    </section>
+        </div>
+      )}
+
+      <div className="descanso-ejercicio">
+        <div>
+          <p className="descanso-etiqueta">Descanso de {ejercicio}</p>
+          <p className="descanso-nota">Se pone en marcha al pulsar «Hecha».</p>
+        </div>
+        <div className="descanso-ajuste">
+          <button
+            type="button"
+            aria-label="Menos descanso"
+            disabled={duracion <= MIN_DESCANSO}
+            onClick={() => onCambiarDuracion(ajustarDuracion(duracion, -1))}
+          >
+            <IconoMenos tamano={18} />
+          </button>
+          <output aria-label={`Descanso de ${ejercicio}`}>{formatear(duracion)}</output>
+          <button
+            type="button"
+            aria-label="Más descanso"
+            disabled={duracion >= MAX_DESCANSO}
+            onClick={() => onCambiarDuracion(ajustarDuracion(duracion, 1))}
+          >
+            <IconoMas tamano={18} />
+          </button>
+        </div>
+      </div>
+    </HojaInferior>
   );
 }

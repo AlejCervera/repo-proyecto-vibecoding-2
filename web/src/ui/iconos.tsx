@@ -63,6 +63,13 @@ export const IconoCerrar = (p: Props) => (
   </Icono>
 );
 
+export const IconoReloj = (p: Props) => (
+  <Icono {...p}>
+    <circle cx="12" cy="13" r="8" />
+    <path d="M12 9v4l2.5 2M9 2h6" />
+  </Icono>
+);
+
 export const IconoMas = (p: Props) => (
   <Icono {...p}>
     <path d="M12 5v14M5 12h14" />

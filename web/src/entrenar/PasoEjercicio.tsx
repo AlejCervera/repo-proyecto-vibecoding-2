@@ -9,8 +9,9 @@ import { Aviso } from "../ui/Aviso";
 import { BotonFijo } from "../ui/BotonFijo";
 import { ContadorBotones } from "../ui/ContadorBotones";
 import { FotoCirculo } from "../ui/FotoCirculo";
-import { IconoMas, IconoMenos } from "../ui/iconos";
+import { IconoMas, IconoMenos, IconoReloj } from "../ui/iconos";
 import { leerNumero } from "../ui/pasos";
+import { formatear } from "./cronometro";
 import { PASO_KG, pistaProgresion } from "./estadisticas";
 import { FotoHoja } from "./FotoHoja";
 import { casillas, puedeQuitar } from "./plan";
@@ -23,6 +24,9 @@ type Props = {
   previstas: number;
   repsMin: number | null;
   repsMax: number | null;
+  /** Descanso de este ejercicio (ms); al tocarlo se abre la hoja del descanso. */
+  descanso: number;
+  onAbrirDescanso: () => void;
   onCambiarPrevistas: (n: number) => void;
   /** Se llama tras guardar cada serie (arranca el cronómetro de descanso). */
   onGuardada: (s: Serie) => void;
@@ -114,6 +118,18 @@ export function PasoEjercicio(props: Props) {
           <h2>{ejercicio.nombre}</h2>
           <p className="paso-objetivo">
             Objetivo: {textoPlan({ series: previstas, reps_min: repsMin, reps_max: repsMax })}
+            <span aria-hidden="true"> · </span>
+            <button
+              type="button"
+              className="paso-descanso"
+              onClick={props.onAbrirDescanso}
+              aria-label={`Descanso ${formatear(props.descanso)}: cambiarlo`}
+            >
+              <span className="pildora">
+                <IconoReloj tamano={15} />
+                {formatear(props.descanso)}
+              </span>
+            </button>
           </p>
         </div>
       </div>

@@ -299,44 +299,6 @@ ul[aria-label="Sugerencias"] button {
   color: var(--texto);
 }
 
-/* --- Entrenamiento (se rehace en la Fase 9a) ------------------------------------------- */
-
-/* El descanso queda fijo arriba mientras se hace scroll */
-section[aria-label="Descanso"] {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  margin: 8px -16px;
-  padding: calc(4px + env(safe-area-inset-top)) 16px 4px;
-  background: var(--fondo);
-  border-bottom: 1px solid var(--linea);
-}
-
-section[aria-label="Descanso"] p {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: 6px 0;
-}
-
-[role="timer"] {
-  font-size: 2.4rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  min-width: 4ch;
-}
-
-section[aria-label="Descanso"] [role="alert"] {
-  background: var(--hecho-fondo);
-  color: var(--acento);
-}
-
-section[aria-label="Descanso"] button[aria-pressed="true"] {
-  background: var(--acento);
-  color: var(--acento-texto);
-}
-
 /* --- Inicio (se rehace en la Fase 9b) -------------------------------------------------- */
 
 .tarjeta {
