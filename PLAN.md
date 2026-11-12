@@ -296,13 +296,13 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 **Objetivo:** ver el progreso de un vistazo.
 
 **Tareas:**
-- [ ] Cálculos en funciones puras (sin tocar la API): entrenos por semana, volumen semanal (kg × reps), récords (peso máximo y 1RM estimado por Epley).
-- [ ] Gráficas en SVG propio (sin librerías), en el diario debajo del calendario (fase 9c), en tarjetas deslizables: entrenos por semana (12 semanas), volumen semanal y récords recientes. El calendario de constancia que estaba previsto aquí lo cubre el de la 9c.
-- [ ] Gráfica de progreso en el historial de cada ejercicio: peso máximo y 1RM estimado por sesión.
-- [ ] La lista de entrenamientos pasa a tarjetas.
+- [x] Cálculos en funciones puras (`diario/graficas.ts`, sin tocar la API): entrenos por semana y volumen semanal (kg × reps) de las últimas 12 semanas, de lunes a domingo y con las semanas vacías a 0; récords recientes (cada vez que se superó el mejor peso de un ejercicio, con la mejora); progreso de un ejercicio por sesión: peso máximo y 1RM estimado (Epley: peso × (1 + reps / 30)).
+- [x] Gráficas en SVG propio (sin librerías): barras (semana actual en lima, el resto en gris, cifra destacada encima) y línea. Accesibles: resumen en texto y tabla oculta con los datos. Colores de datos validados con la guía de visualización sobre la tarjeta oscura: lima de datos #7EA418 y azul #5A93CC (el lima brillante de la marca queda para botones y textos).
+- [x] Diario: calendario → «Progreso» en tres tarjetas deslizables en horizontal (con puntos debajo): entrenos por semana, volumen semanal y récords recientes → lista de entrenos en tarjetas (fecha, rutina, ejercicios y series; el volumen por entreno no se muestra porque las series no dicen a qué entreno pertenecen).
+- [x] Historial de un ejercicio: gráfica de progreso de las últimas 12 sesiones (peso máximo en lima y 1RM estimado en gris discontinuo); con menos de 2 sesiones, «Necesitas al menos 2 sesiones para ver la evolución».
 
 **Pruebas:**
-- Unitarias de todos los cálculos (semanas sin datos, cambio de año, una sola sesión); web de las gráficas (con texto accesible); e2e: tras entrenar, el diario muestra la semana con un entreno.
+- Unitarias de los cálculos (semanas sin datos, cambio de año, una sola sesión, series de 1 repetición); web de las gráficas (texto y tabla accesibles, semana actual destacada); e2e: tras entrenar, el diario muestra 1 entreno en la semana actual y el historial del ejercicio su gráfica.
 
 **Hecho cuando:** el diario enseña las tres tarjetas con datos reales y el historial de un ejercicio su gráfica de progreso.
 

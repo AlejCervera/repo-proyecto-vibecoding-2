@@ -34,8 +34,17 @@ test("muestra el récord y las series agrupadas por día, en el orden en que se 
   expect(resumen).toContain("Sesiones2");
   expect(resumen).toContain("Series3");
 
-  const dias = screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+  const dias = [...document.querySelectorAll(".dia h3")].map((h) => h.textContent);
   expect(dias).toEqual(["Lun 09/11/2026", "Lun 02/11/2026"]);
+
+  // Evolución: una sesión por día, del más antiguo al más reciente; se lee la última
+  const evolucion = screen.getByRole("region", { name: "Evolución" });
+  expect(evolucion.querySelector(".lectura")!.textContent).toBe("09/1185 kg Peso máximo102 kg 1RM estimado");
+  const filas = within(evolucion).getAllByRole("row").map((r) => r.textContent);
+  expect(filas).toEqual(["SesiónPeso máximo1RM estimado", "02/1180 kg96 kg", "09/1185 kg102 kg"]);
+  // Al tocar una sesión, se leen sus valores
+  fireEvent.click(evolucion.querySelector('[data-indice="0"]')!);
+  expect(evolucion.querySelector(".lectura")!.textContent).toBe("02/1180 kg Peso máximo96 kg 1RM estimado");
   const delDia = within(screen.getByRole("list", { name: "Series del Lun 09/11/2026" }))
     .getAllByRole("listitem")
     .map((li) => li.textContent);
@@ -75,4 +84,11 @@ test("si la sesión ha caducado, avisa a la app", async () => {
   const onSesionCaducada = vi.fn();
   render(<HistorialPage ejercicioId={3} onSesionCaducada={onSesionCaducada} />);
   await vi.waitFor(() => expect(onSesionCaducada).toHaveBeenCalled());
+});
+
+test("con una sola sesión no hay gráfica de evolución, y lo explica", async () => {
+  simularFetch({ status: 200, body: { ejercicio: BANCA, series: [serie(1, "2026-11-09", 80, 8)] } });
+  render(<HistorialPage ejercicioId={3} onSesionCaducada={vi.fn()} />);
+  expect(await screen.findByText("Necesitas al menos 2 sesiones para ver la evolución.")).toBeTruthy();
+  expect(screen.queryByRole("region", { name: "Evolución" })).toBeNull();
 });

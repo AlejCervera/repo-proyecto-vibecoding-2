@@ -12,11 +12,15 @@ const PUSH = { id: 1, nombre: "Push", predefinida: false, ejercicios: [] };
 const PIERNA = { id: 2, nombre: "Pierna", predefinida: false, ejercicios: [] };
 const TODOS_PUSH = Array(7).fill({ id: 1, nombre: "Push" });
 
-function pintar(opciones: { diario?: unknown[]; semana?: unknown[]; cambios?: unknown[] }, ...extra: { status: number; body: unknown }[]) {
+function pintar(
+  opciones: { diario?: unknown[]; semana?: unknown[]; cambios?: unknown[]; series?: unknown[] },
+  ...extra: { status: number; body: unknown }[]
+) {
   const fetch = simularFetch(
     { status: 200, body: opciones.diario ?? [] },
     { status: 200, body: [PUSH, PIERNA] },
     { status: 200, body: { dias: opciones.semana ?? Array(7).fill(null) } },
+    { status: 200, body: opciones.series ?? [] },
     { status: 200, body: { dias: opciones.cambios ?? [] } },
     ...extra,
   );
@@ -41,7 +45,7 @@ test("el calendario del mes muestra lo planeado frente a lo hecho", async () => 
   }
   // Los cambios se piden para el mes que se ve
   const desde = `${HOY.slice(0, 7)}-01`;
-  expect(fetch.mock.calls[3][0]).toMatch(new RegExp(`^/api/plan/dias\\?desde=${desde}&hasta=`));
+  expect(fetch.mock.calls[4][0]).toMatch(new RegExp(`^/api/plan/dias\\?desde=${desde}&hasta=`));
 });
 
 test("cambiar de mes pide los cambios de ese mes", async () => {
@@ -49,7 +53,7 @@ test("cambiar de mes pide los cambios de ese mes", async () => {
   await screen.findByRole("button", { name: "Mes siguiente" });
   const antes = screen.getByRole("heading", { level: 3, name: /de \d{4}$/ }).textContent;
   fireEvent.click(screen.getByRole("button", { name: "Mes siguiente" }));
-  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(5));
+  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(6));
   expect(screen.getByRole("heading", { level: 3, name: /de \d{4}$/ }).textContent).not.toBe(antes);
 });
 
@@ -67,7 +71,7 @@ test("tocar hoy abre su hoja; «Cambiar solo este día» guarda el cambio", asyn
 
   fireEvent.change(within(hoja).getByLabelText("Cambiar solo este día"), { target: { value: "2" } });
   await vi.waitFor(() => expect(hoja.textContent).toContain("Toca: Pierna (cambiado solo este día)"));
-  const [url, init] = fetch.mock.calls[4];
+  const [url, init] = fetch.mock.calls[5];
   expect(url).toBe(`/api/plan/dias/${HOY}`);
   expect(JSON.parse(init.body)).toEqual({ rutina_id: 2 });
   expect(dia(HOY).getAttribute("aria-label")).toContain("Pierna");
@@ -110,7 +114,7 @@ test("editar el plan semanal", async () => {
   fireEvent.click(within(hoja).getByRole("button", { name: "Guardar plan" }));
 
   await vi.waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
-  const [url, init] = fetch.mock.calls[4];
+  const [url, init] = fetch.mock.calls[5];
   expect(url).toBe("/api/plan/semana");
   expect(init.method).toBe("PUT");
   expect(JSON.parse(init.body)).toEqual({ dias: [1, null, 2, null, null, null, null] });
@@ -119,4 +123,38 @@ test("editar el plan semanal", async () => {
 test("sin entrenos lo dice: al terminar un entreno se guarda solo", async () => {
   pintar({});
   expect(await screen.findByText(/al terminar un entreno se guarda aquí solo/)).toBeTruthy();
+});
+
+test("Progreso: entrenos y volumen de esta semana, y récords recientes", async () => {
+  const s = (id: number, fecha: string, peso_kg: number) => ({
+    id,
+    fecha,
+    ejercicio_id: 10,
+    ejercicio: "Press de banca",
+    peso_kg,
+    repeticiones: 10,
+  });
+  pintar({
+    diario: [{ id: 5, fecha: HOY, rutina_id: 1, rutina_nombre: "Push", num_ejercicios: 1, num_series: 2 }],
+    series: [s(1, sumarDias(HOY, -14), 60), s(2, HOY, 62.5), s(3, HOY, 60)],
+  });
+  const progreso = await screen.findByRole("region", { name: "Progreso" });
+  const entrenos = within(progreso).getByRole("article", { name: "Entrenos por semana" });
+  expect(entrenos.querySelector(".lectura")!.textContent).toBe("1 entreno esta semana");
+  const volumen = within(progreso).getByRole("article", { name: "Volumen semanal" });
+  expect(volumen.querySelector(".lectura")!.textContent).toBe("1225 kg esta semana");
+  const records = within(progreso).getByRole("list", { name: "Récords recientes" });
+  expect(records.textContent).toContain("Press de banca");
+  expect(records.textContent).toContain("62,5 kg × 10+2,5 kg");
+  // Tres puntos para moverse entre las tarjetas; el primero marcado
+  const puntos = within(progreso).getAllByRole("button", { name: /^Ver / });
+  expect(puntos).toHaveLength(3);
+  expect(puntos[0].getAttribute("aria-current")).toBe("true");
+  fireEvent.click(puntos[2]);
+  expect(puntos[2].getAttribute("aria-current")).toBe("true");
+});
+
+test("Progreso sin récords lo explica", async () => {
+  pintar({});
+  expect(await screen.findByText(/Aún no hay récords/)).toBeTruthy();
 });

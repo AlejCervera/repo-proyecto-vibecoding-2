@@ -3,13 +3,16 @@ import { obtenerHistorial, type Historial } from "../api/historial";
 import { ApiError } from "../api/http";
 import { urlImagen } from "../api/imagenes";
 import { EjercicioImagen } from "../ejercicios/EjercicioImagen";
+import { progresoEjercicio } from "../diario/graficas";
 import { mejorSerie } from "../entrenar/estadisticas";
 import { fechaCorta } from "../inicio/resumen";
 import { enlace } from "../navegacion";
 import { pesoPorReps, reemplazarSerie, type Serie } from "../series/serie";
 import { SerieFila } from "../series/SerieFila";
 import { FotoCirculo } from "../ui/FotoCirculo";
+import { GraficaLinea } from "../ui/GraficaLinea";
 import { HojaInferior } from "../ui/HojaInferior";
+import { formatearNumero } from "../ui/pasos";
 import { agruparPorDia } from "./agrupar";
 
 type Props = { ejercicioId: number; onSesionCaducada: () => void };
@@ -48,6 +51,7 @@ export function HistorialPage({ ejercicioId, onSesionCaducada }: Props) {
   const { ejercicio, series } = historial;
   const dias = agruparPorDia(series);
   const mejor = mejorSerie(series);
+  const sesiones = progresoEjercicio(series);
 
   const cambiada = (s: Serie) =>
     setHistorial({
@@ -86,6 +90,24 @@ export function HistorialPage({ ejercicioId, onSesionCaducada }: Props) {
             <dd>{series.length}</dd>
           </div>
         </dl>
+      )}
+
+      {sesiones.length >= 2 && (
+        <section className="tarjeta tarjeta-grafica" aria-label="Evolución">
+          <h3 className="titulo-grafica">Evolución</h3>
+          <GraficaLinea
+            titulo={`Evolución de ${ejercicio.nombre}, últimas ${sesiones.length} sesiones`}
+            etiquetas={sesiones.map((x) => `${x.fecha.slice(8)}/${x.fecha.slice(5, 7)}`)}
+            series={[
+              { nombre: "Peso máximo", valores: sesiones.map((x) => x.pesoMax), color: "dato-1" },
+              { nombre: "1RM estimado", valores: sesiones.map((x) => x.unoRM), color: "dato-2", discontinua: true },
+            ]}
+            formato={(n) => `${formatearNumero(n)} kg`}
+          />
+        </section>
+      )}
+      {sesiones.length === 1 && (
+        <p className="vacio">Necesitas al menos 2 sesiones para ver la evolución.</p>
       )}
 
       {dias.length === 0 ? (

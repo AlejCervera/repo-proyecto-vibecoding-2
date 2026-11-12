@@ -3,15 +3,17 @@ import { listarEntrenamientos, type EntradaDiario } from "../api/entrenamientos"
 import { ApiError } from "../api/http";
 import { cambiarDia, guardarSemana, leerCambios, leerSemana, volverAlPlan } from "../api/plan";
 import { listarRutinas } from "../api/rutinas";
+import { listarSeries } from "../api/series";
 import { fechaCorta } from "../inicio/resumen";
 import { enlace } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
-import { hoyISO } from "../series/serie";
+import { hoyISO, type Serie } from "../series/serie";
 import { CalendarioMes } from "./CalendarioMes";
 import { limitesMes, type Plan } from "./calendario";
 import { resumenEntrada } from "./entrada";
 import { HojaDia } from "./HojaDia";
 import { HojaPlanSemanal } from "./HojaPlanSemanal";
+import { Progreso } from "./Progreso";
 
 type Props = { onSesionCaducada: () => void };
 
@@ -21,6 +23,7 @@ export function DiarioPage({ onSesionCaducada }: Props) {
   const [mes, setMes] = useState(() => ({ anio: Number(hoy.slice(0, 4)), mes: Number(hoy.slice(5, 7)) - 1 }));
   const [entradas, setEntradas] = useState<EntradaDiario[] | null>(null);
   const [rutinas, setRutinas] = useState<Rutina[]>([]);
+  const [series, setSeries] = useState<Serie[]>([]);
   const [plan, setPlan] = useState<Plan>({ semana: Array(7).fill(null), cambios: [] });
   const [dia, setDia] = useState<string | null>(null);
   const [editandoPlan, setEditandoPlan] = useState(false);
@@ -37,11 +40,12 @@ export function DiarioPage({ onSesionCaducada }: Props) {
   );
 
   useEffect(() => {
-    Promise.all([listarEntrenamientos(), listarRutinas(), leerSemana()])
-      .then(([d, r, semana]) => {
+    Promise.all([listarEntrenamientos(), listarRutinas(), leerSemana(), listarSeries()])
+      .then(([d, r, semana, s]) => {
         setEntradas(d);
         setRutinas(r);
         setPlan((p) => ({ ...p, semana }));
+        setSeries(s);
       })
       .catch(fallo);
   }, [fallo]);
@@ -104,6 +108,8 @@ export function DiarioPage({ onSesionCaducada }: Props) {
         Editar plan semanal
       </button>
 
+      {entradas !== null && <Progreso hoy={hoy} diario={entradas} series={series} />}
+
       <h3>Entrenos</h3>
       {entradas === null && !error && <p>Cargando…</p>}
       {entradas?.length === 0 && (
@@ -113,7 +119,7 @@ export function DiarioPage({ onSesionCaducada }: Props) {
         </p>
       )}
       {entradas && entradas.length > 0 && (
-        <ul aria-label="Entrenamientos">
+        <ul aria-label="Entrenamientos" className="lista-entrenos">
           {entradas.map((e) => (
             <li key={e.id}>
               <a href={enlace({ pantalla: "entrenamiento", entrenamientoId: e.id })}>

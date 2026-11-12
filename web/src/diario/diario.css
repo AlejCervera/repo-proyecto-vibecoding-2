@@ -225,3 +225,126 @@ main .entrenos-dia li {
   font-size: 0.95rem;
   color: var(--texto);
 }
+
+/* --- Progreso: tres tarjetas que se deslizan en horizontal (Fase 9d) ----------------------- */
+
+.progreso-diario h3,
+.tarjeta-grafica h4,
+.titulo-grafica {
+  margin: 0;
+}
+
+.progreso-diario > h3 {
+  margin: 20px 0 8px;
+}
+
+/* position: relative para que lo oculto de dentro (tablas para lectores de pantalla) no se escape
+   del carrusel y ensanche la página: en Android la dejaba a 701 px de ancho */
+.carrusel {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100%;
+  align-items: start; /* cada tarjeta con su altura, sin huecos */
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.carrusel::-webkit-scrollbar {
+  display: none;
+}
+
+.tarjeta-grafica {
+  scroll-snap-align: start;
+  margin: 0;
+  padding: 16px;
+}
+
+.tarjeta-grafica h4,
+.titulo-grafica {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.tarjeta-grafica .subtitulo {
+  margin: 2px 0 10px;
+  font-size: 0.85rem;
+}
+
+.puntos-carrusel {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+/* Cada punto es un botón de 44 px; lo visible es el punto pequeño de dentro */
+.puntos-carrusel button {
+  min-width: 32px;
+  padding: 0;
+  background: transparent;
+}
+
+.puntos-carrusel span {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--superficie-2);
+}
+
+.puntos-carrusel button[aria-current="true"] span {
+  width: 20px;
+  border-radius: 4px;
+  background: var(--acento);
+}
+
+main .lista-records {
+  margin: 4px 0 0;
+}
+
+main .lista-records li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: var(--fondo);
+}
+
+.record-ejercicio,
+.record-valor {
+  display: flex;
+  flex-direction: column;
+}
+
+.record-valor {
+  align-items: flex-end;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.record-valor small {
+  color: var(--acento);
+  font-weight: 700;
+}
+
+/* Lista de entrenos en tarjetas */
+main .lista-entrenos li {
+  padding: 14px 16px;
+  border-radius: var(--radio-grande);
+}
+
+.lista-entrenos a {
+  color: var(--texto);
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+
+.lista-entrenos a strong {
+  color: var(--acento);
+}

@@ -59,6 +59,7 @@ test("el diario lista los entrenamientos y abre su detalle", async () => {
     { status: 200, body: [ENTRADA] },
     { status: 200, body: [] },
     SIN_PLAN,
+    { status: 200, body: [] },
     SIN_CAMBIOS,
     {
       status: 200,
@@ -125,7 +126,7 @@ test("al entrenar no hay pestañas; en el resumen final vuelven", async () => {
 test("si la sesión caduca al cargar el diario, vuelve al inicio de sesión", async () => {
   window.location.hash = "#/diario";
   const caducada = { status: 401, body: { error: "Inicia sesión" } };
-  simularFetch({ status: 200, body: ANA }, caducada, caducada, caducada, caducada);
+  simularFetch({ status: 200, body: ANA }, caducada, caducada, caducada, caducada, caducada);
   render(<App />);
   expect(await screen.findByRole("heading", { name: "Iniciar sesión" })).toBeTruthy();
 });

@@ -1,0 +1,163 @@
+/* Gráficas en SVG propio (Fase 9d). Paleta de datos validada sobre la tarjeta (#1C1F1D) con la
+   guía de visualización: luminosidad, croma, daltonismo (ΔE 23), visión normal y contraste.
+   El lima brillante de la marca se queda para botones y textos; los datos usan su versión en banda. */
+
+:root {
+  --dato-1: #7ea418; /* lima de datos: serie principal y semana actual */
+  --dato-2: #5a93cc; /* azul: segunda serie (1RM estimado) */
+  --dato-fondo: #3a403c; /* semanas anteriores: gris de menos énfasis */
+}
+
+.grafica {
+  position: relative; /* contiene su tabla oculta */
+  margin: 0;
+}
+
+.grafica-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Lectura arriba: primero la cifra, luego qué es */
+.lectura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  min-height: 28px;
+  margin: 0 0 6px;
+  color: var(--suave);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lectura strong {
+  color: var(--texto);
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.lectura-valor {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.rejilla {
+  stroke: var(--linea);
+  stroke-width: 1;
+}
+
+.eje-base {
+  stroke: var(--superficie-2);
+  stroke-width: 1;
+}
+
+.eje {
+  fill: var(--suave);
+  font-size: 10px;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.barra {
+  fill: var(--dato-fondo);
+}
+
+.barra.actual {
+  fill: var(--dato-1);
+}
+
+/* La columna elegida se aclara un poco para que se vea que responde */
+.barra.elegida:not(.actual) {
+  fill: #59605b;
+}
+
+.zona-toque {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.zona-toque:focus-visible {
+  stroke: var(--acento);
+  stroke-width: 1.5;
+}
+
+.linea {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.linea.dato-1,
+.punto.dato-1 {
+  stroke: var(--dato-1);
+}
+
+.linea.dato-2,
+.punto.dato-2 {
+  stroke: var(--dato-2);
+}
+
+.linea.discontinua {
+  stroke-dasharray: 5 4;
+}
+
+/* Punto con anillo del color de la tarjeta, para que se lea sobre las líneas */
+.punto {
+  stroke: var(--superficie);
+  stroke-width: 2;
+}
+
+.punto.dato-1 {
+  fill: var(--dato-1);
+  stroke: var(--superficie);
+}
+
+.punto.dato-2 {
+  fill: var(--dato-2);
+  stroke: var(--superficie);
+}
+
+.cruceta {
+  stroke: var(--superficie-2);
+  stroke-width: 1;
+}
+
+/* Claves de la leyenda y de la lectura: un trazo corto, no un cuadro */
+.clave-linea {
+  display: inline-block;
+  width: 16px;
+  height: 0;
+  border-top: 2px solid var(--dato-1);
+  vertical-align: middle;
+}
+
+.clave-linea.dato-2 {
+  border-top-color: var(--dato-2);
+}
+
+.clave-linea.discontinua {
+  border-top-style: dashed;
+}
+
+main ul.leyenda-grafica {
+  display: flex;
+  gap: 16px;
+  margin: 6px 0 0;
+}
+
+main ul.leyenda-grafica li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  font-size: 0.8rem;
+  color: var(--suave);
+}
