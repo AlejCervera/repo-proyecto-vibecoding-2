@@ -69,8 +69,8 @@ test("pasar al siguiente, recargar a mitad y terminar con el resumen", async ({ 
   // Es predefinida: no ofrece guardar cambios
   await expect(resumen.getByRole("complementary")).toHaveCount(0);
 
-  // Guardarlo en el diario: queda con sus dos ejercicios y sus series
-  await resumen.getByRole("button", { name: "Guardar en el diario" }).click();
+  // Se guarda solo en el diario: queda con sus dos ejercicios y sus series
+  await expect(resumen.getByRole("button", { name: "Guardar en el diario" })).toHaveCount(0);
   await resumen.getByRole("link", { name: "Ver en el diario" }).click();
   await expect(page.getByRole("article", { name: "Press de banca" })).toContainText("60 kg × 10");
   await expect(page.getByRole("article", { name: "Aperturas con mancuernas" })).toContainText("14 kg × 12");
@@ -113,7 +113,6 @@ test("entrenar «Pecho» entero solo con los botones − / +, sin teclado", asyn
   await expect(resumen.getByRole("heading", { name: "¡Entreno hecho!" })).toBeVisible();
   await expect(resumen).toContainText("6 series en total.");
   await expect(resumen).toContainText("Volumen375 kg"); // 3 × 10×8 + 3 × 5×9
-  await resumen.getByRole("button", { name: "Guardar en el diario" }).click();
   await expect(resumen.getByRole("status")).toContainText("Guardado en el diario.");
 });
 

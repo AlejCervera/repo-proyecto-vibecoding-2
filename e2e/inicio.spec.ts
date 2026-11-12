@@ -25,14 +25,12 @@ test("el inicio: iniciar entrenamiento, la semana y el último entrenamiento", a
   await expect(ultimo).toContainText("Pecho");
   await expect(ultimo).toContainText("2 ejercicios · 2 series");
 
-  // Ahora el inicio dice que hoy toca «Pecho», entrenada hoy mismo
+  // Ya se ha entrenado hoy (se guardó solo en el diario): «¡Hecho!»
   const entrenar = page.getByRole("article", { name: "Entrenar" });
-  await expect(entrenar.getByRole("heading", { name: "Pecho" })).toBeVisible();
-  await expect(entrenar).toContainText("2 ejercicios · la última vez hoy");
-  await entrenar.getByRole("link", { name: "Empezar" }).click();
-  await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
+  await expect(entrenar.getByRole("heading", { name: "¡Hecho! ✓" })).toBeVisible();
+  await expect(entrenar).toContainText("Pecho · 2 ejercicios · 2 series");
 
-  // El atajo del icono del móvil (#/empezar) hace lo mismo
+  // Sin plan, el atajo del icono del móvil (#/empezar) lleva a la última rutina usada
   await page.goto("/#/empezar");
   await expect(page.getByRole("heading", { name: "Entrenando: Pecho" })).toBeVisible();
 

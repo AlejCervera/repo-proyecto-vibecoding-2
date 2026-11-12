@@ -60,7 +60,6 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await page.getByRole("navigation", { name: "Pasos" }).getByRole("link", { name: "Terminar" }).click();
   await expect(page.getByRole("article", { name: "Resumen del entrenamiento" })).toBeVisible();
   await revisar(page, "resumen");
-  await page.getByRole("button", { name: "Guardar en el diario" }).click();
   await page.getByRole("link", { name: "Ver en el diario" }).click();
   await expect(page.getByRole("article", { name: "Press de banca" })).toBeVisible();
   await revisar(page, "entrenamiento del diario");

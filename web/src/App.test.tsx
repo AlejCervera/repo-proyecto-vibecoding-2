@@ -13,6 +13,9 @@ const ENTRADA = {
   num_series: 5,
 };
 
+const SIN_PLAN = { status: 200, body: { dias: Array(7).fill(null) } };
+const SIN_CAMBIOS = { status: 200, body: { dias: [] } };
+
 afterEach(() => {
   window.location.hash = "";
 });
@@ -30,6 +33,8 @@ test("con sesión, la primera pantalla es el inicio y la navegación lo marca", 
     { status: 200, body: [] },
     { status: 200, body: [] },
     { status: 200, body: [] },
+    SIN_PLAN,
+    SIN_CAMBIOS,
   );
   render(<App />);
   expect(await screen.findByRole("link", { name: "Elegir rutina" })).toBeTruthy();
@@ -52,6 +57,9 @@ test("el diario lista los entrenamientos y abre su detalle", async () => {
   const fetch = simularFetch(
     { status: 200, body: ANA },
     { status: 200, body: [ENTRADA] },
+    { status: 200, body: [] },
+    SIN_PLAN,
+    SIN_CAMBIOS,
     {
       status: 200,
       body: {
@@ -116,7 +124,8 @@ test("al entrenar no hay pestañas; en el resumen final vuelven", async () => {
 
 test("si la sesión caduca al cargar el diario, vuelve al inicio de sesión", async () => {
   window.location.hash = "#/diario";
-  simularFetch({ status: 200, body: ANA }, { status: 401, body: { error: "Inicia sesión" } });
+  const caducada = { status: 401, body: { error: "Inicia sesión" } };
+  simularFetch({ status: 200, body: ANA }, caducada, caducada, caducada, caducada);
   render(<App />);
   expect(await screen.findByRole("heading", { name: "Iniciar sesión" })).toBeTruthy();
 });

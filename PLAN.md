@@ -279,15 +279,17 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 **Objetivo:** decidir qué rutina toca cada día de la semana y ver en un calendario lo planeado frente a lo hecho.
 
 **Tareas:**
-- [ ] Plan semanal por usuario: para cada día (L … D) una rutina propia o predefinida, o «Descanso» (migración 009 y API para leerlo y guardarlo; solo rutinas visibles para el usuario; si se borra una rutina, ese día pasa a descanso).
-- [ ] Cambiar solo un día concreto («hoy hago Pierna» o «hoy descanso») sin tocar el plan semanal.
-- [ ] El Diario abre con el calendario del mes: días pasados con lo hecho (✓ hecho, ✗ no hecho, otra rutina, descanso), hoy destacado y días futuros con lo que toca; al tocar un día, su entreno o lo que toca. El plan semanal se edita desde ahí.
-- [ ] Inicio: «Hoy toca» sale del plan («Hoy toca descanso» con la opción de entrenar igualmente; sin plan, la última rutina como ahora) y el cumplimiento de la semana («3 de 4 entrenos») con la racha.
+- [x] Migración 009: `plan_semanal` (usuario, día 0 = lunes … 6 = domingo, rutina; sin fila = descanso; si se borra la rutina, su fila desaparece y ese día pasa a descanso) y `plan_dias` (cambio de una fecha concreta: otra rutina o descanso).
+- [x] API (`app/plan/`, lógica separada): `GET`/`PUT /plan/semana` (7 días, rutina propia o predefinida o descanso; rutina ajena → 400), `GET /plan/dias?desde&hasta` (rango de unos dos meses como mucho), `PUT`/`DELETE /plan/dias/{fecha}` (cambiar un día o volver al plan).
+- [x] Guardado automático en el diario: «Terminar entreno» guarda solo el entreno (sin pulsar «Guardar en el diario»). En la API, guardar otra vez el mismo día y rutina añade las series nuevas al mismo entreno en vez de duplicarlo, y si no hay nada nuevo devuelve el que ya existe (sin error).
+- [x] Lógica del calendario (funciones puras): cuadrícula del mes empezando en lunes; qué toca un día (cambio del día → plan semanal → descanso); estado de cada día (pasado: ✓ hecho, otra rutina, ✗ no hecho o descanso; hoy; futuro: lo que toca), contando lo que hay en el diario; cumplimiento de la semana («3 de 4») y racha (entrenos planificados cumplidos seguidos; los descansos no la rompen; se miran como mucho las últimas 8 semanas).
+- [x] Diario: arriba el calendario del mes (‹ › para cambiar de mes, leyenda) y debajo la lista de entrenos. Al tocar un día, hoja con lo que tocaba y lo hecho (con enlace); hoy y días futuros: «Cambiar solo este día» (selector nativo: rutina o descanso) y «Volver al plan» si tiene cambio. «Editar plan semanal» en una hoja con L … D y un selector por día.
+- [x] Inicio: «Hoy toca» sale del plan (cambio del día → plan semanal → sin plan, la última rutina como ahora); «Hoy toca descanso» con «Entrenar igualmente»; «Hecho hoy ✓» si ya se entrenó; en «Esta semana», «3 de 4 entrenos» y la racha. El atajo `#/empezar` también usa el plan.
 
 **Pruebas:**
-- API (guardar y leer el plan, aislamiento entre usuarios, rutina de otro usuario → 400, borrar rutina → descanso, cambio de un día); unitarias de la lógica del calendario (planeado frente a hecho, cambio de mes y de año); web del calendario y de Inicio; e2e: planificar Push el día de hoy, verlo en Inicio, entrenarlo y verlo hecho en el calendario.
+- API (guardar y leer el plan, validación, aislamiento entre usuarios, rutina ajena → 400, borrar rutina → descanso, cambio de un día y rango; guardar dos veces el mismo entreno no duplica); unitarias del calendario (meses de 28 a 31 días, cambio de año, planeado frente a hecho, racha); web del Diario, de Inicio y del guardado automático; e2e: planificar «Pecho» para hoy, verlo en Inicio, entrenarlo, terminar (se guarda solo) y verlo ✓ en el calendario.
 
-**Hecho cuando:** el plan semanal se guarda, Inicio dice qué toca hoy y el calendario muestra lo planeado y lo hecho.
+**Hecho cuando:** el plan semanal se guarda, Inicio dice qué toca hoy, terminar un entreno lo guarda solo en el diario y el calendario muestra lo planeado y lo hecho.
 
 ## Fase 9d · Diario con gráficas
 

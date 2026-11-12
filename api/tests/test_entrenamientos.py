@@ -86,21 +86,44 @@ def test_lista_del_diario(ana, rutina, catalogo):
     ] == [(HOY, "Pecho", 2, 2), ("2026-11-01", "Pecho", 1, 1)]
 
 
-def test_sin_series_nuevas_no_se_guarda(ana, rutina, catalogo):
+def test_sin_series_de_ese_dia_no_se_guarda(ana, rutina, catalogo):
     assert guardar(ana, rutina).status_code == 400
+    assert ana.get("/entrenamientos").json() == []
+
+
+def test_guardar_otra_vez_sin_nada_nuevo_devuelve_el_mismo(ana, rutina, catalogo):
+    """Al terminar el entreno se guarda solo: repetirlo no da error ni duplica."""
     serie(ana, catalogo["Press de banca"], 80)
-    assert guardar(ana, rutina).status_code == 201
-    # guardar otra vez: esas series ya están en el diario
-    assert guardar(ana, rutina).status_code == 400
+    primero = guardar(ana, rutina)
+    assert primero.status_code == 201
+    otra_vez = guardar(ana, rutina)
+    assert otra_vez.status_code == 200
+    assert otra_vez.json()["id"] == primero.json()["id"]
     assert len(ana.get("/entrenamientos").json()) == 1
 
 
-def test_dos_veces_la_misma_rutina_el_mismo_dia(ana, rutina, catalogo):
+def test_series_nuevas_el_mismo_dia_se_anaden_al_mismo_entreno(ana, rutina, catalogo):
     serie(ana, catalogo["Press de banca"], 80)
-    guardar(ana, rutina)
+    primero = guardar(ana, rutina).json()
     serie(ana, catalogo["Press de banca"], 60)
-    segundo = guardar(ana, rutina).json()
-    assert [s["peso_kg"] for s in segundo["ejercicios"][0]["series"]] == [60.0]
+    serie(ana, catalogo["Press militar"], 40)
+    segundo = guardar(ana, rutina)
+    assert segundo.status_code == 200
+    detalle = segundo.json()
+    assert detalle["id"] == primero["id"]
+    assert [(e["nombre"], [s["peso_kg"] for s in e["series"]]) for e in detalle["ejercicios"]] == [
+        ("Press de banca", [80.0, 60.0]),
+        ("Press militar", [40.0]),
+    ]
+    assert len(ana.get("/entrenamientos").json()) == 1
+
+
+def test_otro_dia_es_otro_entreno(ana, rutina, catalogo):
+    serie(ana, catalogo["Press de banca"], 80)
+    serie(ana, catalogo["Press de banca"], 70, fecha="2026-11-01")
+    guardar(ana, rutina)
+    assert guardar(ana, rutina, fecha="2026-11-01").status_code == 201
+    assert len(ana.get("/entrenamientos").json()) == 2
 
 
 def test_quitar_del_diario_no_borra_las_series(ana, rutina, catalogo):

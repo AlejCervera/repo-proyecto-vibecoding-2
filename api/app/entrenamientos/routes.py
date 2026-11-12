@@ -1,6 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends, Response
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from app import db
@@ -51,12 +52,15 @@ def guardar(usuario: Usuario, datos: Annotated[Any, Body()] = None):
         rutina = rutinas.obtener(conn, usuario["id"], nuevo.rutina_id)
         if rutina is None:
             return _error("La rutina no existe", 404)
-        entrenamiento_id = repository.crear(
+        guardado = repository.crear(
             conn, usuario["id"], rutina["id"], rutina["nombre"], nuevo.fecha
         )
-        if entrenamiento_id is None:
+        if guardado is None:
             return _error("No hay series de este día de esta rutina para guardar", 400)
-        return _detalle(conn, usuario["id"], entrenamiento_id)
+        entrenamiento_id, es_nuevo = guardado
+        detalle = _detalle(conn, usuario["id"], entrenamiento_id)
+        # 201 si se ha creado; 200 si ya estaba (y se le han añadido las series nuevas, si había)
+        return JSONResponse(jsonable_encoder(detalle), status_code=201 if es_nuevo else 200)
 
 
 @router.delete("/{entrenamiento_id}", status_code=204)

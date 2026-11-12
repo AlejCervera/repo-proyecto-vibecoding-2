@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { guardarEntrenamiento } from "../api/entrenamientos";
 import { configurarEjercicio } from "../api/rutinas";
 import { enlace } from "../navegacion";
@@ -64,6 +64,15 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
   const volumenHoy = volumen(filas.flatMap((f) => f.deHoy));
   // Duración: desde la primera serie de hoy hasta que se ve el resumen
   const [duracion] = useState(() => (inicio === null ? null : Date.now() - inicio));
+
+  // Al terminar, el entreno se guarda solo en el diario (una vez; si falla, queda el botón)
+  const autoguardado = useRef(false);
+  useEffect(() => {
+    if (total === 0 || autoguardado.current) return;
+    autoguardado.current = true;
+    void guardarEnDiario();
+    // guardarEnDiario solo depende de la rutina y del día, que no cambian en esta pantalla
+  }, [total]);
 
   async function guardarEnRutina() {
     setGuardando(true);
@@ -143,7 +152,8 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
         ))}
       </ul>
 
-      {total > 0 && enDiario === null && (
+      {total > 0 && enDiario === null && guardandoDiario && <p className="vacio">Guardando en el diario…</p>}
+      {total > 0 && enDiario === null && !guardandoDiario && error && (
         <button
           type="button"
           className="primario grande"

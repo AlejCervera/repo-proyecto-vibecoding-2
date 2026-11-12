@@ -13,6 +13,7 @@ from app.health import check_database
 from app.imagenes.routes import router as imagenes_router
 from app.migrate import migrate
 from app.perfil.routes import router as perfil_router
+from app.plan.routes import router as plan_router
 from app.recomendaciones.routes import router as recomendaciones_router
 from app.rutinas import predefinidas
 from app.rutinas.routes import router as rutinas_router
@@ -37,6 +38,7 @@ app.include_router(rutinas_router)
 app.include_router(entrenamientos_router)
 app.include_router(series_router)
 app.include_router(perfil_router)
+app.include_router(plan_router)
 app.include_router(recomendaciones_router)
 
 

@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api/http";
 import { listarEntrenamientos, type EntradaDiario } from "../api/entrenamientos";
+import { leerCambios, leerSemana } from "../api/plan";
 import { listarRutinas } from "../api/rutinas";
-import { resumenEntrada } from "../diario/DiarioPage";
+import { cumplimientoSemana, hayPlan, racha, sumarDias, type Plan } from "../diario/calendario";
+import { resumenEntrada } from "../diario/entrada";
 import { listarSeries } from "../api/series";
 import { recordsDeHoy } from "../entrenar/estadisticas";
 import { enlace } from "../navegacion";
-import { resumen, type Rutina } from "../rutinas/rutina";
+import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, pesoPorReps, type Serie } from "../series/serie";
-import { DIAS, diasEntre, fechaCorta, fechaLarga, haceDias, leerUltimaRutina, lunesDe, semana } from "./resumen";
+import { queHacerHoy } from "./hoy";
+import { DIAS, diasEntre, fechaCorta, fechaLarga, leerUltimaRutina, lunesDe, semana } from "./resumen";
+import { TarjetaHoy } from "./TarjetaHoy";
 
 type Props = { onSesionCaducada: () => void };
 
@@ -17,30 +21,38 @@ export function InicioPage({ onSesionCaducada }: Props) {
   const [series, setSeries] = useState<Serie[] | null>(null);
   const [rutinas, setRutinas] = useState<Rutina[]>([]);
   const [diario, setDiario] = useState<EntradaDiario[]>([]);
+  const [plan, setPlan] = useState<Plan>({ semana: Array(7).fill(null), cambios: [] });
   const [error, setError] = useState<string | null>(null);
   const hoy = useMemo(() => hoyISO(), []);
 
   useEffect(() => {
-    Promise.all([listarSeries(), listarRutinas(), listarEntrenamientos()])
-      .then(([s, r, d]) => {
+    // Cambios de días concretos: los de las últimas 8 semanas (para la racha) y esta semana
+    Promise.all([
+      listarSeries(),
+      listarRutinas(),
+      listarEntrenamientos(),
+      leerSemana(),
+      leerCambios(sumarDias(hoy, -55), sumarDias(hoy, 6)),
+    ])
+      .then(([s, r, d, semanaPlan, cambios]) => {
         setSeries(s);
         setRutinas(r);
         setDiario(d);
+        setPlan({ semana: semanaPlan, cambios });
       })
       .catch((e: Error) => {
         if (e instanceof ApiError && e.status === 401) onSesionCaducada();
         else setError(e.message);
       });
-  }, [onSesionCaducada]);
+  }, [onSesionCaducada, hoy]);
 
   if (error) return <p role="alert">{error}</p>;
   if (!series) return <p>Cargando…</p>;
 
-  // Solo se ofrece la última rutina si sigue existiendo y tiene ejercicios.
-  const guardada = leerUltimaRutina();
-  const ultima = rutinas.find((r) => r.id === guardada?.id && r.ejercicios.length > 0);
-  // El diario viene del más reciente al más antiguo
-  const vezAnterior = ultima ? diario.find((d) => d.rutina_id === ultima.id) : undefined;
+  const que = queHacerHoy(hoy, plan, rutinas, diario, leerUltimaRutina()?.id ?? null);
+  const conPlan = hayPlan(plan);
+  const cumplido = cumplimientoSemana(hoy, plan, diario);
+  const enRacha = racha(hoy, plan, diario);
   const esta = semana(series, hoy);
   const indiceHoy = diasEntre(lunesDe(hoy), hoy);
   const anterior = diario[0];
@@ -50,43 +62,21 @@ export function InicioPage({ onSesionCaducada }: Props) {
     <section className="inicio">
       <p className="fecha-hoy">{fechaLarga(hoy)}</p>
 
-      <article className="tarjeta destacada" aria-label="Entrenar">
-        {ultima ? (
-          <>
-            <p className="etiqueta">Hoy toca</p>
-            <h2 className="hoy-toca">{ultima.nombre}</h2>
-            <p className="subtitulo">
-              {resumen(ultima)} ·{" "}
-              {vezAnterior ? `la última vez ${haceDias(vezAnterior.fecha, hoy)}` : "aún sin entrenar"}
-            </p>
-            <a
-              className="boton primario grande"
-              href={enlace({ pantalla: "entrenar", rutinaId: ultima.id, paso: 0 })}
-            >
-              Empezar
-            </a>
-            <a className="enlace-secundario" href={enlace({ pantalla: "rutinas" })}>
-              Elegir otra rutina
-            </a>
-          </>
-        ) : (
-          <>
-            <p className="etiqueta">Hoy</p>
-            <h2 className="hoy-toca">¿Qué entrenas hoy?</h2>
-            <p className="subtitulo">Elige una de tus rutinas o una predefinida.</p>
-            <a className="boton primario grande" href={enlace({ pantalla: "rutinas" })}>
-              Elegir rutina
-            </a>
-          </>
-        )}
-      </article>
+      <TarjetaHoy hoy={hoy} que={que} diario={diario} />
 
       <article className="tarjeta" aria-label="Esta semana">
         <h2>Esta semana</h2>
-        <p className="cifra">
-          {esta.numDias} {esta.numDias === 1 ? "día" : "días"} · {esta.numSeries}{" "}
-          {esta.numSeries === 1 ? "serie" : "series"}
-        </p>
+        {conPlan ? (
+          <p className="cifra">
+            {cumplido.hechos} de {cumplido.planificados} entrenos
+            {enRacha > 0 && <span className="racha"> · racha de {enRacha}</span>}
+          </p>
+        ) : (
+          <p className="cifra">
+            {esta.numDias} {esta.numDias === 1 ? "día" : "días"} · {esta.numSeries}{" "}
+            {esta.numSeries === 1 ? "serie" : "series"}
+          </p>
+        )}
         <ol className="semana" aria-label="Días entrenados">
           {DIAS.map((d, i) => {
             const clases = [esta.dias[i] ? "hecho" : "", i === indiceHoy ? "hoy" : ""].join(" ").trim();

@@ -10,25 +10,39 @@ from app.series.repository import SELECT_SERIES, serie_a_dict
 
 def crear(
     conn: psycopg.Connection, usuario_id: int, rutina_id: int, rutina_nombre: str, fecha: date
-) -> int | None:
-    """Crea el entrenamiento con las series de ese día de los ejercicios de la rutina que aún
-    no estén en otro entrenamiento. None si no hay ninguna (y no se crea nada)."""
+) -> tuple[int, bool] | None:
+    """Guarda en el diario las series de ese día de los ejercicios de la rutina que aún no estén
+    en ningún entrenamiento. Si ese día ya hay un entrenamiento de esta rutina, se añaden a él
+    (al terminar el entreno se guarda solo y se puede terminar varias veces).
+
+    Devuelve (id, nuevo): nuevo=False si se reutilizó el que ya había. None si no hay nada que
+    guardar ni un entrenamiento previo de ese día (y no se crea nada)."""
     with conn.transaction():
-        (entrenamiento_id,) = conn.execute(
-            "INSERT INTO entrenamientos (usuario_id, fecha, rutina_id, rutina_nombre) "
-            "VALUES (%s, %s, %s, %s) RETURNING id",
-            (usuario_id, fecha, rutina_id, rutina_nombre),
+        existente = conn.execute(
+            "SELECT id FROM entrenamientos WHERE usuario_id = %s AND fecha = %s AND rutina_id = %s "
+            "ORDER BY id LIMIT 1",
+            (usuario_id, fecha, rutina_id),
         ).fetchone()
+        if existente:
+            entrenamiento_id = existente[0]
+        else:
+            (entrenamiento_id,) = conn.execute(
+                "INSERT INTO entrenamientos (usuario_id, fecha, rutina_id, rutina_nombre) "
+                "VALUES (%s, %s, %s, %s) RETURNING id",
+                (usuario_id, fecha, rutina_id, rutina_nombre),
+            ).fetchone()
         cur = conn.execute(
             "UPDATE series SET entrenamiento_id = %(e)s "
             "WHERE usuario_id = %(u)s AND fecha = %(f)s AND entrenamiento_id IS NULL "
             "AND ejercicio_id IN (SELECT ejercicio_id FROM rutina_ejercicios WHERE rutina_id = %(r)s)",
             {"e": entrenamiento_id, "u": usuario_id, "f": fecha, "r": rutina_id},
         )
+        if existente:
+            return entrenamiento_id, False
         if cur.rowcount == 0:
             conn.execute("DELETE FROM entrenamientos WHERE id = %s", (entrenamiento_id,))
             return None
-    return entrenamiento_id
+    return entrenamiento_id, True
 
 
 def listar(conn: psycopg.Connection, usuario_id: int) -> list[dict[str, Any]]:

@@ -432,3 +432,8 @@ main .series-dia {
 .formulario-perfil > button {
   flex: none;
 }
+
+/* Racha en «Esta semana» */
+.racha {
+  color: var(--acento);
+}

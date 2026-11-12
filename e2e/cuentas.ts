@@ -110,11 +110,10 @@ export async function serieEntrenando(page: Page, ejercicio: string, peso: strin
   await expect(hechas).toHaveCount(antes + 1);
 }
 
-/** Termina el entrenamiento y lo guarda en el diario; queda en el resumen. */
+/** Termina el entrenamiento (se guarda solo en el diario); queda en el resumen. */
 export async function terminarYGuardar(page: Page) {
   await page.getByRole("navigation", { name: "Pasos" }).getByRole("link", { name: "Terminar" }).click();
   const resumen = page.getByRole("article", { name: "Resumen del entrenamiento" });
-  await resumen.getByRole("button", { name: "Guardar en el diario" }).click();
   await expect(resumen.getByRole("status")).toContainText("Guardado en el diario.");
 }
 
