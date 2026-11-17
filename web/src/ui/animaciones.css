@@ -5,9 +5,9 @@
 @media (prefers-reduced-motion: no-preference) {
   /* --- Navegación y botones --------------------------------------------------------------- */
 
-  /* Cambio de pantalla: fundido corto */
+  /* Cambio de pantalla: fundido corto (120 ms: que no se sume a la espera, Fase 9e3) */
   .pantalla {
-    animation: fundido 180ms ease-out;
+    animation: fundido 120ms ease-out;
   }
 
   /* Los botones se hunden un poco al pulsarlos */

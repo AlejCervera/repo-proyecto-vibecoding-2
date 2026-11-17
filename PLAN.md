@@ -216,7 +216,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Rediseño y mejoras (Fases 9 a 9h, con 9e2)
+## Rediseño y mejoras (Fases 9 a 9h, con 9e2 y 9e3)
 
 Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
 
@@ -349,6 +349,25 @@ Todo en `web/src/ui/animaciones.css`, dentro de `prefers-reduced-motion: no-pref
 Resultado: la versión optimizada es 1 JS (~94 KB comprimido) y 1 CSS frente a ~94 módulos sueltos en desarrollo. Las pruebas nuevas (`e2e/pantalla-fija.spec.ts`, `e2e/rendimiento.spec.ts` en el proyecto «produccion») fallaban antes del arreglo: el documento se deslizaba 323 px y el aviso pisaba 3 px el botón fijo (también arreglado). Notas: WebKit móvil de Playwright no admite la rueda del ratón, así que allí se desliza el contenedor bajo el dedo por código; ninguna prueba automática reproduce la barra de Safari real, por eso se simula cambiando el alto.
 
 **Hecho cuando:** en el iPhone real la barra no se mueve al deslizar y la app va fluida en `http://<IP del ordenador>:4173`, con todas las pruebas en verde.
+
+## Fase 9e3 · Velocidad al cambiar de pestaña
+
+**Objetivo:** que las pestañas se abran al instante en el móvil.
+
+**Medido antes:** cada pestaña tardaba 200–425 ms en local (más el viaje por la wifi en el móvil): volvía a pedir todo y enseñaba «Cargando…», y cada petición abría y cerraba dos conexiones a Postgres (≈ 6 ms cada una; con 5 peticiones a la vez, ~100 ms cada una; en Neon, con TLS, mucho más). El catálogo y sus fotos ya estaban en la base de datos: no se llama a wger al usar la app.
+
+**Tareas:**
+- [x] API: pool de conexiones con `psycopg-pool` 3.3.3 (dependencia nueva). `with db.connect()` se usa igual; comprueba la conexión antes de darla (Neon corta las que duermen) y se cierra al apagar.
+- [x] Web: memoria de lecturas (`api/cache.ts`) dentro de `pedir`. Las lecturas se guardan por ruta y se devuelven copiadas; las de `/auth`, nunca. Cualquier escritura la vacía (nunca se ve algo anterior a un cambio propio). Caduca a los 5 min y al volver a la app tras más de 1 min en segundo plano. Al salir de la cuenta o caducar la sesión se vacía.
+- [x] Precarga (`precarga.ts`): al entrar y poco después de cada cambio, en segundo plano, lo mismo que piden Inicio, Diario, Entrenar, Ejercicios y Perfil. Al empezar un entreno, el historial de cada ejercicio.
+- [x] Fundido entre pantallas de 180 a 120 ms.
+
+**Pruebas:**
+- API: el pool reutiliza la conexión, confirma al salir y deshace si hay error, se recupera si Postgres corta la conexión y otra URL usa otro pool.
+- Web: lecturas repetidas sin red, copias, peticiones a la vez compartidas, escrituras que vacían, una lectura lenta no guarda datos viejos, errores y `/auth` sin guardar, caducidad, vaciado al volver del segundo plano, aviso para precargar tras escribir; la precarga pide exactamente las rutas de las pestañas; App precarga con sesión y tras cada cambio, y nunca sin sesión.
+- E2E (versión optimizada): con la red frenada 2,5 s por petición, las cinco pestañas salen en menos de 1 s, sin «Cargando…» y sin ninguna petición; tras guardar el perfil o entrenar, se ve el dato nuevo y no el viejo.
+
+**Hecho cuando:** cambiar de pestaña en el iPhone es instantáneo, con todas las pruebas en verde.
 
 ## Fase 9f · Primeros pasos y repetir entreno
 

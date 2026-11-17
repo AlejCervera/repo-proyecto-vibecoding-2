@@ -164,3 +164,34 @@ test("al cambiar de pantalla, el contenido (#root, que es lo que se desliza) vue
   await vi.waitFor(() => expect(scrollTo).toHaveBeenCalledWith(0, 0));
   raiz.remove();
 });
+
+test("con sesión precarga las pestañas, y otra vez poco después de cada cambio", async () => {
+  const { precargarPestanas } = await import("./precarga");
+  const precarga = vi.mocked(precargarPestanas);
+  precarga.mockClear();
+  simularFetch(
+    { status: 200, body: ANA },
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    SIN_PLAN,
+    SIN_CAMBIOS,
+  );
+  render(<App />);
+  await screen.findByRole("link", { name: "Elegir rutina" });
+  expect(precarga).toHaveBeenCalledTimes(1);
+
+  // Una escritura (p. ej. guardar el perfil) vacía la memoria y, poco después, se vuelve a precargar
+  const { trasEscribir } = await import("./api/cache");
+  trasEscribir();
+  await vi.waitFor(() => expect(precarga).toHaveBeenCalledTimes(2), { timeout: 2000 });
+});
+
+test("sin sesión no se precarga nada", async () => {
+  const { precargarPestanas } = await import("./precarga");
+  vi.mocked(precargarPestanas).mockClear();
+  simularFetch({ status: 401, body: { error: "Inicia sesión para continuar" } });
+  render(<App />);
+  await screen.findByRole("button", { name: "Entrar" });
+  expect(precargarPestanas).not.toHaveBeenCalled();
+});

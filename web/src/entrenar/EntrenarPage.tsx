@@ -3,6 +3,7 @@ import { ApiError } from "../api/http";
 import { obtenerRutina } from "../api/rutinas";
 import { listarSeries } from "../api/series";
 import { guardarUltimaRutina } from "../inicio/resumen";
+import { precargarHistoriales } from "../precarga";
 import { enlace, enlaceRutina } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, type Serie } from "../series/serie";
@@ -53,6 +54,7 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
         setRutina(r);
         setSeries(s);
         guardarUltimaRutina(r); // para «Continuar con…» en el inicio
+        void precargarHistoriales(r.ejercicios.map((e) => e.id)); // pasar al siguiente sin esperar
       })
       .catch((e: Error) => {
         if (e instanceof ApiError && e.status === 401) onSesionCaducada();

@@ -27,6 +27,7 @@ async def lifespan(_app: FastAPI):
         migrate(conn)
         predefinidas.sembrar(conn)
     yield
+    db.cerrar()
 
 
 app = FastAPI(title="Gym Log API", lifespan=lifespan)

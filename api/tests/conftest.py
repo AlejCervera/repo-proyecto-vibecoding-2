@@ -4,6 +4,7 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
+from app import db
 from app.ejercicios.nombres import normalizar
 from app.ejercicios.repository import insertar_base
 from app.main import app
@@ -15,6 +16,13 @@ TEST_DB = os.environ.get(
 SECRETO = "secreto-de-pruebas"
 CODIGO = "codigo-de-pruebas"
 PASSWORD = "contraseña-segura"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cerrar_pools():
+    """Al acabar, cierra los pools de conexiones que hayan abierto las pruebas (Fase 9e3)."""
+    yield
+    db.cerrar()
 
 
 @pytest.fixture

@@ -66,23 +66,21 @@ test("sin sesión avisa a la app", async () => {
 });
 
 test("una carga que llega tarde no borra lo que ya has escrito", async () => {
-  // En desarrollo (StrictMode) la carga se lanza dos veces; la primera puede responder la última.
+  // En desarrollo (StrictMode) la carga se lanza dos veces: ahora comparten una sola petición
+  // (api/cache.ts), y su respuesta no pisa lo que se escribe después.
   const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200 });
-  let responderPrimera: (r: Response) => void = () => {};
-  const fetch = vi
-    .fn()
-    .mockReturnValueOnce(new Promise<Response>((r) => (responderPrimera = r)))
-    .mockResolvedValueOnce(json({ altura_cm: 178, peso_corporal_kg: 80 }));
+  let responder: (r: Response) => void = () => {};
+  const fetch = vi.fn().mockReturnValueOnce(new Promise<Response>((r) => (responder = r)));
   vi.stubGlobal("fetch", fetch);
   render(
     <StrictMode>
       <PerfilPage {...CUENTA} onSesionCaducada={vi.fn()} />
     </StrictMode>,
   );
+  responder(json({ altura_cm: 178, peso_corporal_kg: 80 }));
   await vi.waitFor(() => expect(valor("Altura (cm)")).toBe("178"));
+  expect(fetch).toHaveBeenCalledTimes(1);
   fireEvent.change(screen.getByLabelText("Altura (cm)"), { target: { value: "180" } });
-
-  responderPrimera(json({ altura_cm: null, peso_corporal_kg: null }));
   await new Promise((r) => setTimeout(r, 20));
   expect(valor("Altura (cm)")).toBe("180");
 });

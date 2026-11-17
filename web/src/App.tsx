@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
+import { alVaciar, vaciar } from "./api/cache";
 import { AuthScreen } from "./auth/AuthScreen";
 import { MisEjerciciosPage } from "./ejercicios/MisEjerciciosPage";
 import { EntrenarPage } from "./entrenar/EntrenarPage";
@@ -8,6 +9,7 @@ import { Empezar } from "./inicio/Empezar";
 import { InicioPage } from "./inicio/InicioPage";
 import { enlace, ir, useRuta } from "./navegacion";
 import { PerfilPage } from "./perfil/PerfilPage";
+import { precargarPestanas } from "./precarga";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
 import { DiarioPage } from "./diario/DiarioPage";
@@ -28,7 +30,18 @@ export function App() {
       .catch((e: Error) => setError(e.message));
   }, []);
 
-  const sinSesion = useCallback(() => setUsuario(null), []);
+  const sinSesion = useCallback(() => {
+    vaciar(); // nada de la cuenta anterior se queda en memoria
+    setUsuario(null);
+  }, []);
+
+  // Con sesión, se precargan las pestañas (y otra vez tras cada cambio): abrirlas no espera a la red
+  const idUsuario = usuario?.id;
+  useEffect(() => {
+    if (idUsuario === undefined) return;
+    void precargarPestanas();
+    return alVaciar(() => void precargarPestanas());
+  }, [idUsuario]);
 
   // Lo que se desliza es #root (no el documento): al cambiar de pantalla, vuelve arriba.
   const pagina = enlace(ruta);
