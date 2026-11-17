@@ -33,7 +33,7 @@ Dos personas (yo y mi novia). Cada una tiene su cuenta y su propio historial, y 
 - **Contenedores:** `docker compose` levanta base de datos, API y web.
 - **Catálogo:** script de importación única desde wger; después la app no depende de ese servicio.
 - **Pruebas:** pytest para la API (contra un Postgres de pruebas en Docker), Vitest para la web y Playwright en `e2e/`.
-- **Cómo se arrancará:** `docker compose up` y se abre la web en `http://localhost:5173`. Para probar en el móvil, se abre la IP del PC en la red local.
+- **Cómo se arrancará:** `docker compose up` y se abre la web en `http://localhost:5173` (versión de desarrollo). Para el móvil, la versión optimizada: `docker compose --profile movil up -d` y se abre `http://<IP del PC>:4173` en la misma wifi (la de desarrollo va muy lenta en el móvil). Si el puerto 8000 está ocupado por otro proyecto, `API_PORT=8002`; el 8001 lo usan los e2e.
 - **Cómo se probará:** `npm test`, `npm run lint` y `npm run test:e2e`. Los tres deben pasar antes de dar nada por terminado.
 - **Producción:** alojar el servidor para los dos móviles es una acción de producción; no se hará sin permiso explícito.
 

@@ -6,11 +6,16 @@ test.skip(({ viewport }) => (viewport?.width ?? 0) > 500, "solo con tamaño de m
 
 /** Ninguna pantalla debe obligar a hacer scroll de lado. */
 async function sinScrollHorizontal(page: Page, pantalla: string) {
-  const { ancho, visible } = await page.evaluate(() => ({
-    ancho: document.documentElement.scrollWidth,
-    visible: window.innerWidth,
-  }));
+  const { ancho, visible, contenido } = await page.evaluate(() => {
+    const raiz = document.getElementById("root")!;
+    return {
+      ancho: document.documentElement.scrollWidth,
+      visible: window.innerWidth,
+      contenido: raiz.scrollWidth - raiz.clientWidth, // lo que se desliza es #root
+    };
+  });
   expect(ancho, `scroll horizontal en ${pantalla}`).toBeLessThanOrEqual(visible);
+  expect(contenido, `scroll horizontal del contenido en ${pantalla}`).toBeLessThanOrEqual(0);
 }
 
 /** Todos los botones y enlaces-botón visibles miden al menos 44 px de alto. */
@@ -56,7 +61,7 @@ test("todas las pantallas caben a 390 px y sus botones se pueden tocar", async (
   await revisar(page, "entrenar");
 
   // El descanso sigue a la vista al bajar hasta el final de la pantalla
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => document.getElementById("root")!.scrollTo(0, 1e6));
   await expect(page.getByRole("timer")).toBeInViewport();
 
   await page.getByRole("navigation", { name: "Pasos" }).getByRole("link", { name: "Terminar" }).click();
@@ -87,7 +92,7 @@ test("la barra de pestañas queda fija abajo y no tapa el final de la pantalla",
   expect(caja.y + caja.height).toBeCloseTo(844, 0);
 
   // Al bajar del todo, el último botón queda por encima de la barra
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.evaluate(() => document.getElementById("root")!.scrollTo(0, 1e6));
   const salir = (await page.getByRole("button", { name: "Cerrar sesión" }).boundingBox())!;
   expect(salir.y + salir.height).toBeLessThanOrEqual(caja.y);
 });

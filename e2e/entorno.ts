@@ -3,6 +3,9 @@ export const PROYECTO = "gymlog-e2e";
 export const WEB_PORT = "5174";
 export const API_PORT = "8001";
 export const WEB_URL = `http://localhost:${WEB_PORT}`;
+/** Versión optimizada (servicio web-movil): la que se usa en el móvil. */
+export const WEB_MOVIL_PORT = "4174";
+export const WEB_MOVIL_URL = `http://localhost:${WEB_MOVIL_PORT}`;
 export const API_URL = `http://localhost:${API_PORT}`;
 export const CODIGO = "codigo-e2e";
 
@@ -10,6 +13,7 @@ export const envDocker = {
   ...process.env,
   WEB_PORT,
   API_PORT,
+  WEB_MOVIL_PORT,
   INVITE_CODE: CODIGO,
   // Los e2e nunca llaman a Gemini: las respuestas de la IA se simulan en el navegador.
   GEMINI_API_KEY: "",

@@ -35,6 +35,19 @@ services:
     depends_on:
       - api
 
+  # Versión optimizada (compilada) para usarla en el móvil: mucho más rápida que la de desarrollo.
+  # Se arranca con: docker compose --profile movil up -d  →  http://<IP del ordenador>:4173
+  web-movil:
+    build: ./web
+    profiles: ["movil"]
+    command: ["sh", "-c", "npm run build && npx vite preview"]
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "${WEB_MOVIL_PORT:-4173}:4173"
+    depends_on:
+      - api
+
   db-test:
     image: postgres:16
     profiles: ["test"]

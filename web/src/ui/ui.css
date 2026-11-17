@@ -306,6 +306,12 @@ label:has(> input[type="file"]:focus-visible) {
   color: var(--fondo);
 }
 
+/* Con el botón fijo de entrenar abajo, el aviso va justo encima, sin pisarlo
+   (botón de 56 px + 10 px arriba + 12 px abajo) */
+body:has(.boton-fijo.sin-pestanas) .aviso {
+  bottom: calc(78px + 8px + env(safe-area-inset-bottom));
+}
+
 .aviso button {
   background: transparent;
   color: #3d5c00;

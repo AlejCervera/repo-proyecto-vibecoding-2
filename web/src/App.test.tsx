@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { App } from "./App";
 import { simularFetch } from "./test-setup";
 
@@ -138,4 +138,29 @@ test("avisa si no puede conectar con el servidor", async () => {
   simularFetch({ status: 500, body: null });
   render(<App />);
   expect((await screen.findByRole("alert")).textContent).toMatch(/servidor/);
+});
+
+test("al cambiar de pantalla, el contenido (#root, que es lo que se desliza) vuelve arriba", async () => {
+  const raiz = document.createElement("div");
+  raiz.id = "root";
+  const scrollTo = vi.fn();
+  Object.assign(raiz, { scrollTo });
+  document.body.appendChild(raiz);
+  simularFetch(
+    { status: 200, body: ANA },
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    SIN_PLAN,
+    SIN_CAMBIOS,
+  );
+  render(<App />);
+  await screen.findByRole("link", { name: "Elegir rutina" });
+  scrollTo.mockClear();
+
+  simularFetch({ status: 200, body: { id: 1, nombre_usuario: "ana", nombre: null } });
+  window.location.hash = "#/perfil";
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  await vi.waitFor(() => expect(scrollTo).toHaveBeenCalledWith(0, 0));
+  raiz.remove();
 });

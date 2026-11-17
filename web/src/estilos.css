@@ -53,6 +53,24 @@
   box-sizing: border-box;
 }
 
+/* El documento no se desliza nunca; solo el contenido (#root). En iOS 26, al deslizar el documento,
+   Safari encoge o agranda su barra y deja lo fijado abajo a media pantalla (Fase 9e2). */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  position: relative; /* contiene lo oculto para lectores de pantalla */
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;

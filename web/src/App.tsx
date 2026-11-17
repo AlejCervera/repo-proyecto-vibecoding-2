@@ -6,7 +6,7 @@ import { EntrenarPage } from "./entrenar/EntrenarPage";
 import { HistorialPage } from "./historial/HistorialPage";
 import { Empezar } from "./inicio/Empezar";
 import { InicioPage } from "./inicio/InicioPage";
-import { ir, useRuta } from "./navegacion";
+import { enlace, ir, useRuta } from "./navegacion";
 import { PerfilPage } from "./perfil/PerfilPage";
 import { RutinaPage } from "./rutinas/RutinaPage";
 import { RutinasPage } from "./rutinas/RutinasPage";
@@ -29,6 +29,12 @@ export function App() {
   }, []);
 
   const sinSesion = useCallback(() => setUsuario(null), []);
+
+  // Lo que se desliza es #root (no el documento): al cambiar de pantalla, vuelve arriba.
+  const pagina = enlace(ruta);
+  useEffect(() => {
+    document.getElementById("root")?.scrollTo?.(0, 0);
+  }, [pagina]);
 
   async function salir() {
     await cerrarSesion();

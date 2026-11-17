@@ -216,7 +216,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Rediseño y mejoras (Fases 9 a 9h)
+## Rediseño y mejoras (Fases 9 a 9h, con 9e2)
 
 Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
 
@@ -322,6 +322,33 @@ Todo en `web/src/ui/animaciones.css`, dentro de `prefers-reduced-motion: no-pref
 - Unitarias de la cuenta hacia arriba (lógica pura, con reloj simulado); web: con «Reducir movimiento» no se anima (se muestra el valor final directamente); e2e completos en verde (las animaciones no deben retrasar ni tapar ningún clic). El ✓ de las series pasa a ser un SVG (`svg.check`): las e2e lo buscan así, y la prueba de tamaños en móvil espera a que acaben las animaciones antes de medir.
 
 **Hecho cuando:** las animaciones se ven en el iPhone, son cortas y con «Reducir movimiento» desaparecen.
+
+## Fase 9e2 · Arreglos en el iPhone real (iOS 26)
+
+**Objetivo:** que en el iPhone la barra de pestañas no se mueva al deslizar y que la app vaya fluida.
+
+**Problemas vistos en un iPhone con iOS 26 (Safari):**
+1. Al deslizar, la barra de pestañas se queda a media pantalla. Causa: lo que se desliza es el documento entero; Safari encoge o agranda su barra de direcciones y no recoloca a tiempo lo fijado abajo (`position: fixed; bottom: 0`), un fallo conocido de iOS 26. Afecta también al botón fijo y a los avisos. Los e2e no lo veían: WebKit de escritorio no tiene esa barra que cambia de tamaño.
+2. Va muy lenta. Causa: el móvil abre el servidor de desarrollo de Vite (cientos de módulos sueltos sin comprimir por la wifi y React en modo desarrollo).
+
+**Tareas:**
+- [x] El documento no se desliza nunca: `html` y `body` a toda la altura sin scroll y el contenido se desliza dentro de su propio contenedor (`#root`). La barra, el botón fijo y los avisos quedan fuera de ese movimiento.
+- [x] Al cambiar de pantalla, el contenido vuelve arriba (antes se heredaba la posición de la pantalla anterior).
+- [x] Servicio `web-movil` en Docker (perfil `movil`): compila la web optimizada y la sirve con `vite preview` en el puerto 4173, con el mismo proxy a la API. Sin dependencias nuevas. La de desarrollo (5173) no cambia.
+- [x] La API de desarrollo deja libre el 8001 (lo usan los e2e): se documenta usar otro puerto si el 8000 está ocupado.
+
+**Pruebas (concienzudas, para ver en local lo que pasaba en el iPhone):**
+- Prueba que falla primero: en móvil e iPhone, al deslizar hasta el final el documento sigue en 0 y la barra sigue pegada abajo.
+- Barra de Safari simulada: se cambia el alto de la pantalla a mitad de deslizar (844 → 750 → 844 px, como cuando Safari encoge su barra) y la barra de pestañas, el botón fijo y el aviso siguen pegados al borde inferior real, en Inicio, Diario, Entrenar y Perfil.
+- El final de cada pantalla larga se puede alcanzar y su último elemento queda por encima de la barra y del botón fijo (nada tapado).
+- Tras escribir en un campo (teclado) y salir, la barra vuelve a su sitio.
+- Al cambiar de pantalla el contenido empieza arriba (web y e2e).
+- Sin scroll lateral ni en el documento ni en el contenedor.
+- Versión optimizada (proyecto e2e propio contra `web-movil`): carga con pocos archivos (≤ 10 de JS y CSS), sin módulos de desarrollo (`/@vite/`, `/src/`), JS total comprimido por debajo de un tope, y entrar, entrenar una serie y ver el diario funcionan a través del proxy.
+
+Resultado: la versión optimizada es 1 JS (~94 KB comprimido) y 1 CSS frente a ~94 módulos sueltos en desarrollo. Las pruebas nuevas (`e2e/pantalla-fija.spec.ts`, `e2e/rendimiento.spec.ts` en el proyecto «produccion») fallaban antes del arreglo: el documento se deslizaba 323 px y el aviso pisaba 3 px el botón fijo (también arreglado). Notas: WebKit móvil de Playwright no admite la rueda del ratón, así que allí se desliza el contenedor bajo el dedo por código; ninguna prueba automática reproduce la barra de Safari real, por eso se simula cambiando el alto.
+
+**Hecho cuando:** en el iPhone real la barra no se mueve al deslizar y la app va fluida en `http://<IP del ordenador>:4173`, con todas las pruebas en verde.
 
 ## Fase 9f · Primeros pasos y repetir entreno
 

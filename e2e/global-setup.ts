@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
-import { API_URL, PROYECTO, WEB_URL, envDocker } from "./entorno";
+import { API_URL, PROYECTO, WEB_MOVIL_URL, WEB_URL, envDocker } from "./entorno";
 
 async function esperar(url: string, segundos = 90) {
   for (let i = 0; i < segundos; i++) {
@@ -15,12 +15,13 @@ async function esperar(url: string, segundos = 90) {
 }
 
 export default async function globalSetup() {
-  execSync(`docker compose -p ${PROYECTO} up -d --build db api web`, {
+  execSync(`docker compose -p ${PROYECTO} up -d --build db api web web-movil`, {
     env: envDocker,
     stdio: "inherit",
   });
   await esperar(`${API_URL}/health`);
   await esperar(WEB_URL);
+  await esperar(WEB_MOVIL_URL, 240); // compila la web antes de servirla
   // Catálogo pequeño de prueba (no se llama a wger.de en los e2e).
   execSync(`docker compose -p ${PROYECTO} exec -T api python -m app.importar_wger --archivo -`, {
     env: envDocker,

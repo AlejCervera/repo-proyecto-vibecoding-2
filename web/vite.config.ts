@@ -14,6 +14,13 @@ export default defineConfig({
       "/api": { target: apiUrl, rewrite: (path) => path.replace(/^\/api/, "") },
     },
   },
+  // Versión optimizada para probar en el móvil (servicio web-movil): mismo proxy a la API
+  // (preview hereda server.proxy) y siempre en el 4173.
+  preview: {
+    host: true,
+    port: 4173,
+    strictPort: true,
+  },
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
