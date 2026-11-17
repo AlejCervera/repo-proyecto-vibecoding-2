@@ -216,7 +216,7 @@ Estructura: `web/` (React), `api/` (Python + FastAPI + Postgres), `docker-compos
 
 **Hecho cuando:** con el perfil completo, una rutina propia muestra recomendaciones válidas y «Aplicar» cambia la rutina; con 429 o respuesta inválida, la app avisa.
 
-## Rediseño (Fases 9 a 9e)
+## Rediseño y mejoras (Fases 9 a 9h)
 
 Referencia: maqueta «2B · Modo foco» con los colores de «2A» (https://claude.ai/artifact/XgqQiCaUr2WKPDshNnCUjo). Solo modo oscuro: fondo grafito (#121413), superficies #1C1F1D / #2A2F2B, texto #F2F2EE, secundario #9BA39D, único acento verde lima #C6F432 (texto oscuro encima). Fuente Archivo alojada en `web/public` (sin Google Fonts ni dependencias). Iconos SVG propios. Pensado para iPhone (390 px, márgenes seguros, campos ≥ 16 px para que Safari no haga zoom).
 
@@ -323,6 +323,46 @@ Todo en `web/src/ui/animaciones.css`, dentro de `prefers-reduced-motion: no-pref
 
 **Hecho cuando:** las animaciones se ven en el iPhone, son cortas y con «Reducir movimiento» desaparecen.
 
+## Fase 9f · Primeros pasos y repetir entreno
+
+**Objetivo:** que alguien que entra por primera vez sepa qué hacer, y que repetir lo de siempre cueste un toque.
+
+**Tareas:**
+- [ ] Bienvenida para cuentas nuevas (solo la primera vez, se puede saltar): 3 pasos en hojas o pantallas cortas — elige o copia una rutina, planifica la semana, empieza. Se marca como vista en el servidor (no solo en el navegador), para que no salga en cada móvil.
+- [ ] «Repetir el último» en la tarjeta de Inicio: empieza la rutina con los pesos y repeticiones de la última sesión de cada ejercicio ya puestos.
+
+**Pruebas:**
+- API del «bienvenida vista»; web de los 3 pasos y de saltarla; e2e: cuenta nueva → bienvenida → rutina y plan creados; «Repetir el último» rellena los valores de la vez anterior.
+
+**Hecho cuando:** una cuenta nueva llega a su primer entreno sin ayuda y repetir un entreno es un toque.
+
+## Fase 9g · Más herramientas al entrenar
+
+**Objetivo:** cubrir lo que se echa en falta en el gimnasio.
+
+**Tareas:**
+- [ ] Notas: una por serie (opcional) y otra por entreno («molestia en el hombro», «agarre cerrado»). Se ven en «la última vez», en el historial y en el diario. Con límite de longitud.
+- [ ] Superseries: en una rutina propia, agrupar dos ejercicios que se alternan; al entrenar se pasa de uno a otro y el descanso solo corre tras el segundo.
+- [ ] Calculadora de discos: al tocar el peso, una hoja dice qué discos poner por lado (barra de 20 kg por defecto, configurable en Perfil; discos 25 · 20 · 15 · 10 · 5 · 2,5 · 1,25). Lógica pura aparte.
+
+**Pruebas:**
+- Unitarias de la calculadora de discos (incluido un peso imposible de cargar exacto); API de notas y de superseries (migración nueva); web y e2e de cada una.
+
+**Hecho cuando:** las tres funcionan en el iPhone con todas las pruebas en verde.
+
+## Fase 9h · Peso corporal y exportar datos
+
+**Objetivo:** seguir el peso corporal y poder llevarte tus datos.
+
+**Tareas:**
+- [ ] Peso corporal en Perfil (fecha y kg, uno por día) y su gráfica de línea en el Progreso del diario, con las gráficas SVG que ya hay.
+- [ ] Exportar a CSV desde Perfil: series (fecha, ejercicio, kg, repeticiones, notas), entrenos y peso corporal. Solo los datos del propio usuario. Sirve de copia de seguridad antes de publicar.
+
+**Pruebas:**
+- API del peso corporal y de la exportación (que nunca incluya datos de otra cuenta y que escape bien el CSV, sin fórmulas inyectables); web y e2e de la descarga.
+
+**Hecho cuando:** se registra el peso, se ve su evolución y el CSV abre bien en una hoja de cálculo.
+
 ## Fase 10 · Preparar para producción (en local)
 
 **Objetivo:** que la app esté lista para publicarse sin tocar todavía la nube.
@@ -334,6 +374,7 @@ Todo en `web/src/ui/animaciones.css`, dentro de `prefers-reduced-motion: no-pref
 - [ ] Dockerfile de producción en dos etapas (Node compila la web, Python la sirve), usuario sin root, `/docs` desactivado. Las migraciones siguen al arrancar (una sola instancia).
 - [ ] `COOKIE_SECURE=true` por defecto y comprobación de que `SESSION_SECRET` es largo.
 - [ ] Conexión a Postgres con SSL (la exige Neon) y que la app aguante la primera conexión lenta cuando la base de datos despierta.
+- [ ] Icono propio y pantalla de arranque para la app instalada en el iPhone (lima sobre grafito): `apple-touch-icon`, iconos del manifiesto y color de la barra de estado.
 
 **Pruebas:**
 - API del límite diario y de intentos; web del contador; la imagen de producción arranca y pasa los e2e en local.
