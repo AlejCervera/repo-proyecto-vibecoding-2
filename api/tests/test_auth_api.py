@@ -11,10 +11,10 @@ def login(client, nombre="ana", password=PASSWORD):
 def test_registro_inicia_sesion(client):
     r = registrar(client, "ana")
     assert r.status_code == 201
-    assert r.json() == {"id": 1, "nombre_usuario": "ana"}
+    assert r.json() == {"id": 1, "nombre_usuario": "ana", "bienvenida_vista": False}
     cookie = r.headers["set-cookie"].lower()
     assert "httponly" in cookie and "samesite=lax" in cookie
-    assert client.get("/auth/yo").json() == {"id": 1, "nombre_usuario": "ana"}
+    assert client.get("/auth/yo").json() == {"id": 1, "nombre_usuario": "ana", "bienvenida_vista": False}
 
 
 def test_registro_guarda_hash_y_no_la_contraseña(client, conn):

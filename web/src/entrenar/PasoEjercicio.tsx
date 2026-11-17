@@ -79,6 +79,13 @@ export function PasoEjercicio(props: Props) {
   const estado = casillas(hechas.length, previstas);
   const pista = estado.completado ? null : pistaProgresion(leerNumero(peso), repsMax);
 
+  /** Tras guardar o deshacer: los valores de la serie que toca ahora (repetir la última vez). */
+  function proponerSiguiente(todas: Serie[]) {
+    const v = valoresIniciales(todas, hoy);
+    if (v.peso) setPeso(v.peso);
+    if (v.repeticiones) setRepeticiones(v.repeticiones);
+  }
+
   async function guardar(e: FormEvent) {
     e.preventDefault();
     setGuardando(true);
@@ -86,6 +93,7 @@ export function PasoEjercicio(props: Props) {
     try {
       const nueva = await crearSerie(aPeticion({ fecha: hoy, ejercicio, peso, repeticiones }));
       setHistorial((h) => h && { ...h, series: [nueva, ...h.series] });
+      proponerSiguiente([nueva, ...series]);
       setRecienGuardada(nueva);
       onGuardada(nueva);
     } catch (err) {
@@ -100,6 +108,7 @@ export function PasoEjercicio(props: Props) {
     try {
       await borrarSerie(s.id);
       setHistorial((h) => h && { ...h, series: h.series.filter((x) => x.id !== s.id) });
+      proponerSiguiente(series.filter((x) => x.id !== s.id));
       onBorrada(s.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se ha podido deshacer");

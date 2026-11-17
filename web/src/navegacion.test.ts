@@ -57,3 +57,8 @@ test("mi perfil", () => {
   expect(leerRuta("#/perfil")).toEqual({ pantalla: "perfil" });
   expect(enlace({ pantalla: "perfil" })).toBe("#/perfil");
 });
+
+test("la bienvenida (Fase 9f)", () => {
+  expect(leerRuta("#/bienvenida")).toEqual({ pantalla: "bienvenida" });
+  expect(enlace({ pantalla: "bienvenida" })).toBe("#/bienvenida");
+});

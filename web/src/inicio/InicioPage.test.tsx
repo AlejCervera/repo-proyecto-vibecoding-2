@@ -194,3 +194,25 @@ test("el atajo «empezar» con plan va a la rutina que toca hoy", async () => {
   await vi.waitFor(() => expect(window.location.hash).toBe("#/rutinas/3/entrenar/0"));
   window.location.hash = "";
 });
+
+// --- Repetir el último (Fase 9f) ---------------------------------------------------------
+
+const AYER = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+const entradaAyer = { id: 5, fecha: AYER, rutina_id: 3, rutina_nombre: "Pecho", num_ejercicios: 1, num_series: 3 };
+
+test("hoy descanso: «Repetir el último» empieza la rutina del último entreno", async () => {
+  const entrenar = await pintar([], [PECHO], [entradaAyer], planHoy(null));
+  const repetir = within(entrenar).getByRole("link", { name: /^Repetir el último: Pecho/ });
+  expect(repetir.getAttribute("href")).toBe("#/rutinas/3/entrenar/0");
+});
+
+test("sin rutina usada en este móvil pero con diario: también se ofrece repetir", async () => {
+  const entrenar = await pintar([], [PECHO], [entradaAyer]);
+  expect(within(entrenar).getByRole("heading", { name: "¿Qué entrenas hoy?" })).toBeTruthy();
+  expect(within(entrenar).getByRole("link", { name: /^Repetir el último: Pecho/ })).toBeTruthy();
+});
+
+test("si hoy ya toca una rutina, no se ofrece repetir (sería un segundo botón para lo mismo)", async () => {
+  const entrenar = await pintar([], [PECHO], [entradaAyer], planHoy({ id: 3, nombre: "Pecho" }));
+  expect(within(entrenar).queryByRole("link", { name: /Repetir el último/ })).toBeNull();
+});

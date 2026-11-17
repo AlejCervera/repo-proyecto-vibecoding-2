@@ -1,6 +1,11 @@
 import { ApiError, enviarJson, pedir } from "./http";
 
-export type Usuario = { id: number; nombre_usuario: string };
+export type Usuario = {
+  id: number;
+  nombre_usuario: string;
+  /** false = cuenta nueva que aún no ha visto la bienvenida (Fase 9f). */
+  bienvenida_vista?: boolean;
+};
 
 /** Usuario con sesión iniciada, o null si no hay sesión. */
 export async function usuarioActual(): Promise<Usuario | null> {

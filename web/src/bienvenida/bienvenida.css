@@ -1,0 +1,88 @@
+/* Bienvenida para cuentas nuevas (Fase 9f): pantalla completa, sin pestañas, con el botón fijo abajo. */
+
+.bienvenida {
+  padding-bottom: 96px; /* el botón fijo no tapa lo último */
+}
+
+.bienvenida-cabecera {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.bienvenida-cabecera button {
+  padding: 8px 4px;
+  font-weight: 600;
+}
+
+.bienvenida-cabecera button:last-child {
+  justify-self: end;
+}
+
+.bienvenida-cabecera button:first-child {
+  justify-self: start;
+}
+
+.bienvenida-paso {
+  margin: 0;
+  color: var(--suave);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Tres tramos, como la barra de progreso de entrenar */
+main ol.bienvenida-progreso {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin: 6px 0 20px;
+}
+
+main ol.bienvenida-progreso li {
+  height: 4px;
+  padding: 0;
+  margin: 0;
+  border-radius: 2px;
+  background: var(--superficie-2);
+}
+
+main ol.bienvenida-progreso li.hecho {
+  background: var(--acento);
+}
+
+.bienvenida h2 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
+main ul.bienvenida-rutinas li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 12px 16px;
+}
+
+.bienvenida-rutinas li > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bienvenida-rutinas small {
+  color: var(--suave);
+}
+
+.bienvenida-rutinas button {
+  flex-shrink: 0;
+}
+
+.bienvenida button.enlace-secundario {
+  width: 100%;
+  background: transparent;
+}
+
+main ul.bienvenida-plan li {
+  font-weight: 700;
+}

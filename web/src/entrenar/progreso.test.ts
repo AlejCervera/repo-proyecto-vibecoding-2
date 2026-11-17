@@ -47,11 +47,42 @@ test("seriesDeHoy en orden de registro", () => {
   expect(seriesDeHoy(lista, HOY).map((x) => x.peso_kg)).toEqual([80, 85]);
 });
 
-test("valoresIniciales: la última serie de hoy si hay; si no, la última de la sesión anterior", () => {
-  expect(valoresIniciales(historial(), HOY)).toEqual({ peso: "75", repeticiones: "10" });
-  const conHoy = [s(HOY, 82.5, 6), ...historial()];
-  expect(valoresIniciales(conHoy, HOY)).toEqual({ peso: "82,5", repeticiones: "6" });
-  expect(valoresIniciales([], HOY)).toEqual({ peso: "", repeticiones: "" });
+// --- Repetir el último, serie a serie (Fase 9f) -------------------------------------------
+
+/** La última vez: 80×8 · 80×8 · 77,5×6 (y antes, otra sesión que no cuenta). */
+function ultimaVez(): Serie[] {
+  siguienteId = 1;
+  return [s("2026-11-01", 70, 10), s("2026-11-05", 80, 8), s("2026-11-05", 80, 8), s("2026-11-05", 77.5, 6)];
+}
+const v = (peso: string, repeticiones: string) => ({ peso, repeticiones });
+
+test("valoresIniciales: sin nada hoy, la primera serie de la última vez (no la última)", () => {
+  expect(valoresIniciales(ultimaVez(), HOY)).toEqual(v("80", "8"));
+});
+
+test("valoresIniciales: si repites la serie como la última vez, propone la siguiente de entonces", () => {
+  const series = ultimaVez();
+  series.push(s(HOY, 80, 8));
+  expect(valoresIniciales(series, HOY)).toEqual(v("80", "8"));
+  series.push(s(HOY, 80, 8));
+  expect(valoresIniciales(series, HOY)).toEqual(v("77,5", "6"));
+});
+
+test("valoresIniciales: si cambias una serie, la siguiente sigue desde lo que has hecho hoy", () => {
+  const series = ultimaVez();
+  series.push(s(HOY, 82.5, 8)); // hoy has subido peso
+  expect(valoresIniciales(series, HOY)).toEqual(v("82,5", "8"));
+});
+
+test("valoresIniciales: con más series que la última vez, se repite la última de hoy", () => {
+  const series = ultimaVez();
+  series.push(s(HOY, 80, 8), s(HOY, 80, 8), s(HOY, 77.5, 6));
+  expect(valoresIniciales(series, HOY)).toEqual(v("77,5", "6"));
+});
+
+test("valoresIniciales: la primera vez, vacío; sin sesión anterior, la última de hoy", () => {
+  expect(valoresIniciales([], HOY)).toEqual(v("", ""));
+  expect(valoresIniciales([s(HOY, 60, 12)], HOY)).toEqual(v("60", "12"));
 });
 
 test("contarHoy por ejercicio", () => {

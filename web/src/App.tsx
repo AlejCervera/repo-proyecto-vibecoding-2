@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { cerrarSesion, usuarioActual, type Usuario } from "./api/auth";
 import { alVaciar, vaciar } from "./api/cache";
 import { AuthScreen } from "./auth/AuthScreen";
+import { Bienvenida } from "./bienvenida/Bienvenida";
+import { marcarBienvenida } from "./api/perfil";
 import { MisEjerciciosPage } from "./ejercicios/MisEjerciciosPage";
 import { EntrenarPage } from "./entrenar/EntrenarPage";
 import { HistorialPage } from "./historial/HistorialPage";
@@ -49,6 +51,21 @@ export function App() {
     document.getElementById("root")?.scrollTo?.(0, 0);
   }, [pagina]);
 
+  // Primeros pasos: salen solos a las cuentas nuevas, y desde Perfil si se quieren ver otra vez
+  const enBienvenida = !!usuario && (usuario.bienvenida_vista === false || ruta.pantalla === "bienvenida");
+
+  async function terminarBienvenida() {
+    if (usuario?.bienvenida_vista === false) {
+      try {
+        await marcarBienvenida();
+      } catch {
+        // si no se pudo guardar, se volverá a ofrecer la próxima vez: no bloquea
+      }
+    }
+    setUsuario((u) => u && { ...u, bienvenida_vista: true });
+    ir({ pantalla: "inicio" });
+  }
+
   async function salir() {
     await cerrarSesion();
     // Quien entre después empieza en Inicio, no en el Perfil de la cuenta anterior.
@@ -67,7 +84,12 @@ export function App() {
       )}
       {error && <p role="alert">{error}</p>}
       {usuario === null && <AuthScreen onEntrar={setUsuario} />}
-      {usuario && (
+      {usuario && enBienvenida && (
+        <div className="pantalla" key="bienvenida">
+          <Bienvenida nombre={usuario.nombre_usuario} onTerminar={terminarBienvenida} />
+        </div>
+      )}
+      {usuario && !enBienvenida && (
         <>
           {/* Cada pantalla entra con un fundido corto (ui/animaciones.css) */}
           <div className="pantalla" key={ruta.pantalla}>

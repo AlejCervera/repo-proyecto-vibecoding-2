@@ -1,14 +1,20 @@
 import type { EntradaDiario } from "../api/entrenamientos";
 import { resumenEntrada } from "../diario/entrada";
 import { enlace } from "../navegacion";
-import { resumen } from "../rutinas/rutina";
+import { resumen, type Rutina } from "../rutinas/rutina";
 import type { Hoy } from "./hoy";
 import { haceDias } from "./resumen";
 
-type Props = { hoy: string; que: Hoy; diario: EntradaDiario[] };
+type Props = {
+  hoy: string;
+  que: Hoy;
+  diario: EntradaDiario[];
+  /** «Repetir el último» (Fase 9f): sale en días de descanso o sin nada que tocar. */
+  repetir: { rutina: Rutina; fecha: string } | null;
+};
 
 /** Tarjeta principal de Inicio: lo que toca hoy (o descanso, o hecho) y el botón para empezar. */
-export function TarjetaHoy({ hoy, que, diario }: Props) {
+export function TarjetaHoy({ hoy, que, diario, repetir }: Props) {
   return (
     <article className="tarjeta destacada" aria-label="Entrenar">
       {que.tipo === "toca" && (
@@ -39,6 +45,7 @@ export function TarjetaHoy({ hoy, que, diario }: Props) {
           <a className="boton grande" href={enlace({ pantalla: "rutinas" })}>
             Entrenar igualmente
           </a>
+          <Repetir hoy={hoy} repetir={repetir} />
         </>
       )}
       {que.tipo === "hecho" && (
@@ -61,9 +68,23 @@ export function TarjetaHoy({ hoy, que, diario }: Props) {
           <a className="boton primario grande" href={enlace({ pantalla: "rutinas" })}>
             Elegir rutina
           </a>
+          <Repetir hoy={hoy} repetir={repetir} />
         </>
       )}
     </article>
+  );
+}
+
+/** Enlace para empezar otra vez la rutina del último entreno, con sus valores serie a serie. */
+function Repetir({ hoy, repetir }: { hoy: string; repetir: Props["repetir"] }) {
+  if (!repetir) return null;
+  return (
+    <a
+      className="enlace-secundario"
+      href={enlace({ pantalla: "entrenar", rutinaId: repetir.rutina.id, paso: 0 })}
+    >
+      Repetir el último: {repetir.rutina.nombre} · {haceDias(repetir.fecha, hoy)}
+    </a>
   );
 }
 

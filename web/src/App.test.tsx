@@ -195,3 +195,43 @@ test("sin sesión no se precarga nada", async () => {
   await screen.findByRole("button", { name: "Entrar" });
   expect(precargarPestanas).not.toHaveBeenCalled();
 });
+
+// --- Bienvenida (Fase 9f) ------------------------------------------------------------------
+
+const RUTINAS_Y_PLAN = [{ status: 200, body: [] }, SIN_PLAN] as const;
+
+test("una cuenta nueva ve la bienvenida (sin pestañas) y al saltarla queda vista y va a Inicio", async () => {
+  const fetch = simularFetch(
+    { status: 200, body: { ...ANA, bienvenida_vista: false } },
+    ...RUTINAS_Y_PLAN,
+    { status: 204, body: null }, // PUT /perfil/bienvenida
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    { status: 200, body: [] },
+    SIN_PLAN,
+    SIN_CAMBIOS,
+  );
+  render(<App />);
+  expect(await screen.findByRole("heading", { name: "Hola, ana. Elige con qué empezar" })).toBeTruthy();
+  expect(screen.queryByRole("navigation", { name: "Secciones" })).toBeNull();
+
+  fireEvent.click(screen.getByRole("button", { name: "Saltar" }));
+  expect(await screen.findByRole("navigation", { name: "Secciones" })).toBeTruthy();
+  const marcar = fetch.mock.calls.find(([url]) => url === "/api/perfil/bienvenida");
+  expect(marcar?.[1].method).toBe("PUT");
+  expect(window.location.hash).toBe("#/");
+});
+
+test("con la bienvenida ya vista no sale, pero se puede abrir desde #/bienvenida sin volver a marcarla", async () => {
+  window.location.hash = "#/bienvenida";
+  const fetch = simularFetch({ status: 200, body: { ...ANA, bienvenida_vista: true } }, ...RUTINAS_Y_PLAN);
+  render(<App />);
+  expect(await screen.findByRole("heading", { name: "Hola, ana. Elige con qué empezar" })).toBeTruthy();
+  // Inicio: parte ya está en memoria; se responde según la ruta, no por orden
+  fetch.mockImplementation(async (url: string) =>
+    Response.json(url.startsWith("/api/plan/semana") ? SIN_PLAN.body : url.startsWith("/api/plan/dias") ? SIN_CAMBIOS.body : []),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Saltar" }));
+  expect(await screen.findByRole("navigation", { name: "Secciones" })).toBeTruthy();
+  expect(fetch.mock.calls.some(([url]) => url === "/api/perfil/bienvenida")).toBe(false);
+});

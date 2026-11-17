@@ -55,7 +55,7 @@ function abrirLista() {
   return screen.getByRole("list", { name: "Ejercicios del entrenamiento" });
 }
 
-test("muestra objetivo, la última vez, las series de hoy y los valores de la última serie", async () => {
+test("muestra objetivo, la última vez, las series de hoy y los valores de su serie 1 (Fase 9f)", async () => {
   pintar(0, RUTINA, BANCA_ANTES, historial(10, "Press de banca", BANCA_ANTES));
   const paso = await screen.findByRole("article", { name: "Press de banca" });
 
@@ -63,7 +63,7 @@ test("muestra objetivo, la última vez, las series de hoy y los valores de la ú
   expect(paso.textContent).toContain("La última vez (15/01/2020): 80 kg × 8 · 80 kg × 6");
   expect(puntos(paso)).toEqual(["Ahora: serie 1", "Serie 2"]);
   expect(campo(paso, "Peso (kg)").value).toBe("80");
-  expect(campo(paso, "Repeticiones").value).toBe("6");
+  expect(campo(paso, "Repeticiones").value).toBe("8"); // la serie 1 de la última vez, no la última
   expect(paso.textContent).toContain("Si completas todas a 12 repeticiones, la próxima vez 82,5 kg.");
 });
 
@@ -84,7 +84,7 @@ test("con − / + se cambia el peso sin teclado y se guarda lo que se ve", async
   fireEvent.click(within(paso).getByRole("button", { name: "Sumar 2,5 kg" }));
   fireEvent.click(within(paso).getByRole("button", { name: "Sumar 1 rep." }));
   expect(campo(paso, "Peso (kg)").value).toBe("82,5");
-  expect(campo(paso, "Repeticiones").value).toBe("7");
+  expect(campo(paso, "Repeticiones").value).toBe("9"); // desde 80 × 8, la serie 1 de la última vez
 
   fireEvent.click(hecha());
   await vi.waitFor(() => expect(puntos(paso)[0]).toBe("Serie 1 · 82,5 kg × 6"));
@@ -95,7 +95,7 @@ test("con − / + se cambia el peso sin teclado y se guarda lo que se ve", async
     fecha: HOY,
     ejercicio_id: 10,
     peso_kg: "82,5",
-    repeticiones: "7",
+    repeticiones: "9",
   });
 });
 

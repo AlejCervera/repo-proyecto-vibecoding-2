@@ -9,6 +9,8 @@ export type Ruta =
   | { pantalla: "entrenamiento"; entrenamientoId: number }
   | { pantalla: "ejercicios" }
   | { pantalla: "perfil" }
+  /** Los primeros pasos (Fase 9f): salen solos a las cuentas nuevas y desde Perfil. */
+  | { pantalla: "bienvenida" }
   | { pantalla: "historial"; ejercicioId: number }
   | { pantalla: "rutinas" }
   | { pantalla: "rutina"; rutinaId: number }
@@ -37,6 +39,7 @@ export function leerRuta(hash: string): Ruta {
   if (hash === "#/diario") return { pantalla: "diario" };
   if (hash === "#/empezar") return { pantalla: "empezar" };
   if (hash === "#/perfil") return { pantalla: "perfil" };
+  if (hash === "#/bienvenida") return { pantalla: "bienvenida" };
   return { pantalla: "inicio" };
 }
 
@@ -60,6 +63,8 @@ export function enlace(ruta: Ruta): string {
       return "#/empezar";
     case "perfil":
       return "#/perfil";
+    case "bienvenida":
+      return "#/bienvenida";
     default:
       return "#/";
   }

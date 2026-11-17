@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { EntradaDiario } from "../api/entrenamientos";
 import type { Plan } from "../diario/calendario";
 import type { Rutina } from "../rutinas/rutina";
-import { queHacerHoy } from "./hoy";
+import { queHacerHoy, ultimoParaRepetir } from "./hoy";
 
 const HOY = "2026-11-13"; // viernes (índice 4)
 const rutina = (id: number, nombre: string): Rutina => ({
@@ -58,4 +58,19 @@ test("sin plan: la última rutina usada; si no hay, elegir", () => {
   });
   expect(queHacerHoy(HOY, SIN_PLAN, [PUSH], [], 99)).toEqual({ tipo: "elegir" });
   expect(queHacerHoy(HOY, SIN_PLAN, [PUSH], [entrada("2026-11-12", 1)], null)).toEqual({ tipo: "elegir" });
+});
+
+// --- Repetir el último (Fase 9f) ---------------------------------------------------------
+
+test("repetir el último: el entreno anterior a hoy más reciente, si su rutina sigue existiendo", () => {
+  // el diario va del más reciente al más antiguo
+  const diario = [entrada("2026-11-11", 2), entrada("2026-11-09", 1)];
+  expect(ultimoParaRepetir(HOY, diario, [PUSH, PIERNA])).toEqual({ rutina: PIERNA, fecha: "2026-11-11" });
+});
+
+test("repetir el último: no cuenta el de hoy, ni rutinas borradas o vacías", () => {
+  const vacia: Rutina = { ...rutina(3, "Vacía"), ejercicios: [] };
+  const diario = [entrada(HOY, 1), entrada("2026-11-12", 9), entrada("2026-11-11", 3), entrada("2026-11-10", 1)];
+  expect(ultimoParaRepetir(HOY, diario, [PUSH, vacia])).toEqual({ rutina: PUSH, fecha: "2026-11-10" });
+  expect(ultimoParaRepetir(HOY, [], [PUSH])).toBeNull();
 });

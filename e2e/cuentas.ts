@@ -8,14 +8,21 @@ export function nombreUnico(prefijo: string) {
   return `${prefijo}${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(0, 30);
 }
 
-/** Crea una cuenta nueva; queda en la pantalla de Inicio. */
-export async function registrar(page: Page, usuario: string) {
+/** Crea una cuenta nueva y se queda en la bienvenida (Fase 9f). */
+export async function registrarSinSaltar(page: Page, usuario: string) {
   await page.goto("/");
   await page.getByRole("button", { name: "Crear una cuenta" }).click();
   await page.getByLabel("Usuario").fill(usuario);
   await page.getByLabel("Contraseña").fill(PASSWORD);
   await page.getByLabel("Código de invitación").fill(CODIGO);
   await page.getByRole("button", { name: "Crear cuenta" }).click();
+  await expect(page.getByText("Paso 1 de 3")).toBeVisible();
+}
+
+/** Crea una cuenta nueva, salta la bienvenida y queda en la pantalla de Inicio. */
+export async function registrar(page: Page, usuario: string) {
+  await registrarSinSaltar(page, usuario);
+  await page.getByRole("button", { name: "Saltar" }).click();
   await expect(page.getByRole("navigation", { name: "Secciones" })).toBeVisible();
 }
 

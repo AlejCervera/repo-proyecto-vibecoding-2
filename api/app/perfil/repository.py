@@ -20,3 +20,7 @@ def guardar(conn: psycopg.Connection, usuario_id: int, perfil: Perfil) -> None:
         "UPDATE usuarios SET altura_cm = %s, peso_corporal_kg = %s WHERE id = %s",
         (perfil.altura_cm, perfil.peso_corporal_kg, usuario_id),
     )
+
+
+def marcar_bienvenida(conn: psycopg.Connection, usuario_id: int) -> None:
+    conn.execute("UPDATE usuarios SET bienvenida_vista = true WHERE id = %s", (usuario_id,))

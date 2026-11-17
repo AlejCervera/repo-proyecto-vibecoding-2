@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ApiError } from "../api/http";
 import { guardarPerfil, obtenerPerfil } from "../api/perfil";
+import { enlace } from "../navegacion";
 import type { Usuario } from "../api/auth";
 import { ContadorBotones } from "../ui/ContadorBotones";
 import { leerNumero } from "./perfil";
@@ -95,6 +96,9 @@ export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
       <p>
         Has entrado como <strong>{usuario.nombre_usuario}</strong>.
       </p>
+      <a className="enlace-secundario" href={enlace({ pantalla: "bienvenida" })}>
+        Ver la bienvenida otra vez
+      </a>
       <button type="button" className="grande" onClick={onSalir}>
         Cerrar sesión
       </button>

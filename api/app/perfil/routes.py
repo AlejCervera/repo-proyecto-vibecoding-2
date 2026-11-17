@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Body, Depends
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app import db
 from app.auth.dependencies import usuario_actual
@@ -27,3 +27,11 @@ def guardar_perfil(usuario: Usuario, datos: Annotated[Any, Body()] = None):
     with db.connect() as conn:
         repository.guardar(conn, usuario["id"], perfil)
     return a_dict(perfil)
+
+
+@router.put("/bienvenida", status_code=204)
+def bienvenida_vista(usuario: Usuario):
+    """La bienvenida ya se ha visto (terminada o saltada): no vuelve a salir en ningún móvil."""
+    with db.connect() as conn:
+        repository.marcar_bienvenida(conn, usuario["id"])
+    return Response(status_code=204)

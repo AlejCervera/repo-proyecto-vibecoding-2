@@ -374,11 +374,14 @@ Resultado: la versión optimizada es 1 JS (~94 KB comprimido) y 1 CSS frente a ~
 **Objetivo:** que alguien que entra por primera vez sepa qué hacer, y que repetir lo de siempre cueste un toque.
 
 **Tareas:**
-- [ ] Bienvenida para cuentas nuevas (solo la primera vez, se puede saltar): 3 pasos en hojas o pantallas cortas — elige o copia una rutina, planifica la semana, empieza. Se marca como vista en el servidor (no solo en el navegador), para que no salga en cada móvil.
-- [ ] «Repetir el último» en la tarjeta de Inicio: empieza la rutina con los pesos y repeticiones de la última sesión de cada ejercicio ya puestos.
+- [x] Repetir la última vez, serie a serie, en todos los entrenos: la serie N de hoy propone la serie N de la última sesión (antes se proponía la última serie en todas). Si cambias una serie, o haces más que entonces, la siguiente sigue desde lo de hoy. Al guardar o deshacer, los números pasan a los de la serie que toca.
+- [x] «Repetir el último: Pecho · hace 3 días» en la tarjeta de Inicio cuando hoy toca descanso o no hay nada que proponer: el entreno anterior más reciente cuya rutina sigue existiendo.
+- [x] Bienvenida para cuentas nuevas, a pantalla completa y sin pestañas, con «Saltar» y «Atrás»: 1) copiar rutinas predefinidas, 2) plan semanal (opcional, con `SelectorSemana`, la misma pieza que la hoja del Diario), 3) resumen y «Ir al inicio». Se guarda en el servidor (`usuarios.bienvenida_vista`, migración 010; las cuentas que ya existían la dan por vista) con `PUT /perfil/bienvenida`, y `/auth/*` devuelve el campo. En Perfil, «Ver la bienvenida otra vez» (`#/bienvenida`), que no vuelve a marcar nada.
 
 **Pruebas:**
-- API del «bienvenida vista»; web de los 3 pasos y de saltarla; e2e: cuenta nueva → bienvenida → rutina y plan creados; «Repetir el último» rellena los valores de la vez anterior.
+- API: cuenta nueva sin verla, vista tras marcarla también al entrar desde otro móvil, solo afecta a tu cuenta, sin sesión 401, y la migración da por vista la bienvenida a las cuentas que ya existían.
+- Web: serie a serie (sin nada hoy, repitiendo, cambiando, con más series que entonces, primera vez); al guardar se propone la siguiente; «Repetir el último» (cuándo sale, cuándo no, rutinas borradas o vacías); la bienvenida (3 pasos, copiar, plan, «Ahora no», «Atrás», «Saltar», error al copiar); App la enseña a cuentas nuevas sin pestañas y la marca al saltar, y desde `#/bienvenida` no vuelve a marcarla.
+- E2E: cuenta nueva → copia, planifica y llega a «Hoy toca»; no vuelve al recargar ni al entrar otra vez; saltar y verla desde Perfil; al volver a entrenar, serie 1 = 80 × 8 y tras «Hecha», 77,5 × 6. El ayudante `registrar` de las e2e salta la bienvenida.
 
 **Hecho cuando:** una cuenta nueva llega a su primer entreno sin ayuda y repetir un entreno es un toque.
 

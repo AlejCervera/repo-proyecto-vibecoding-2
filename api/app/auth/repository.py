@@ -11,14 +11,16 @@ class UsuarioExistente(Exception):
 
 
 def _usuario(row: tuple | None) -> dict[str, Any] | None:
-    return {"id": row[0], "nombre_usuario": row[1]} if row else None
+    if not row:
+        return None
+    return {"id": row[0], "nombre_usuario": row[1], "bienvenida_vista": row[2]}
 
 
 def crear_usuario(conn: psycopg.Connection, nombre: str, password_hash: str) -> dict[str, Any]:
     try:
         row = conn.execute(
             "INSERT INTO usuarios (nombre_usuario, password_hash) VALUES (%s, %s) "
-            "RETURNING id, nombre_usuario",
+            "RETURNING id, nombre_usuario, bienvenida_vista",
             (nombre, password_hash),
         ).fetchone()
     except psycopg.errors.UniqueViolation:
@@ -28,11 +30,11 @@ def crear_usuario(conn: psycopg.Connection, nombre: str, password_hash: str) -> 
 
 def buscar_para_login(conn: psycopg.Connection, nombre: str) -> tuple[dict, str] | None:
     row = conn.execute(
-        "SELECT id, nombre_usuario, password_hash FROM usuarios "
+        "SELECT id, nombre_usuario, bienvenida_vista, password_hash FROM usuarios "
         "WHERE lower(nombre_usuario) = lower(%s)",
         (nombre,),
     ).fetchone()
-    return (_usuario(row[:2]), row[2]) if row else None
+    return (_usuario(row[:3]), row[3]) if row else None
 
 
 def crear_sesion(
@@ -46,7 +48,7 @@ def crear_sesion(
 
 def usuario_de_sesion(conn: psycopg.Connection, token_hash: str) -> dict[str, Any] | None:
     row = conn.execute(
-        "SELECT u.id, u.nombre_usuario FROM sesiones s JOIN usuarios u ON u.id = s.usuario_id "
+        "SELECT u.id, u.nombre_usuario, u.bienvenida_vista FROM sesiones s JOIN usuarios u ON u.id = s.usuario_id "
         "WHERE s.token_hash = %s AND s.expira_en > now()",
         (token_hash,),
     ).fetchone()

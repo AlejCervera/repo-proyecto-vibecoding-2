@@ -16,12 +16,22 @@ export function ultimaSesion(series: Serie[], hoy: string): { fecha: string; ser
   return { fecha, series: porRegistro(anteriores.filter((s) => s.fecha === fecha)) };
 }
 
-/** Valores con los que se rellena el formulario: la última serie registrada (hoy o antes). */
+const iguales = (a: Serie, b: Serie) => a.peso_kg === b.peso_kg && a.repeticiones === b.repeticiones;
+
+/**
+ * Valores con los que se rellena la serie siguiente: repetir la última vez, serie a serie (Fase 9f).
+ * La serie N de hoy propone la serie N de la última sesión. Si hoy cambiaste la anterior (no es
+ * igual que entonces) o ya has hecho más series que entonces, sigue desde la última de hoy.
+ */
 export function valoresIniciales(series: Serie[], hoy: string): { peso: string; repeticiones: string } {
-  const hoySeries = seriesDeHoy(series, hoy);
-  const ultima = hoySeries.at(-1) ?? ultimaSesion(series, hoy)?.series.at(-1);
-  if (!ultima) return { peso: "", repeticiones: "" };
-  return { peso: String(ultima.peso_kg).replace(".", ","), repeticiones: String(ultima.repeticiones) };
+  const hechas = seriesDeHoy(series, hoy);
+  const antes = ultimaSesion(series, hoy)?.series ?? [];
+  const k = hechas.length;
+  const ultimaHoy = hechas.at(-1);
+  const sigueComoEntonces = k === 0 || (antes[k - 1] !== undefined && iguales(ultimaHoy!, antes[k - 1]));
+  const valor = (sigueComoEntonces ? antes[k] : undefined) ?? ultimaHoy ?? antes.at(-1);
+  if (!valor) return { peso: "", repeticiones: "" };
+  return { peso: String(valor.peso_kg).replace(".", ","), repeticiones: String(valor.repeticiones) };
 }
 
 /** Cuántas series de hoy lleva cada ejercicio. */

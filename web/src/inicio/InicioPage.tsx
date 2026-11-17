@@ -10,7 +10,7 @@ import { recordsDeHoy } from "../entrenar/estadisticas";
 import { enlace } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
 import { hoyISO, pesoPorReps, type Serie } from "../series/serie";
-import { queHacerHoy } from "./hoy";
+import { queHacerHoy, ultimoParaRepetir } from "./hoy";
 import { DIAS, diasEntre, fechaCorta, fechaLarga, leerUltimaRutina, lunesDe, semana } from "./resumen";
 import { TarjetaHoy } from "./TarjetaHoy";
 
@@ -62,7 +62,7 @@ export function InicioPage({ onSesionCaducada }: Props) {
     <section className="inicio">
       <p className="fecha-hoy">{fechaLarga(hoy)}</p>
 
-      <TarjetaHoy hoy={hoy} que={que} diario={diario} />
+      <TarjetaHoy hoy={hoy} que={que} diario={diario} repetir={ultimoParaRepetir(hoy, diario, rutinas)} />
 
       <article className="tarjeta" aria-label="Esta semana">
         <h2>Esta semana</h2>

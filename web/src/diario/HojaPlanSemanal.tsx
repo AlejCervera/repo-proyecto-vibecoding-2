@@ -2,9 +2,7 @@ import { useState, type FormEvent } from "react";
 import type { RutinaPlan } from "../api/plan";
 import type { Rutina } from "../rutinas/rutina";
 import { HojaInferior } from "../ui/HojaInferior";
-
-const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-const DESCANSO = "descanso";
+import { SelectorSemana } from "./SelectorSemana";
 
 type Props = {
   semana: RutinaPlan[];
@@ -27,25 +25,7 @@ export function HojaPlanSemanal({ semana, rutinas, ocupado, error, onGuardar, on
   return (
     <HojaInferior titulo="Plan semanal" onCerrar={onCerrar}>
       <form onSubmit={guardar} aria-label="Plan semanal" className="formulario-hoja plan-semanal">
-        {DIAS.map((nombre, i) => (
-          <label key={nombre}>
-            {nombre}
-            <select
-              value={dias[i] === null ? DESCANSO : String(dias[i])}
-              onChange={(e) => {
-                const valor = e.target.value === DESCANSO ? null : Number(e.target.value);
-                setDias((prev) => prev.map((d, j) => (j === i ? valor : d)));
-              }}
-            >
-              <option value={DESCANSO}>Descanso</option>
-              {rutinas.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
-        ))}
+        <SelectorSemana dias={dias} rutinas={rutinas} onCambiar={setDias} />
         {error && <p role="alert">{error}</p>}
         <button type="submit" className="grande" disabled={ocupado}>
           Guardar plan
