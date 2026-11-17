@@ -316,7 +316,7 @@ main ol.puntos li.hecha {
   color: var(--hecho-texto);
 }
 
-main ol.puntos li.hecha > span[aria-hidden] {
+main ol.puntos li.hecha > .check {
   color: var(--acento);
 }
 

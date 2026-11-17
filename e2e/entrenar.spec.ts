@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 const hechas = (paso: Locator) =>
-  paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ hasText: "✓" });
+  paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ has: paso.page().locator("svg.check") });
 
 async function guardar(paso: Locator, peso: string, reps: string) {
   await paso.getByLabel("Peso (kg)").fill(peso);
@@ -27,7 +27,7 @@ test("desde «Pecho» registrar press de banca y verlo en su historial", async (
   await expect(paso.getByLabel("Repeticiones")).toHaveValue("8"); // mínimo del objetivo
 
   await guardar(paso, "80", "8");
-  await expect(hechas(paso)).toHaveText(["✓ Serie 1 · 80 kg × 8"]);
+  await expect(hechas(paso)).toHaveText(["Serie 1 · 80 kg × 8"]);
 
   // La siguiente serie viene rellena con la anterior
   await expect(paso.getByLabel("Peso (kg)")).toHaveValue("80");
@@ -103,9 +103,9 @@ test("entrenar «Pecho» entero solo con los botones − / +, sin teclado", asyn
     await expect(hechas(aperturas)).toHaveCount(i);
   }
   await expect(hechas(aperturas)).toHaveText([
-    "✓ Serie 1 · 5 kg × 9",
-    "✓ Serie 2 · 5 kg × 9",
-    "✓ Serie 3 · 5 kg × 9",
+    "Serie 1 · 5 kg × 9",
+    "Serie 2 · 5 kg × 9",
+    "Serie 3 · 5 kg × 9",
   ]);
   await page.getByRole("link", { name: "Terminar entreno" }).click();
 

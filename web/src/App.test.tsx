@@ -39,6 +39,9 @@ test("con sesión, la primera pantalla es el inicio y la navegación lo marca", 
   render(<App />);
   expect(await screen.findByRole("link", { name: "Elegir rutina" })).toBeTruthy();
   expect(document.querySelector(".saludo")!.textContent).toBe("Hola, ana");
+  // La pantalla va en su contenedor (entra con fundido); las pestañas quedan fuera, fijas
+  expect(document.querySelector(".pantalla .saludo")).toBeTruthy();
+  expect(document.querySelector(".pantalla nav")).toBeNull();
   const nav = screen.getByRole("navigation", { name: "Secciones" });
   expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
     "Inicio",

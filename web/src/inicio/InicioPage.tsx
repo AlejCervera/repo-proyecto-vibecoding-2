@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ApiError } from "../api/http";
 import { listarEntrenamientos, type EntradaDiario } from "../api/entrenamientos";
 import { leerCambios, leerSemana } from "../api/plan";
@@ -81,7 +81,12 @@ export function InicioPage({ onSesionCaducada }: Props) {
           {DIAS.map((d, i) => {
             const clases = [esta.dias[i] ? "hecho" : "", i === indiceHoy ? "hoy" : ""].join(" ").trim();
             return (
-              <li key={d} className={clases || undefined} aria-current={i === indiceHoy ? "date" : undefined}>
+              <li
+                key={d}
+                className={clases || undefined}
+                aria-current={i === indiceHoy ? "date" : undefined}
+                style={{ "--i": i } as CSSProperties}
+              >
                 <span>{d}</span>
                 <span className="punto" aria-label={esta.dias[i] ? "entrenado" : "sin entrenar"} />
               </li>

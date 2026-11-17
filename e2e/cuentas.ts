@@ -102,7 +102,7 @@ export async function serieEntrenando(page: Page, ejercicio: string, peso: strin
   await (await listaEntreno(page)).getByRole("link", { name: ejercicio, exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   const paso = page.getByRole("article", { name: ejercicio });
-  const hechas = paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ hasText: "✓" });
+  const hechas = paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ has: paso.page().locator("svg.check") });
   const antes = await hechas.count();
   await paso.getByLabel("Peso (kg)").fill(peso);
   await paso.getByLabel("Repeticiones").fill(reps);

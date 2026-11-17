@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { EntradaDiario } from "../api/entrenamientos";
 import { fechaLarga } from "../inicio/resumen";
 import { cuadriculaMes, estadoDia, queToca, TEXTO_ESTADO, type Plan } from "./calendario";
@@ -45,7 +46,7 @@ export function CalendarioMes({ anio, mes, hoy, plan, diario, onCambiarMes, onEl
           const { rutina } = queToca(fecha, plan);
           const etiqueta = `${fechaLarga(fecha)}: ${TEXTO_ESTADO[estado]}${rutina ? ` · ${rutina.nombre}` : ""}`;
           return (
-            <li key={fecha}>
+            <li key={fecha} style={{ "--i": i } as CSSProperties}>
               <button
                 type="button"
                 className={`dia-calendario ${estado}${fecha === hoy ? " hoy" : ""}`}

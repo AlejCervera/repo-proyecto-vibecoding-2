@@ -9,7 +9,7 @@ import { Aviso } from "../ui/Aviso";
 import { BotonFijo } from "../ui/BotonFijo";
 import { ContadorBotones } from "../ui/ContadorBotones";
 import { FotoCirculo } from "../ui/FotoCirculo";
-import { IconoMas, IconoMenos, IconoReloj } from "../ui/iconos";
+import { IconoCheck, IconoMas, IconoMenos, IconoReloj } from "../ui/iconos";
 import { leerNumero } from "../ui/pasos";
 import { formatear } from "./cronometro";
 import { PASO_KG, pistaProgresion } from "./estadisticas";
@@ -138,7 +138,7 @@ export function PasoEjercicio(props: Props) {
         <ol aria-label="Series de hoy" className="puntos">
           {hechas.map((s, i) => (
             <li key={s.id} className="hecha">
-              <span aria-hidden="true">✓</span>
+              <IconoCheck />
               <span className="oculto"> Serie {i + 1} ·</span> {pesoPorReps(s)}
             </li>
           ))}

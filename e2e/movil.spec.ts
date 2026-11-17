@@ -25,6 +25,8 @@ async function botonesGrandes(page: Page, pantalla: string) {
 }
 
 async function revisar(page: Page, pantalla: string) {
+  // Se mide el tamaño final: primero acaban las microanimaciones (cascadas que escalan, Fase 9e)
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   await sinScrollHorizontal(page, pantalla);
   await botonesGrandes(page, pantalla);
 }

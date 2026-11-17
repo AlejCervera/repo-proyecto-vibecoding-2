@@ -1,5 +1,6 @@
-import { useId } from "react";
+import { useId, useRef } from "react";
 import { IconoMas, IconoMenos } from "./iconos";
+import { saltito } from "./movimiento";
 import { ajustarTexto, formatearNumero, leerNumero, type Limites } from "./pasos";
 
 type Props = Limites & {
@@ -16,8 +17,14 @@ type Props = Limites & {
 /** Un número grande con botones − / + para no abrir el teclado; también se puede escribir. */
 export function ContadorBotones({ etiqueta, unidad, valor, onCambio, modoTeclado, ...limites }: Props) {
   const id = useId();
+  const campo = useRef<HTMLInputElement>(null);
   const paso = `${formatearNumero(limites.paso)} ${unidad}`;
   const n = leerNumero(valor);
+  // Con − / + el número da un saltito, para que se note el cambio
+  const ajustar = (sentido: 1 | -1) => {
+    onCambio(ajustarTexto(valor, sentido, limites));
+    saltito(campo.current);
+  };
   return (
     <div className="contador">
       <label htmlFor={id} className="contador-etiqueta">
@@ -25,6 +32,7 @@ export function ContadorBotones({ etiqueta, unidad, valor, onCambio, modoTeclado
       </label>
       <input
         id={id}
+        ref={campo}
         className="contador-valor"
         inputMode={modoTeclado}
         value={valor}
@@ -36,7 +44,7 @@ export function ContadorBotones({ etiqueta, unidad, valor, onCambio, modoTeclado
           type="button"
           aria-label={`Restar ${paso}`}
           disabled={n !== null && n <= limites.min}
-          onClick={() => onCambio(ajustarTexto(valor, -1, limites))}
+          onClick={() => ajustar(-1)}
         >
           <IconoMenos />
         </button>
@@ -44,7 +52,7 @@ export function ContadorBotones({ etiqueta, unidad, valor, onCambio, modoTeclado
           type="button"
           aria-label={`Sumar ${paso}`}
           disabled={n !== null && n >= limites.max}
-          onClick={() => onCambio(ajustarTexto(valor, 1, limites))}
+          onClick={() => ajustar(1)}
         >
           <IconoMas />
         </button>

@@ -130,6 +130,17 @@ test("el número también se puede escribir y los botones siguen desde ahí", ()
   expect(campo().value).toBe("102,5");
 });
 
+test("con − / + el número da un saltito (si el sistema no pide reducir movimiento)", () => {
+  vi.stubGlobal("matchMedia", (q: string) => ({ matches: false, media: q }));
+  const animate = vi.fn();
+  render(<Kilos inicial="60" />);
+  Object.assign(campo(), { animate });
+  fireEvent.click(screen.getByRole("button", { name: "Sumar 2,5 kg" }));
+  expect(animate).toHaveBeenCalledTimes(1);
+  fireEvent.change(campo(), { target: { value: "70" } }); // al escribir, no
+  expect(animate).toHaveBeenCalledTimes(1);
+});
+
 test("en el mínimo, «Restar» está desactivado", () => {
   render(<Kilos inicial="0" />);
   expect(screen.getByRole("button", { name: "Restar 2,5 kg" }).hasAttribute("disabled")).toBe(true);

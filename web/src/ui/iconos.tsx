@@ -22,6 +22,25 @@ function Icono({ tamano = 22, children }: Props & { children: ReactNode }) {
   );
 }
 
+/** ✓ en trazo: con movimiento, se dibuja al aparecer (clase «check»). */
+export const IconoCheck = ({ tamano = 14 }: Props) => (
+  <svg
+    className="check"
+    width={tamano}
+    height={tamano}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={3}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+);
+
 export const IconoInicio = (p: Props) => (
   <Icono {...p}>
     <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" />

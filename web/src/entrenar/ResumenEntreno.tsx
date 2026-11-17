@@ -12,6 +12,7 @@ import {
   volumen,
 } from "./estadisticas";
 import { cambiosPendientes } from "./plan";
+import { useCuentaArriba } from "../ui/useCuentaArriba";
 import { seriesDeHoy } from "./progreso";
 
 type Props = {
@@ -64,6 +65,11 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
   const volumenHoy = volumen(filas.flatMap((f) => f.deHoy));
   // Duración: desde la primera serie de hoy hasta que se ve el resumen
   const [duracion] = useState(() => (inicio === null ? null : Date.now() - inicio));
+  // Las cifras cuentan hacia arriba (sin animación si el sistema pide reducir movimiento)
+  const duracionVista = useCuentaArriba(duracion ?? 0);
+  const volumenVisto = useCuentaArriba(volumenHoy);
+  const seriesVistas = useCuentaArriba(total);
+  const redondo = (visto: number, final: number) => (visto === final ? final : Math.round(visto));
 
   // Al terminar, el entreno se guarda solo en el diario (una vez; si falla, queda el botón)
   const autoguardado = useRef(false);
@@ -104,15 +110,15 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
         <dl className="cifras" aria-label="Cifras del entreno">
           <div>
             <dt>Duración</dt>
-            <dd>{duracion === null ? "—" : formatearDuracion(duracion)}</dd>
+            <dd>{duracion === null ? "—" : formatearDuracion(redondo(duracionVista, duracion))}</dd>
           </div>
           <div>
             <dt>Volumen</dt>
-            <dd>{formatearKilos(volumenHoy)}</dd>
+            <dd>{formatearKilos(redondo(volumenVisto, volumenHoy))}</dd>
           </div>
           <div>
             <dt>Series</dt>
-            <dd>{total}</dd>
+            <dd>{redondo(seriesVistas, total)}</dd>
           </div>
         </dl>
       )}

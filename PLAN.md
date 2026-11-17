@@ -308,16 +308,18 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 
 ## Fase 9e · Microanimaciones
 
-**Objetivo:** que la app se sienta viva sin distraer: animaciones cortas (≤ 300 ms), solo CSS (sin librerías) y desactivadas si el móvil tiene activado «Reducir movimiento».
+**Objetivo:** que la app se sienta viva sin distraer: animaciones cortas (≤ 300 ms), CSS y la API de animaciones del navegador (sin librerías), solo de opacidad y escala y desactivadas si el móvil tiene activado «Reducir movimiento».
 
 **Tareas:**
-- [ ] Al entrenar: la píldora de la serie guardada aparece con un pequeño «pop» y el ✓ se dibuja; la barra de progreso se rellena suave; el número de kilos o repeticiones da un ligero salto al pulsar − / +; el anillo del descanso late en lima al llegar a 0.
-- [ ] Resumen y récords: en «¡Entreno hecho!» las cifras (duración, volumen, series) cuentan hacia arriba y los récords nuevos entran con un destello lima.
-- [ ] Navegación y botones: cambio de pantalla con un fundido corto; los botones se hunden un poco al tocarlos; los avisos entran deslizando desde abajo.
-- [ ] Inicio y calendario: los círculos de la semana y los días del calendario (9c) se rellenan en cascada al entrar.
+- [x] Al entrenar: la píldora de la serie guardada aparece con un pequeño «pop» y el ✓ se dibuja; la barra de progreso se rellena suave; el número de kilos o repeticiones da un ligero salto al pulsar − / +; el anillo del descanso late en lima al llegar a 0.
+- [x] Resumen y récords: en «¡Entreno hecho!» las cifras (duración, volumen, series) cuentan hacia arriba y los récords nuevos entran con un destello lima.
+- [x] Navegación y botones: cambio de pantalla con un fundido corto; los botones se hunden un poco al tocarlos; los avisos entran deslizando desde abajo.
+- [x] Inicio y calendario: los círculos de la semana y los días del calendario (9c) se rellenan en cascada al entrar.
+
+Todo en `web/src/ui/animaciones.css`, dentro de `prefers-reduced-motion: no-preference`; la cuenta hacia arriba es `useCuentaArriba` (lógica en `ui/movimiento.ts`).
 
 **Pruebas:**
-- Unitarias de la cuenta hacia arriba (lógica pura, con reloj simulado); web: con «Reducir movimiento» no se anima (se muestra el valor final directamente); e2e completos en verde (las animaciones no deben retrasar ni tapar ningún clic).
+- Unitarias de la cuenta hacia arriba (lógica pura, con reloj simulado); web: con «Reducir movimiento» no se anima (se muestra el valor final directamente); e2e completos en verde (las animaciones no deben retrasar ni tapar ningún clic). El ✓ de las series pasa a ser un SVG (`svg.check`): las e2e lo buscan así, y la prueba de tamaños en móvil espera a que acaben las animaciones antes de medir.
 
 **Hecho cuando:** las animaciones se ven en el iPhone, son cortas y con «Reducir movimiento» desaparecen.
 
@@ -337,6 +339,32 @@ Fotos discretas (32-36 px) solo al lado del nombre de un ejercicio. Dos commits 
 - API del límite diario y de intentos; web del contador; la imagen de producción arranca y pasa los e2e en local.
 
 **Hecho cuando:** la imagen de producción funciona en local con todas las pruebas en verde.
+
+## Fase 10b · Endurecer la seguridad (auditoría del 2026-11-17)
+
+**Objetivo:** cerrar los fallos de seguridad encontrados en la revisión antes de exponer la app a Internet. Lo que ya cubre la Fase 10 (límite de intentos de login e invitación, límite diario de Gemini, `/docs` desactivado, usuario sin root, `COOKIE_SECURE` y `SESSION_SECRET`) no se repite aquí. Va antes de la Fase 11.
+
+Revisado y correcto (no tocar): todas las consultas SQL usan parámetros (las f-strings solo insertan constantes); todas las rutas de datos exigen sesión y filtran por usuario (sin IDOR en series, ejercicios, rutinas, plan, entrenamientos ni imágenes); contraseñas con scrypt y sal; token de sesión aleatorio guardado como HMAC; login con tiempo constante aunque el usuario no exista; cookie httpOnly + SameSite=Lax; imágenes validadas por su contenido y servidas con `nosniff`; nombres de ejercicio y rutina con longitud máxima en la API; la salida de Gemini se valida contra el contexto; ningún secreto en el historial de git; `npm audit` sin vulnerabilidades.
+
+**Tareas:**
+- [ ] **(Alta) DoS en el login sin sesión:** `validar_login` no limita la longitud de la contraseña y se calcula scrypt sobre lo que llegue; aplicar el mismo máximo (200) también al login y al nombre de usuario (30), rechazando antes de hacer el hash.
+- [ ] **(Alta) Sin límite de tamaño del cuerpo:** las rutas JSON aceptan cuerpos de cualquier tamaño (incluido `/auth/login` y `/auth/registro`, sin sesión). Middleware que rechace con 413 los cuerpos JSON de más de ~64 KB (la subida de imágenes mantiene su límite de 2 MB).
+- [ ] **(Media) Cabeceras de seguridad** en todas las respuestas: `Content-Security-Policy` (`default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`), `X-Content-Type-Options: nosniff`, `Referrer-Policy: same-origin`, `Strict-Transport-Security` cuando `COOKIE_SECURE=true`, y `Cache-Control: no-store` en las respuestas de la API con datos personales.
+- [ ] **(Media) Defensa CSRF adicional:** hoy solo depende de SameSite=Lax. En peticiones que cambian datos (POST/PUT/DELETE), rechazar con 403 si la cabecera `Origin` existe y no coincide con el host; y exigir `Content-Type: application/json` en las rutas JSON (hoy un cuerpo sin `Content-Type` también se interpreta como JSON).
+- [ ] **(Media) Sesiones:** borrar las sesiones caducadas (al iniciar sesión o al arrancar) para que la tabla no crezca sin fin; añadir «Cerrar sesión en todos los dispositivos» en Perfil (borra todas las sesiones del usuario) para poder cortar el acceso si se pierde un móvil.
+- [ ] **(Media) Cuotas de almacenamiento:** hoy cada usuario puede crear ejercicios, rutinas y fotos (2 MB cada una) sin límite y llenar la base de datos gratuita de Neon (0,5 GB). Poner un máximo razonable por usuario (p. ej. 200 ejercicios propios, 50 rutinas, 50 MB de fotos) con un 409 y aviso claro en la web.
+- [ ] **(Baja) Coste de scrypt:** subir a los parámetros recomendados por OWASP (N=2^17, r=8, p=1, con `maxmem` suficiente) y rehacer el hash al iniciar sesión si el guardado usa parámetros antiguos.
+- [ ] **(Baja) Entorno local:** el servidor de desarrollo de Vite (`host: true`), la API (puerto 8000) y `db-test` (puerto 5433, con la misma `POSTGRES_PASSWORD` que la base de datos real) quedan abiertos a toda la red local. Publicar la API y `db-test` solo en `127.0.0.1`, y usar en `db-test` una contraseña propia de pruebas.
+- [ ] **(Baja) Inyección en el prompt de Gemini:** los nombres de ejercicios y rutinas que escribe el usuario van tal cual al prompt. Delimitarlos (p. ej. entre comillas y con instrucción de tratarlos como datos) y mantener la validación estricta de la respuesta. Solo afecta a las recomendaciones del propio usuario, pero conviene cerrarlo.
+- [ ] **(Baja) Dependencias de Python:** añadir `pip-audit` (solo desarrollo; decir antes cuál y para qué) y ejecutarlo junto a `npm audit` antes de cada publicación.
+- [ ] **(Baja) Registros:** comprobar que ni los logs de la API ni los de Gemini incluyen la cookie, el código de invitación, contraseñas ni la clave de Gemini.
+
+**Pruebas:**
+- API: login con contraseña de 1 MB → 400 rápido; cuerpo JSON de 1 MB → 413; POST con `Origin` ajeno → 403; POST sin `Content-Type` JSON → 400/415; cabeceras de seguridad presentes; sesiones caducadas borradas; «cerrar todas» invalida las demás cookies; límites de cuota → 409; hash con parámetros antiguos se actualiza al entrar.
+- Web: botón «Cerrar sesión en todos los dispositivos» y avisos de cuota.
+- e2e completos en verde con la CSP activa (que no rompa fuentes, imágenes ni estilos).
+
+**Hecho cuando:** todas las tareas están cerradas con su prueba, `npm audit` y `pip-audit` sin vulnerabilidades y todas las pruebas en verde.
 
 ## Fase 11 · Publicar gratis en Render + Neon (solo con permiso explícito)
 

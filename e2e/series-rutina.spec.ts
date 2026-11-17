@@ -17,7 +17,7 @@ const fila = (page: Page, nombre: string) =>
   page.getByRole("list", { name: "Ejercicios de la rutina" }).getByRole("listitem").filter({ hasText: nombre });
 
 const hechas = (paso: Locator) =>
-  paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ hasText: "✓" });
+  paso.getByRole("list", { name: "Series de hoy" }).getByRole("listitem").filter({ has: paso.page().locator("svg.check") });
 
 test("4 × 8-10 en press de banca se guarda, sigue tras recargar y se completa al entrenar", async ({ page }) => {
   await page.getByRole("button", { name: "Más series de Press de banca" }).click();

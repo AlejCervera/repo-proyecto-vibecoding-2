@@ -87,7 +87,10 @@ test("con − / + se cambia el peso sin teclado y se guarda lo que se ve", async
   expect(campo(paso, "Repeticiones").value).toBe("7");
 
   fireEvent.click(hecha());
-  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("✓ Serie 1 · 82,5 kg × 6"));
+  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("Serie 1 · 82,5 kg × 6"));
+  // La serie hecha lleva su ✓ en SVG (se dibuja al aparecer), oculto a lectores de pantalla
+  const check = paso.querySelector("ol.puntos li.hecha svg.check");
+  expect(check?.getAttribute("aria-hidden")).toBe("true");
   expect(JSON.parse(fetch.mock.calls[3][1].body)).toEqual({
     fecha: HOY,
     ejercicio_id: 10,
@@ -111,9 +114,9 @@ test("completar el ejercicio cambia el botón a «Siguiente ejercicio» y la lis
 
   fireEvent.change(campo(paso, "Peso (kg)"), { target: { value: "60" } });
   fireEvent.click(hecha());
-  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("✓ Serie 1 · 60 kg × 10"));
+  await vi.waitFor(() => expect(puntos(paso)[0]).toBe("Serie 1 · 60 kg × 10"));
   fireEvent.click(hecha());
-  await vi.waitFor(() => expect(puntos(paso)).toEqual(["✓ Serie 1 · 60 kg × 10", "✓ Serie 2 · 60 kg × 9"]));
+  await vi.waitFor(() => expect(puntos(paso)).toEqual(["Serie 1 · 60 kg × 10", "Serie 2 · 60 kg × 9"]));
 
   expect(within(paso).getByText("¡Ejercicio completado!").getAttribute("role")).toBe("status");
   expect(screen.queryByRole("button", { name: "Hecha · empezar descanso" })).toBeNull();
@@ -221,7 +224,7 @@ test("añadir y quitar series para hoy; no se puede quitar por debajo de las hec
 
   fireEvent.click(quitar);
   fireEvent.click(quitar);
-  expect(puntos(paso)).toEqual(["✓ Serie 1 · 60 kg × 10"]);
+  expect(puntos(paso)).toEqual(["Serie 1 · 60 kg × 10"]);
   expect(quitar.disabled).toBe(true);
 });
 

@@ -57,5 +57,5 @@ test("con el peso vacío sale el aviso y no se guarda", async ({ page }) => {
   await paso.getByRole("button", { name: "Hecha · empezar descanso" }).click();
   await expect(paso.getByRole("alert")).toHaveText("Falta el peso");
   await page.reload();
-  await expect(paso.getByText("✓")).toHaveCount(0);
+  await expect(paso.locator("svg.check")).toHaveCount(0);
 });

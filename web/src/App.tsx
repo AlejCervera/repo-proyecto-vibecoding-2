@@ -50,6 +50,8 @@ export function App() {
       {usuario === null && <AuthScreen onEntrar={setUsuario} />}
       {usuario && (
         <>
+          {/* Cada pantalla entra con un fundido corto (ui/animaciones.css) */}
+          <div className="pantalla" key={ruta.pantalla}>
           {ruta.pantalla === "inicio" && (
             <p className="saludo">
               Hola, <strong>{usuario.nombre_usuario}</strong>
@@ -99,6 +101,7 @@ export function App() {
           {ruta.pantalla === "ejercicios" && (
             <MisEjerciciosPage key={usuario.id} onSesionCaducada={sinSesion} />
           )}
+          </div>
           {/* Mientras se entrena no hay pestañas, para no distraer (se sale con la ✕);
               en el resumen final vuelven. */}
           {!(ruta.pantalla === "entrenar" && ruta.paso !== "fin") && (
