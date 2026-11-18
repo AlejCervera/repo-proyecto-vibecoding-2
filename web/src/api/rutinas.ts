@@ -31,3 +31,10 @@ export const reordenarRutina = (id: number, ejercicios: number[]) =>
 
 export const copiarRutina = (id: number) =>
   pedir<Rutina>(`/rutinas/${id}/copiar`, { method: "POST" });
+
+/** Une el ejercicio con el siguiente en una superserie (o lo separa). */
+export const superserie = (id: number, ejercicioId: number, conSiguiente: boolean) =>
+  pedir<Rutina>(
+    `/rutinas/${id}/ejercicios/${ejercicioId}/superserie`,
+    enviarJson({ con_siguiente: conSiguiente }, "PUT"),
+  );

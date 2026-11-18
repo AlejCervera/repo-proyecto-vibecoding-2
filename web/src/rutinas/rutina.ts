@@ -4,6 +4,8 @@ export type EjercicioRutina = {
   series: number;
   reps_min: number | null;
   reps_max: number | null;
+  /** Va en superserie con el siguiente de la rutina (Fase 9g). */
+  con_siguiente?: boolean;
 };
 
 export type Rutina = {
@@ -71,4 +73,13 @@ export function parsearReps(texto: string): { reps_min: number | null; reps_max:
   if (min < 1 || max > 100) throw new Error("Las repeticiones deben estar entre 1 y 100");
   if (min > max) throw new Error("El mínimo no puede ser mayor que el máximo");
   return { reps_min: min, reps_max: max };
+}
+
+/**
+ * Si el ejercicio `i` se puede unir en superserie con el siguiente (Fase 9g): no es el último y
+ * ni él, ni el anterior, ni el siguiente están ya en una (solo de 2 en 2).
+ */
+export function puedeUnir(ejercicios: Pick<EjercicioRutina, "con_siguiente">[], i: number): boolean {
+  if (i >= ejercicios.length - 1) return false;
+  return !ejercicios[i].con_siguiente && !ejercicios[i - 1]?.con_siguiente && !ejercicios[i + 1].con_siguiente;
 }

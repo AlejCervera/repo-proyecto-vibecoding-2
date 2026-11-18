@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 import psycopg
 
-from app.rutinas.logica import Plan
+from app.rutinas.logica import Plan, siguen_unidos
 
 _VISIBLE = "(r.usuario_id IS NULL OR r.usuario_id = %(usuario)s)"
 
@@ -14,12 +14,13 @@ def _ejercicios(conn: psycopg.Connection, rutina_ids: list[int]) -> dict[int, li
     if not rutina_ids:
         return por_rutina
     rows = conn.execute(
-        "SELECT re.rutina_id, e.id, e.nombre, re.series, re.reps_min, re.reps_max "
+        "SELECT re.rutina_id, e.id, e.nombre, re.series, re.reps_min, re.reps_max, "
+        "re.con_siguiente "
         "FROM rutina_ejercicios re JOIN ejercicios e ON e.id = re.ejercicio_id "
         "WHERE re.rutina_id = ANY(%s) ORDER BY re.rutina_id, re.posicion, e.id",
         (rutina_ids,),
     ).fetchall()
-    for rutina_id, ejercicio_id, nombre, series, reps_min, reps_max in rows:
+    for rutina_id, ejercicio_id, nombre, series, reps_min, reps_max, con_siguiente in rows:
         por_rutina[rutina_id].append(
             {
                 "id": ejercicio_id,
@@ -27,6 +28,7 @@ def _ejercicios(conn: psycopg.Connection, rutina_ids: list[int]) -> dict[int, li
                 "series": series,
                 "reps_min": reps_min,
                 "reps_max": reps_max,
+                "con_siguiente": con_siguiente,
             }
         )
     return por_rutina
@@ -154,8 +156,38 @@ def configurar_ejercicio(
     )
 
 
+def orden_con_superseries(conn: psycopg.Connection, rutina_id: int) -> list[tuple[int, bool]]:
+    rows = conn.execute(
+        "SELECT ejercicio_id, con_siguiente FROM rutina_ejercicios WHERE rutina_id = %s "
+        "ORDER BY posicion, ejercicio_id",
+        (rutina_id,),
+    ).fetchall()
+    return [(r[0], r[1]) for r in rows]
+
+
+def poner_superserie(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int, si: bool) -> None:
+    conn.execute(
+        "UPDATE rutina_ejercicios SET con_siguiente = %s WHERE rutina_id = %s AND ejercicio_id = %s",
+        (si, rutina_id, ejercicio_id),
+    )
+
+
+def _rehacer_superseries(
+    conn: psycopg.Connection, rutina_id: int, antes: list[tuple[int, bool]]
+) -> None:
+    """Deshace las superseries cuyo par ya no va seguido (tras reordenar o quitar)."""
+    despues = [i for i, _ in orden_con_superseries(conn, rutina_id)]
+    unidos = siguen_unidos(antes, despues)
+    conn.execute(
+        "UPDATE rutina_ejercicios SET con_siguiente = (ejercicio_id = ANY(%s)) "
+        "WHERE rutina_id = %s",
+        (list(unidos), rutina_id),
+    )
+
+
 def reordenar(conn: psycopg.Connection, rutina_id: int, ejercicio_ids: list[int]) -> None:
-    """Cambia solo el orden; conserva series y objetivos."""
+    """Cambia solo el orden; conserva series, objetivos y las superseries que siguen juntas."""
+    antes = orden_con_superseries(conn, rutina_id)
     with conn.transaction():
         for posicion, ejercicio_id in enumerate(ejercicio_ids, start=1):
             conn.execute(
@@ -163,28 +195,42 @@ def reordenar(conn: psycopg.Connection, rutina_id: int, ejercicio_ids: list[int]
                 "WHERE rutina_id = %s AND ejercicio_id = %s",
                 (posicion, rutina_id, ejercicio_id),
             )
+        _rehacer_superseries(conn, rutina_id, antes)
 
 
 def quitar_ejercicio(conn: psycopg.Connection, rutina_id: int, ejercicio_id: int) -> bool:
+    antes = orden_con_superseries(conn, rutina_id)
     cur = conn.execute(
         "DELETE FROM rutina_ejercicios WHERE rutina_id = %s AND ejercicio_id = %s",
         (rutina_id, ejercicio_id),
     )
+    _rehacer_superseries(conn, rutina_id, antes)
     return cur.rowcount == 1
 
 
 def poner_ejercicios(
-    conn: psycopg.Connection, rutina_id: int, ejercicios: list[tuple[int, Plan]]
+    conn: psycopg.Connection,
+    rutina_id: int,
+    ejercicios: list[tuple[int, Plan]],
+    unidos: set[int] | None = None,
 ) -> None:
-    """Sustituye la lista entera (ejercicio y su plan), en este orden."""
+    """Sustituye la lista entera (ejercicio y su plan), en este orden; `unidos`: superseries."""
     with conn.transaction():
         conn.execute("DELETE FROM rutina_ejercicios WHERE rutina_id = %s", (rutina_id,))
         for posicion, (ejercicio_id, plan) in enumerate(ejercicios, start=1):
             conn.execute(
                 "INSERT INTO rutina_ejercicios "
-                "(rutina_id, ejercicio_id, posicion, series, reps_min, reps_max) "
-                "VALUES (%s, %s, %s, %s, %s, %s)",
-                (rutina_id, ejercicio_id, posicion, plan.series, plan.reps_min, plan.reps_max),
+                "(rutina_id, ejercicio_id, posicion, series, reps_min, reps_max, con_siguiente) "
+                "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (
+                    rutina_id,
+                    ejercicio_id,
+                    posicion,
+                    plan.series,
+                    plan.reps_min,
+                    plan.reps_max,
+                    ejercicio_id in (unidos or set()),
+                ),
             )
 
 

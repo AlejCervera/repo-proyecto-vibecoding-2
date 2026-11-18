@@ -51,6 +51,7 @@ export function EntrenamientoPage({ entrenamientoId, onSesionCaducada }: Props) 
       <h2>
         {fechaCorta(fecha)} · {rutina_nombre}
       </h2>
+      {entrenamiento.nota && <p className="nota-entreno">«{entrenamiento.nota}»</p>}
       {ejercicios.length === 0 && <p>Este entrenamiento ya no tiene series.</p>}
       {ejercicios.map((e) => (
         <article key={e.id} aria-label={e.nombre}>

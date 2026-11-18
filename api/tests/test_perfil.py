@@ -8,13 +8,13 @@ from app.perfil.logica import Perfil, PerfilInvalido, validar_perfil
 
 
 def test_perfil_valido_redondea_el_peso():
-    assert validar_perfil({"altura_cm": 178, "peso_corporal_kg": 80.26}) == Perfil(178, 80.3)
-    assert validar_perfil({"altura_cm": 178.0, "peso_corporal_kg": 80}) == Perfil(178, 80.0)
+    assert validar_perfil({"altura_cm": 178, "peso_corporal_kg": 80.26}) == Perfil(178, 80.3, None)  # sin barra: no se cambia
+    assert validar_perfil({"altura_cm": 178.0, "peso_corporal_kg": 80}) == Perfil(178, 80.0, None)
 
 
 def test_perfil_vacio_se_permite_y_no_esta_completo():
     perfil = validar_perfil({"altura_cm": None, "peso_corporal_kg": None})
-    assert perfil == Perfil() and not perfil.completo
+    assert perfil == Perfil(barra_kg=None) and not perfil.completo
     assert Perfil(170, 60).completo
 
 
@@ -41,13 +41,13 @@ def test_perfil_invalido(datos, mensaje):
 
 
 def test_perfil_nuevo_esta_vacio(ana):
-    assert ana.get("/perfil").json() == {"altura_cm": None, "peso_corporal_kg": None}
+    assert ana.get("/perfil").json() == {"altura_cm": None, "peso_corporal_kg": None, "barra_kg": 20.0}
 
 
 def test_guardar_y_leer_perfil(ana):
     r = ana.put("/perfil", json={"altura_cm": 178, "peso_corporal_kg": 80.5})
     assert r.status_code == 200
-    assert ana.get("/perfil").json() == {"altura_cm": 178, "peso_corporal_kg": 80.5}
+    assert ana.get("/perfil").json() == {"altura_cm": 178, "peso_corporal_kg": 80.5, "barra_kg": 20.0}
 
 
 def test_perfil_invalido_400(ana):
@@ -58,7 +58,7 @@ def test_perfil_invalido_400(ana):
 
 def test_cada_cuenta_ve_su_perfil(ana, bea):
     ana.put("/perfil", json={"altura_cm": 178, "peso_corporal_kg": 80})
-    assert bea.get("/perfil").json() == {"altura_cm": None, "peso_corporal_kg": None}
+    assert bea.get("/perfil").json() == {"altura_cm": None, "peso_corporal_kg": None, "barra_kg": 20.0}
 
 
 def test_perfil_sin_sesion_401(client):

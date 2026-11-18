@@ -1,10 +1,12 @@
-"""Reglas del perfil (altura y peso corporal). Lógica pura."""
+"""Reglas del perfil (altura, peso corporal y peso de la barra). Lógica pura."""
 
 from dataclasses import dataclass
 from typing import Any
 
 MIN_ALTURA, MAX_ALTURA = 100, 250
 MIN_PESO, MAX_PESO = 30, 300
+MIN_BARRA, MAX_BARRA = 0, 50
+BARRA_POR_DEFECTO = 20.0
 
 
 class PerfilInvalido(ValueError):
@@ -15,6 +17,8 @@ class PerfilInvalido(ValueError):
 class Perfil:
     altura_cm: int | None = None
     peso_corporal_kg: float | None = None
+    # Para la calculadora de discos (Fase 9g). None al validar = no se cambia.
+    barra_kg: float | None = BARRA_POR_DEFECTO
 
     @property
     def completo(self) -> bool:
@@ -40,8 +44,17 @@ def validar_perfil(datos: Any) -> Perfil:
         if not _numero(peso) or not MIN_PESO <= peso <= MAX_PESO:
             raise PerfilInvalido(f"El peso debe estar entre {MIN_PESO} y {MAX_PESO} kg")
         peso = round(float(peso), 1)
-    return Perfil(altura, peso)
+    barra = datos.get("barra_kg")
+    if barra is not None:
+        if not _numero(barra) or not MIN_BARRA <= barra <= MAX_BARRA:
+            raise PerfilInvalido(f"La barra debe pesar entre {MIN_BARRA} y {MAX_BARRA} kg")
+        barra = round(float(barra), 1)
+    return Perfil(altura, peso, barra)
 
 
 def a_dict(perfil: Perfil) -> dict[str, Any]:
-    return {"altura_cm": perfil.altura_cm, "peso_corporal_kg": perfil.peso_corporal_kg}
+    return {
+        "altura_cm": perfil.altura_cm,
+        "peso_corporal_kg": perfil.peso_corporal_kg,
+        "barra_kg": perfil.barra_kg,
+    }

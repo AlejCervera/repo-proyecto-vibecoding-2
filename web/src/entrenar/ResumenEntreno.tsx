@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { guardarEntrenamiento } from "../api/entrenamientos";
+import { anotarEntrenamiento, guardarEntrenamiento } from "../api/entrenamientos";
 import { configurarEjercicio } from "../api/rutinas";
 import { enlace } from "../navegacion";
 import type { Rutina } from "../rutinas/rutina";
@@ -12,6 +12,7 @@ import {
   volumen,
 } from "./estadisticas";
 import { cambiosPendientes } from "./plan";
+import { HojaNota } from "../ui/HojaNota";
 import { useCuentaArriba } from "../ui/useCuentaArriba";
 import { seriesDeHoy } from "./progreso";
 
@@ -33,6 +34,8 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
   const [error, setError] = useState<string | null>(null);
   const [enDiario, setEnDiario] = useState<number | null>(null); // id del entrenamiento guardado
   const [guardandoDiario, setGuardandoDiario] = useState(false);
+  const [nota, setNota] = useState<string | null>(null); // nota del entreno (Fase 9g)
+  const [anotando, setAnotando] = useState(false);
 
   async function guardarEnDiario() {
     setGuardandoDiario(true);
@@ -40,6 +43,7 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
     try {
       const e = await guardarEntrenamiento(rutina.id, hoy);
       setEnDiario(e.id);
+      setNota(e.nota ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se ha podido guardar");
     } finally {
@@ -176,6 +180,27 @@ export function ResumenEntreno({ rutina, series, hoy, inicio, ajustes, onRutinaG
             Ver en el diario
           </a>
         </p>
+      )}
+      {enDiario !== null && (
+        <div className="nota-entreno">
+          {nota && <p>«{nota}»</p>}
+          <button type="button" className="enlace-secundario" onClick={() => setAnotando(true)}>
+            {nota ? "Cambiar la nota del entreno" : "Añadir una nota del entreno"}
+          </button>
+        </div>
+      )}
+      {anotando && enDiario !== null && (
+        <HojaNota
+          titulo="Nota del entreno"
+          nota={nota}
+          maximo={500}
+          ejemplo="Poco dormido, mucha energía, gimnasio lleno…"
+          onGuardar={async (texto) => {
+            const e = await anotarEntrenamiento(enDiario, texto);
+            setNota(e.nota ?? null);
+          }}
+          onCerrar={() => setAnotando(false)}
+        />
       )}
 
       {cambios.length > 0 && (

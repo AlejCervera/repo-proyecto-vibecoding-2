@@ -8,6 +8,7 @@ import "./pantallas.css";
 import "./diario/diario.css";
 import "./ui/graficas.css";
 import "./bienvenida/bienvenida.css";
+import "./entrenar/herramientas.css";
 import "./ui/animaciones.css";
 
 createRoot(document.getElementById("root")!).render(

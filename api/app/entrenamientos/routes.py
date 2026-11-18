@@ -9,6 +9,7 @@ from app.auth.dependencies import usuario_actual
 from app.entrenamientos import repository
 from app.entrenamientos.logica import EntrenamientoInvalido, agrupar_por_ejercicio, validar
 from app.rutinas import repository as rutinas
+from app.series.validation import SerieInvalida, validar_nota
 
 router = APIRouter(prefix="/entrenamientos")
 Usuario = Annotated[dict, Depends(usuario_actual)]
@@ -61,6 +62,19 @@ def guardar(usuario: Usuario, datos: Annotated[Any, Body()] = None):
         detalle = _detalle(conn, usuario["id"], entrenamiento_id)
         # 201 si se ha creado; 200 si ya estaba (y se le han añadido las series nuevas, si había)
         return JSONResponse(jsonable_encoder(detalle), status_code=201 if es_nuevo else 200)
+
+
+@router.put("/{entrenamiento_id}/nota")
+def anotar(entrenamiento_id: int, usuario: Usuario, datos: Annotated[Any, Body()] = None):
+    """Nota del entreno («poco dormido»); vacía la quita."""
+    try:
+        nota = validar_nota(datos, 500)
+    except SerieInvalida as e:
+        return _error(str(e), 400)
+    with db.connect() as conn:
+        if not repository.anotar(conn, usuario["id"], entrenamiento_id, nota):
+            return _error(NO_EXISTE, 404)
+        return _detalle(conn, usuario["id"], entrenamiento_id)
 
 
 @router.delete("/{entrenamiento_id}", status_code=204)

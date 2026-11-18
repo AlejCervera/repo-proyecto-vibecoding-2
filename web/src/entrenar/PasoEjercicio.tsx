@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useState, type FormEvent } from "react";
 import { obtenerHistorial, type Historial } from "../api/historial";
 import { urlImagen } from "../api/imagenes";
-import { borrarSerie, crearSerie } from "../api/series";
+import { anotarSerie, borrarSerie, crearSerie } from "../api/series";
 import { enlaceHistorial } from "../navegacion";
 import { MAX_SERIES, textoPlan } from "../rutinas/rutina";
 import { aPeticion, formatearFecha, pesoPorReps, type Serie } from "../series/serie";
@@ -14,6 +14,8 @@ import { leerNumero } from "../ui/pasos";
 import { formatear } from "./cronometro";
 import { PASO_KG, pistaProgresion } from "./estadisticas";
 import { FotoHoja } from "./FotoHoja";
+import { HojaDiscos } from "./HojaDiscos";
+import { HojaNota } from "../ui/HojaNota";
 import { casillas, puedeQuitar } from "./plan";
 import { seriesDeHoy, ultimaSesion, valoresIniciales } from "./progreso";
 
@@ -34,6 +36,8 @@ type Props = {
   onBorrada: (id: number) => void;
   /** A dónde lleva el botón fijo al completar el ejercicio. */
   siguiente: { href: string; texto: string };
+  /** Si va en superserie (Fase 9g): con qué ejercicio y si es el 1.º o el 2.º. */
+  superserie?: { con: string; posicion: 1 | 2 } | null;
 };
 
 const KILOS = { paso: PASO_KG, min: 0, max: 999 };
@@ -50,6 +54,8 @@ export function PasoEjercicio(props: Props) {
   const [recienGuardada, setRecienGuardada] = useState<Serie | null>(null);
   const [fotoAbierta, setFotoAbierta] = useState(false);
   const [versionFoto, setVersionFoto] = useState(0);
+  const [anotando, setAnotando] = useState<Serie | null>(null);
+  const [discosAbierto, setDiscosAbierto] = useState(false);
   const idFormulario = useId();
   const cerrarAviso = useCallback(() => setRecienGuardada(null), []);
 
@@ -143,12 +149,22 @@ export function PasoEjercicio(props: Props) {
         </div>
       </div>
 
+      {props.superserie && (
+        <p className="paso-superserie">
+          <span className="pildora">Superserie {props.superserie.posicion} de 2</span> con{" "}
+          <strong>{props.superserie.con}</strong>
+        </p>
+      )}
+
       <div className="paso-series">
         <ol aria-label="Series de hoy" className="puntos">
           {hechas.map((s, i) => (
-            <li key={s.id} className="hecha">
-              <IconoCheck />
-              <span className="oculto"> Serie {i + 1} ·</span> {pesoPorReps(s)}
+            <li key={s.id} className={s.nota ? "hecha con-nota" : "hecha"}>
+              <button type="button" className="pildora-serie" onClick={() => setAnotando(s)}>
+                <IconoCheck />
+                <span className="oculto"> Serie {i + 1} ·</span> {pesoPorReps(s)}
+                {s.nota && <span className="oculto"> · con nota</span>}
+              </button>
             </li>
           ))}
           {estado.siguiente !== null && (
@@ -208,6 +224,9 @@ export function PasoEjercicio(props: Props) {
               {...REPS}
             />
           </div>
+          <button type="button" className="enlace-discos" onClick={() => setDiscosAbierto(true)}>
+            Discos
+          </button>
         </form>
       )}
 
@@ -222,6 +241,17 @@ export function PasoEjercicio(props: Props) {
         )}{" "}
         <a href={enlaceHistorial(ejercicio.id)}>Ver historial</a>
       </p>
+      {anterior?.series.some((x) => x.nota) && (
+        <ul className="notas-anteriores" aria-label="Notas de la última vez">
+          {anterior.series
+            .filter((x) => x.nota)
+            .map((x) => (
+              <li key={x.id}>
+                <span className="oculto">{pesoPorReps(x)}: </span>«{x.nota}»
+              </li>
+            ))}
+        </ul>
+      )}
       {pista && <p className="pista">{pista}</p>}
       {error && <p role="alert">{error}</p>}
 
@@ -245,6 +275,20 @@ export function PasoEjercicio(props: Props) {
           onCerrar={cerrarAviso}
         />
       )}
+      {anotando && (
+        <HojaNota
+          titulo={`Nota de la serie ${hechas.findIndex((x) => x.id === anotando.id) + 1}`}
+          nota={anotando.nota}
+          maximo={200}
+          ejemplo="Molestia en el hombro, agarre cerrado…"
+          onGuardar={async (nota) => {
+            const anotada = await anotarSerie(anotando.id, nota);
+            setHistorial((h) => h && { ...h, series: h.series.map((x) => (x.id === anotada.id ? anotada : x)) });
+          }}
+          onCerrar={() => setAnotando(null)}
+        />
+      )}
+      {discosAbierto && <HojaDiscos peso={leerNumero(peso)} onCerrar={() => setDiscosAbierto(false)} />}
       {fotoAbierta && (
         <FotoHoja
           ejercicio={ejercicio}

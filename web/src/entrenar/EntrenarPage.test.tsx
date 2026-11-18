@@ -373,3 +373,18 @@ test("rutina sin ejercicios: aviso", async () => {
   pintar(0, { ...RUTINA, ejercicios: [] }, []);
   expect(await screen.findByText(/no tiene ejercicios/)).toBeTruthy();
 });
+
+test("resumen: tras guardarse en el diario, se puede añadir una nota del entreno (Fase 9g)", async () => {
+  const anotado = { ...GUARDADO.body, nota: "poco dormido" };
+  const fetch = pintar("fin", RUTINA, [serie(3, HOY, 11, 12, 12)], GUARDADO, { status: 200, body: anotado });
+  const resumen = await screen.findByRole("article", { name: "Resumen del entrenamiento" });
+  fireEvent.click(await within(resumen).findByRole("button", { name: "Añadir una nota del entreno" }));
+  const hoja = screen.getByRole("dialog", { name: "Nota del entreno" });
+  fireEvent.change(within(hoja).getByLabelText("Nota"), { target: { value: "poco dormido" } });
+  fireEvent.click(within(hoja).getByRole("button", { name: "Guardar nota" }));
+
+  expect(await within(resumen).findByText("«poco dormido»")).toBeTruthy();
+  expect(within(resumen).getByRole("button", { name: "Cambiar la nota del entreno" })).toBeTruthy();
+  const [url, init] = fetch.mock.calls[3];
+  expect([url, init.method, JSON.parse(init.body)]).toEqual(["/api/entrenamientos/40/nota", "PUT", { nota: "poco dormido" }]);
+});

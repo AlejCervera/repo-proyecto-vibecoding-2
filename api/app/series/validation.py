@@ -74,3 +74,18 @@ def validar_serie(datos: Any, hoy: date | None = None) -> NuevaSerie:
     return NuevaSerie(
         fecha=fecha, ejercicio_id=ejercicio_id, peso_kg=peso, repeticiones=int(reps)
     )
+
+
+def validar_nota(datos: Any, maximo: int) -> str | None:
+    """{"nota": "..."}: sin espacios sobrantes; vacía = sin nota (None)."""
+    if not isinstance(datos, dict):
+        raise SerieInvalida("Los datos no son válidos")
+    nota = datos.get("nota")
+    if nota is None:
+        return None
+    if not isinstance(nota, str):
+        raise SerieInvalida("La nota debe ser un texto")
+    nota = nota.strip()
+    if len(nota) > maximo:
+        raise SerieInvalida(f"La nota no puede pasar de {maximo} caracteres")
+    return nota or None

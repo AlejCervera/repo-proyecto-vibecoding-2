@@ -11,11 +11,13 @@ from app.rutinas import repository
 from app.rutinas.logica import (
     Plan,
     RutinaInvalida,
+    error_al_unir,
     nombre_copia,
     validar_ejercicio_id,
     validar_nombre,
     validar_orden,
     validar_plan,
+    validar_superserie,
 )
 
 router = APIRouter(prefix="/rutinas")
@@ -127,6 +129,25 @@ def configurar_ejercicio(rutina_id: int, ejercicio_id: int, usuario: Usuario, da
         return repository.obtener(conn, usuario["id"], rutina_id)
 
 
+@router.put("/{rutina_id}/ejercicios/{ejercicio_id}/superserie")
+def superserie(rutina_id: int, ejercicio_id: int, usuario: Usuario, datos: Datos = None):
+    """Une el ejercicio con el siguiente en una superserie (o lo separa)."""
+    try:
+        si = validar_superserie(datos)
+    except RutinaInvalida as e:
+        return _error(str(e), 400)
+    with db.connect() as conn:
+        if error := _solo_propia(conn, usuario["id"], rutina_id):
+            return error
+        orden = repository.orden_con_superseries(conn, rutina_id)
+        if ejercicio_id not in [i for i, _ in orden]:
+            return _error("Ese ejercicio no está en la rutina", 404)
+        if si and (motivo := error_al_unir(orden, ejercicio_id)):
+            return _error(motivo, 400)
+        repository.poner_superserie(conn, rutina_id, ejercicio_id, si)
+        return repository.obtener(conn, usuario["id"], rutina_id)
+
+
 @router.delete("/{rutina_id}/ejercicios/{ejercicio_id}")
 def quitar_ejercicio(rutina_id: int, ejercicio_id: int, usuario: Usuario):
     with db.connect() as conn:
@@ -165,5 +186,6 @@ def copiar(rutina_id: int, usuario: Usuario):
                 (e["id"], Plan(e["series"], e["reps_min"], e["reps_max"]))
                 for e in original["ejercicios"]
             ]
-            repository.poner_ejercicios(conn, nueva, planes)
+            unidos = {e["id"] for e in original["ejercicios"] if e["con_siguiente"]}
+            repository.poner_ejercicios(conn, nueva, planes, unidos)
         return repository.obtener(conn, usuario["id"], nueva)

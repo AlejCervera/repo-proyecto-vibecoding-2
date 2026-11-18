@@ -15,6 +15,7 @@ type Props = {
 export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
   const [altura, setAltura] = useState("");
   const [peso, setPeso] = useState("");
+  const [barra, setBarra] = useState("20");
   const [cargado, setCargado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
@@ -27,6 +28,7 @@ export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
         if (!vigente) return;
         setAltura(p.altura_cm?.toString() ?? "");
         setPeso(p.peso_corporal_kg?.toLocaleString("es-ES") ?? "");
+        setBarra((p.barra_kg ?? 20).toLocaleString("es-ES"));
         setCargado(true);
       })
       .catch((e: Error) => {
@@ -44,7 +46,11 @@ export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
     setError(null);
     setGuardado(false);
     try {
-      await guardarPerfil({ altura_cm: leerNumero(altura), peso_corporal_kg: leerNumero(peso) });
+      await guardarPerfil({
+        altura_cm: leerNumero(altura),
+        peso_corporal_kg: leerNumero(peso),
+        barra_kg: leerNumero(barra) ?? undefined,
+      });
       setGuardado(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error inesperado");
@@ -84,6 +90,22 @@ export function PerfilPage({ usuario, onSalir, onSesionCaducada }: Props) {
               max={300}
             />
           </div>
+          {/* Para la calculadora de discos al entrenar (Fase 9g) */}
+          <div className="contadores">
+            <ContadorBotones
+              etiqueta="Peso de la barra (kg)"
+              unidad="kg"
+              modoTeclado="decimal"
+              valor={barra}
+              onCambio={setBarra}
+              paso={2.5}
+              min={0}
+              max={50}
+            />
+          </div>
+          <p className="subtitulo">
+            <small>La barra se usa para calcular los discos por lado al entrenar.</small>
+          </p>
           <button type="submit" className="grande">
             Guardar perfil
           </button>

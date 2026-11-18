@@ -28,21 +28,23 @@ test("muestra la cuenta y «Cerrar sesión» llama a onSalir", async () => {
 
 test("muestra el perfil guardado y guarda los cambios", async () => {
   const fetch = simularFetch(
-    { status: 200, body: { altura_cm: 178, peso_corporal_kg: 80.5 } },
-    { status: 200, body: { altura_cm: 178, peso_corporal_kg: 79 } },
+    { status: 200, body: { altura_cm: 178, peso_corporal_kg: 80.5, barra_kg: 20 } },
+    { status: 200, body: { altura_cm: 178, peso_corporal_kg: 79, barra_kg: 15 } },
   );
   render(<PerfilPage {...CUENTA} onSesionCaducada={vi.fn()} />);
   await screen.findByLabelText("Altura (cm)");
   expect(valor("Altura (cm)")).toBe("178");
   expect(valor("Peso corporal (kg)")).toBe("80,5");
+  expect(valor("Peso de la barra (kg)")).toBe("20"); // para la calculadora de discos (Fase 9g)
 
   fireEvent.change(screen.getByLabelText("Peso corporal (kg)"), { target: { value: "79" } });
+  fireEvent.click(screen.getByRole("button", { name: "Restar 2,5 kg" }));
   fireEvent.click(screen.getByRole("button", { name: "Guardar perfil" }));
   expect((await screen.findByRole("status")).textContent).toBe("Perfil guardado.");
   const [url, init] = fetch.mock.calls[1];
   expect(url).toBe("/api/perfil");
   expect(init.method).toBe("PUT");
-  expect(JSON.parse(init.body)).toEqual({ altura_cm: 178, peso_corporal_kg: 79 });
+  expect(JSON.parse(init.body)).toEqual({ altura_cm: 178, peso_corporal_kg: 79, barra_kg: 17.5 });
 });
 
 test("perfil vacío y error de la API", async () => {

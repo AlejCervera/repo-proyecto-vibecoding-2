@@ -221,3 +221,34 @@ test("predefinida: sin recomendaciones con IA", async () => {
   await pintar(PREDEFINIDA);
   expect(screen.queryByRole("region", { name: "Recomendaciones de la IA" })).toBeNull();
 });
+
+// --- Superseries (Fase 9g) --------------------------------------------------------------------
+
+const TRES = { ...MIA, ejercicios: [ej(10, "Press de banca"), ej(11, "Aperturas"), ej(12, "Fondos")] };
+
+test("propia: unir un ejercicio con el siguiente en superserie y separarlo", async () => {
+  const unida = { ...TRES, ejercicios: [{ ...ej(10, "Press de banca"), con_siguiente: true }, ej(11, "Aperturas"), ej(12, "Fondos")] };
+  const fetch = await pintar(TRES, { status: 200, body: unida }, { status: 200, body: TRES });
+  // El último no se puede unir con nada
+  expect(screen.getAllByRole("button", { name: /Superserie con el siguiente/ })).toHaveLength(2);
+
+  fireEvent.click(screen.getByRole("button", { name: "Superserie con el siguiente (Press de banca)" }));
+  expect(await screen.findByText("Superserie")).toBeTruthy();
+  const [url, init] = fetch.mock.calls[1];
+  expect([url, init.method, JSON.parse(init.body)]).toEqual([
+    "/api/rutinas/7/ejercicios/10/superserie",
+    "PUT",
+    { con_siguiente: true },
+  ]);
+  // Unidos 1.º y 2.º, el 3.º ya no se puede unir (sería una cadena)
+  expect(screen.queryAllByRole("button", { name: /Superserie con el siguiente/ })).toHaveLength(0);
+
+  fireEvent.click(screen.getByRole("button", { name: "Separar la superserie (Press de banca)" }));
+  await vi.waitFor(() => expect(screen.queryByText("Superserie")).toBeNull());
+  expect(JSON.parse(fetch.mock.calls[2][1].body)).toEqual({ con_siguiente: false });
+});
+
+test("predefinida: sin botones de superserie", async () => {
+  await pintar(PREDEFINIDA);
+  expect(screen.queryByRole("button", { name: /Superserie/ })).toBeNull();
+});

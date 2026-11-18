@@ -32,7 +32,13 @@ def _pool() -> ConnectionPool:
                 timeout=10,
                 open=True,
             )
-            pool.wait()  # la primera conexión lista antes de usarla (si no, abre otra de más)
+            try:
+                # La primera conexión lista antes de usarla (si no, abre otra de más). Si la base
+                # de datos no responde, se avisa en 3 s (no en 30) y no se deja el pool reintentando.
+                pool.wait(timeout=3)
+            except Exception:
+                pool.close(timeout=0)  # sin esperar al intento de conexión en curso
+                raise
             _pools[url] = pool
         return pool
 

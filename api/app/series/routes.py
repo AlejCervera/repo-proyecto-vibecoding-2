@@ -7,7 +7,7 @@ from app import db
 from app.auth.dependencies import usuario_actual
 from app.ejercicios import repository as ejercicios
 from app.series import repository
-from app.series.validation import NuevaSerie, SerieInvalida, validar_serie
+from app.series.validation import NuevaSerie, SerieInvalida, validar_nota, validar_serie
 
 router = APIRouter(prefix="/series")
 Usuario = Annotated[dict, Depends(usuario_actual)]
@@ -51,6 +51,17 @@ def editar_serie(serie_id: int, usuario: Usuario, datos: Annotated[Any, Body()] 
             return _error("El ejercicio no existe", 400)
         actualizada = repository.actualizar(conn, usuario["id"], serie_id, serie)
     return actualizada or _error("La serie no existe", 404)
+
+
+@router.put("/{serie_id}/nota")
+def anotar_serie(serie_id: int, usuario: Usuario, datos: Annotated[Any, Body()] = None):
+    try:
+        nota = validar_nota(datos, 200)
+    except SerieInvalida as e:
+        return _error(str(e), 400)
+    with db.connect() as conn:
+        anotada = repository.anotar(conn, usuario["id"], serie_id, nota)
+    return anotada or _error("La serie no existe", 404)
 
 
 @router.delete("/{serie_id}", status_code=204)

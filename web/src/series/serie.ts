@@ -7,6 +7,8 @@ export type Serie = {
   ejercicio: string;
   peso_kg: number;
   repeticiones: number;
+  /** «molestia en el hombro» (Fase 9g). */
+  nota?: string | null;
 };
 
 export type FormularioSerie = {

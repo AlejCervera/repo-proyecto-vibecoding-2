@@ -390,12 +390,16 @@ Resultado: la versión optimizada es 1 JS (~94 KB comprimido) y 1 CSS frente a ~
 **Objetivo:** cubrir lo que se echa en falta en el gimnasio.
 
 **Tareas:**
-- [ ] Notas: una por serie (opcional) y otra por entreno («molestia en el hombro», «agarre cerrado»). Se ven en «la última vez», en el historial y en el diario. Con límite de longitud.
-- [ ] Superseries: en una rutina propia, agrupar dos ejercicios que se alternan; al entrenar se pasa de uno a otro y el descanso solo corre tras el segundo.
-- [ ] Calculadora de discos: al tocar el peso, una hoja dice qué discos poner por lado (barra de 20 kg por defecto, configurable en Perfil; discos 25 · 20 · 15 · 10 · 5 · 2,5 · 1,25). Lógica pura aparte.
+- [x] Notas: una por serie (≤ 200, se toca la serie hecha y se escribe en una hoja) y otra por entreno (≤ 500, en el resumen final). Se ven en «la última vez» al entrenar, en el historial y en el detalle del Diario. Rutas `PUT /series/{id}/nota` y `PUT /entrenamientos/{id}/nota`; editar la serie no borra su nota.
+- [x] Superseries de 2 en 2 en las rutinas propias («Superserie con el siguiente» / «Separar la superserie»), marcadas con una línea lima. Al entrenar, tras el 1.º se pasa solo al 2.º sin descanso; tras el 2.º empieza el descanso y se vuelve al 1.º (lógica pura en `entrenar/superserie.ts`). Se copian con la rutina; al reordenar o quitar ejercicios se deshacen las que dejan de ir seguidas. Ruta `PUT /rutinas/{id}/ejercicios/{ej}/superserie`.
+- [x] Calculadora de discos: botón «Discos» junto al peso; hoja con los discos por lado (25 · 20 · 15 · 10 · 5 · 2,5 · 1,25) dibujados y, si no cuadra, el peso más cercano. Barra en Perfil (20 kg por defecto, de 0 a 50). Lógica pura en `entrenar/discos.ts`.
+- [x] Migración 011 (`series.nota`, `entrenamientos.nota`, `rutina_ejercicios.con_siguiente`, `usuarios.barra_kg`).
+- [x] Arreglo encontrado de paso: si Postgres no responde, el pool de conexiones (9e3) tardaba 30 s en avisar; ahora 3 s (más lo que tarde el sistema en rechazar la conexión).
 
 **Pruebas:**
-- Unitarias de la calculadora de discos (incluido un peso imposible de cargar exacto); API de notas y de superseries (migración nueva); web y e2e de cada una.
+- API: notas (recortar, quitar, límites, tipo, de otro usuario 404, editar no borra la nota, en el detalle del entreno), superseries (lógica pura de unir y de qué pares sobreviven a un reordenado; unir, separar, sin cadenas ni el último, reordenar y quitar, copiar, solo en las tuyas), barra (por defecto 20, se conserva si no se envía, límites) y `/health` rápido con la base de datos caída.
+- Web: discos (exactos, decimales, muchos discos, no exacto, otra barra, sin discos); orden de la superserie (A → B → descanso, con más series en A o en B, suelto); en pantalla: saltos de la superserie, anotar una serie, notas de la última vez, hoja de discos y su botón, nota del entreno, unir y separar en la rutina, `puedeUnir`, barra en Perfil.
+- E2E: superserie completa (sin descanso tras A, descanso tras B y vuelta a A), nota de serie en el historial y en «la última vez» de otro día, nota del entreno en el Diario, discos con barra de 20 y de 15.
 
 **Hecho cuando:** las tres funcionan en el iPhone con todas las pruebas en verde.
 

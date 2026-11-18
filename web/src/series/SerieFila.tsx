@@ -85,6 +85,7 @@ export function SerieFila({ serie, mostrarEjercicio, mostrarFecha = true, onCamb
         )}
         {(mostrarFecha || mostrarEjercicio) && " · "}
         <strong>{pesoPorReps(serie)}</strong>
+        {serie.nota && <small className="nota-serie">«{serie.nota}»</small>}
       </span>
       <button type="button" className="boton-redondo discreto" aria-label="Editar" onClick={() => cambiarModo("editar")}>
         <IconoEditar tamano={18} />

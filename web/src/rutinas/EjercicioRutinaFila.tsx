@@ -16,6 +16,10 @@ type Props = {
   /** Pide quitarlo (la pantalla de la rutina confirma antes). */
   onQuitar: () => void;
   onConfigurar: (cambios: CambiosPlan) => void;
+  /** Superserie (Fase 9g): si es el 1.º o el 2.º de una, y si se puede unir con el siguiente. */
+  superserie: "inicio" | "fin" | null;
+  puedeUnir: boolean;
+  onSuperserie: (unir: boolean) => void;
 };
 
 /** Un ejercicio de la rutina en tarjeta: nombre, plan, series con − / +, objetivo y orden. */
@@ -28,6 +32,9 @@ export function EjercicioRutinaFila({
   onMover,
   onQuitar,
   onConfigurar,
+  superserie,
+  puedeUnir,
+  onSuperserie,
 }: Props) {
   const [editandoReps, setEditandoReps] = useState(false);
   const [reps, setReps] = useState("");
@@ -47,7 +54,8 @@ export function EjercicioRutinaFila({
   const objetivo = textoReps(e);
 
   return (
-    <li className="tarjeta-ejercicio">
+    <li className={superserie ? `tarjeta-ejercicio superserie-${superserie}` : "tarjeta-ejercicio"}>
+      {superserie === "inicio" && <p className="marca-superserie">Superserie</p>}
       <div className="tarjeta-ejercicio-cabecera">
         <FotoCirculo nombre={e.nombre} tamano={32} />
         <div className="tarjeta-ejercicio-nombre">
@@ -122,6 +130,18 @@ export function EjercicioRutinaFila({
             </button>
           </div>
         </div>
+      )}
+
+      {editable && (superserie === "inicio" || puedeUnir) && (
+        <button
+          type="button"
+          className="enlace-superserie"
+          disabled={ocupado}
+          onClick={() => onSuperserie(superserie !== "inicio")}
+        >
+          {superserie === "inicio" ? "Separar la superserie" : "Superserie con el siguiente"}{" "}
+          <span className="oculto">({e.nombre})</span>
+        </button>
       )}
 
       {editandoReps && (

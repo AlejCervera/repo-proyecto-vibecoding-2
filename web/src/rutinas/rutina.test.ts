@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { mover, nombresEjercicios, parsearReps, resumen, separar, textoPlan, textoReps, type Rutina } from "./rutina";
+import { mover, puedeUnir, nombresEjercicios, parsearReps, resumen, separar, textoPlan, textoReps, type Rutina } from "./rutina";
 
 test("mover sube y baja un ejercicio", () => {
   expect(mover([1, 2, 3], 2, -1)).toEqual([1, 3, 2]);
@@ -66,4 +66,13 @@ test("nombres de los ejercicios de una rutina, en texto", () => {
   expect(nombresEjercicios(r("Press de banca", "Aperturas", "Fondos", "Cruces"))).toBe(
     "Press de banca, Aperturas y 2 más",
   );
+});
+
+test("puedeUnir: solo de 2 en 2, sin cadenas y nunca el último (Fase 9g)", () => {
+  const sueltos = [{}, {}, {}];
+  expect([0, 1, 2].map((i) => puedeUnir(sueltos, i))).toEqual([true, true, false]);
+  const unidos = [{ con_siguiente: true }, {}, {}];
+  expect([0, 1, 2].map((i) => puedeUnir(unidos, i))).toEqual([false, false, false]);
+  const segundos = [{}, { con_siguiente: true }, {}, {}];
+  expect([0, 1, 2, 3].map((i) => puedeUnir(segundos, i))).toEqual([false, false, false, false]);
 });

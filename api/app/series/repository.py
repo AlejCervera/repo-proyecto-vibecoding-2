@@ -7,13 +7,13 @@ import psycopg
 from app.series.validation import NuevaSerie
 
 _SELECT = (
-    "SELECT s.id, s.fecha, s.ejercicio_id, e.nombre, s.peso_kg, s.repeticiones "
+    "SELECT s.id, s.fecha, s.ejercicio_id, e.nombre, s.peso_kg, s.repeticiones, s.nota "
     "FROM series s JOIN ejercicios e ON e.id = s.ejercicio_id "
 )
 
 
 def _a_dict(row: tuple) -> dict[str, Any]:
-    id_, fecha, ejercicio_id, ejercicio, peso, reps = row
+    id_, fecha, ejercicio_id, ejercicio, peso, reps, nota = row
     return {
         "id": id_,
         "fecha": fecha.isoformat(),
@@ -21,6 +21,7 @@ def _a_dict(row: tuple) -> dict[str, Any]:
         "ejercicio": ejercicio,
         "peso_kg": float(peso),
         "repeticiones": reps,
+        "nota": nota,
     }
 
 
@@ -46,6 +47,19 @@ def actualizar(
         "UPDATE series SET fecha = %s, ejercicio_id = %s, peso_kg = %s, repeticiones = %s "
         "WHERE id = %s AND usuario_id = %s RETURNING id",
         (serie.fecha, serie.ejercicio_id, serie.peso_kg, serie.repeticiones, serie_id, usuario_id),
+    ).fetchone()
+    if row is None:
+        return None
+    return _a_dict(conn.execute(_SELECT + "WHERE s.id = %s", (serie_id,)).fetchone())
+
+
+def anotar(
+    conn: psycopg.Connection, usuario_id: int, serie_id: int, nota: str | None
+) -> dict[str, Any] | None:
+    """Pone o quita la nota. None si la serie no existe o no es del usuario."""
+    row = conn.execute(
+        "UPDATE series SET nota = %s WHERE id = %s AND usuario_id = %s RETURNING id",
+        (nota, serie_id, usuario_id),
     ).fetchone()
     if row is None:
         return None

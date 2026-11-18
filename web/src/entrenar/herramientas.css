@@ -1,0 +1,176 @@
+/* Fase 9g: notas, superseries y calculadora de discos. */
+
+/* --- Series hechas: se tocan para anotarlas ---------------------------------------------- */
+
+/* El botón llena la píldora y la hace de 44 px de alto (tocable con el pulgar) */
+main ol.puntos li.hecha {
+  padding: 0;
+}
+
+.pildora-serie {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 0;
+  padding: 4px 12px;
+  margin: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+}
+
+/* Con nota: un puntito lima arriba a la derecha */
+main ol.puntos li.con-nota {
+  position: relative;
+}
+
+main ol.puntos li.con-nota::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--acento);
+}
+
+.notas-anteriores {
+  margin: -4px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+main ul.notas-anteriores li {
+  padding: 0;
+  margin: 2px 0;
+  background: transparent;
+  color: var(--suave);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.nota-serie {
+  display: block;
+  color: var(--suave);
+  font-style: italic;
+}
+
+.nota-entreno {
+  color: var(--suave);
+  font-style: italic;
+}
+
+.contador-nota {
+  align-self: flex-end;
+  color: var(--suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.formulario-hoja textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--superficie-2);
+  color: var(--texto);
+  font: inherit;
+  font-size: 16px; /* evita el zoom automático del iPhone */
+  resize: vertical;
+}
+
+/* --- Superseries ------------------------------------------------------------------------- */
+
+.paso-superserie {
+  margin: -4px 0 10px;
+  color: var(--suave);
+  font-size: 0.9rem;
+}
+
+.paso-superserie .pildora {
+  color: var(--acento);
+}
+
+/* En la rutina, los dos ejercicios de la superserie unidos por una línea lima a la izquierda */
+main .tarjeta-ejercicio.superserie-inicio,
+main .tarjeta-ejercicio.superserie-fin {
+  border-left: 3px solid var(--acento);
+}
+
+main .tarjeta-ejercicio.superserie-inicio {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+main .tarjeta-ejercicio.superserie-fin {
+  margin-top: 2px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.marca-superserie {
+  margin: 0 0 6px;
+  color: var(--acento);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.enlace-superserie,
+.enlace-discos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 6px;
+  background: transparent;
+  color: var(--suave);
+  font-weight: 600;
+}
+
+/* --- Calculadora de discos --------------------------------------------------------------- */
+
+.discos-dibujo {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 96px;
+  margin: 12px 0;
+}
+
+.discos-barra {
+  width: 56px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--suave);
+}
+
+.disco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  border-radius: 4px;
+  background: var(--acento);
+  color: var(--texto-sobre-acento, #121413);
+  font-size: 0.6rem;
+  font-weight: 800;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.discos-lista {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.aviso-discos {
+  color: var(--suave);
+}

@@ -1,6 +1,11 @@
 import { enviarJson, pedir } from "./http";
 
-export type Perfil = { altura_cm: number | null; peso_corporal_kg: number | null };
+export type Perfil = {
+  altura_cm: number | null;
+  peso_corporal_kg: number | null;
+  /** Peso de la barra para la calculadora de discos (Fase 9g); 20 por defecto. */
+  barra_kg?: number;
+};
 
 export const obtenerPerfil = () => pedir<Perfil>("/perfil");
 

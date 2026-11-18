@@ -9,6 +9,7 @@ import {
   quitarEjercicio,
   renombrarRutina,
   reordenarRutina,
+  superserie,
 } from "../api/rutinas";
 import type { Ejercicio } from "../ejercicios/ejercicio";
 import { EjercicioPicker } from "../ejercicios/EjercicioPicker";
@@ -18,7 +19,7 @@ import { HojaInferior } from "../ui/HojaInferior";
 import { IconoEntrenar, IconoMas, IconoOpciones } from "../ui/iconos";
 import { EjercicioRutinaFila } from "./EjercicioRutinaFila";
 import { RecomendacionesPanel } from "./RecomendacionesPanel";
-import { mover, resumen, type EjercicioRutina, type Rutina } from "./rutina";
+import { mover, puedeUnir, resumen, type EjercicioRutina, type Rutina } from "./rutina";
 
 type Props = { rutinaId: number; onSesionCaducada: () => void };
 /** Qué hoja inferior está abierta (o ninguna, «ver»). */
@@ -153,6 +154,9 @@ export function RutinaPage({ rutinaId, onSesionCaducada }: Props) {
                 setQuitando(e);
               }}
               onConfigurar={(cambios) => ejecutar(() => configurarEjercicio(rutina.id, e.id, cambios))}
+              superserie={e.con_siguiente ? "inicio" : rutina.ejercicios[i - 1]?.con_siguiente ? "fin" : null}
+              puedeUnir={puedeUnir(rutina.ejercicios, i)}
+              onSuperserie={(unir) => ejecutar(() => superserie(rutina.id, e.id, unir))}
             />
           ))}
         </ol>

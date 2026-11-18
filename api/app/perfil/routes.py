@@ -25,8 +25,7 @@ def guardar_perfil(usuario: Usuario, datos: Annotated[Any, Body()] = None):
     except PerfilInvalido as e:
         return JSONResponse({"error": str(e)}, status_code=400)
     with db.connect() as conn:
-        repository.guardar(conn, usuario["id"], perfil)
-    return a_dict(perfil)
+        return a_dict(repository.guardar(conn, usuario["id"], perfil))
 
 
 @router.put("/bienvenida", status_code=204)

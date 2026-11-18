@@ -92,3 +92,44 @@ def validar_orden(actual: list[int], datos: Any) -> list[int]:
     if len(nuevo) != len(actual) or set(nuevo) != set(actual):
         raise RutinaInvalida("El orden debe incluir los mismos ejercicios de la rutina")
     return nuevo
+
+
+# --- Superseries (Fase 9g) ------------------------------------------------------------------
+# Cada ejercicio de la rutina puede ir «unido con el siguiente»: solo de 2 en 2, sin cadenas.
+
+
+def error_al_unir(orden: list[tuple[int, bool]], ejercicio_id: int) -> str | None:
+    """Por qué no se puede unir este ejercicio con el siguiente (None si se puede).
+
+    `orden` son los ejercicios de la rutina en orden, con si van unidos con el siguiente.
+    """
+    ids = [i for i, _ in orden]
+    if ejercicio_id not in ids:
+        return "Ese ejercicio no está en la rutina"
+    pos = ids.index(ejercicio_id)
+    if orden[pos][1]:
+        return None  # ya estaba unido: no es error
+    if pos == len(orden) - 1:
+        return "No hay un ejercicio después para hacer la superserie"
+    if pos > 0 and orden[pos - 1][1]:
+        return "Ese ejercicio ya está en una superserie"
+    if orden[pos + 1][1]:
+        return "El siguiente ya está en una superserie"
+    return None
+
+
+def siguen_unidos(antes: list[tuple[int, bool]], despues: list[int]) -> set[int]:
+    """Tras reordenar o quitar: los que conservan el mismo ejercicio siguiente siguen unidos."""
+    siguiente_antes = {antes[i][0]: antes[i + 1][0] for i in range(len(antes) - 1) if antes[i][1]}
+    return {
+        despues[i]
+        for i in range(len(despues) - 1)
+        if siguiente_antes.get(despues[i]) == despues[i + 1]
+    }
+
+
+def validar_superserie(datos: Any) -> bool:
+    valor = datos.get("con_siguiente") if isinstance(datos, dict) else None
+    if not isinstance(valor, bool):
+        raise RutinaInvalida("Indica si va unido con el siguiente (con_siguiente: true o false)")
+    return valor

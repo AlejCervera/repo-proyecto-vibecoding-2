@@ -16,6 +16,8 @@ export type Entrenamiento = {
   fecha: string;
   rutina_id: number | null;
   rutina_nombre: string;
+  /** «poco dormido» (Fase 9g). */
+  nota?: string | null;
   ejercicios: { id: number; nombre: string; series: Serie[] }[];
 };
 
@@ -30,3 +32,7 @@ export const guardarEntrenamiento = (rutina_id: number, fecha: string) =>
 export async function quitarEntrenamiento(id: number): Promise<void> {
   await pedir(`/entrenamientos/${id}`, { method: "DELETE" });
 }
+
+/** Pone (o quita, con texto vacío) la nota del entreno. */
+export const anotarEntrenamiento = (id: number, nota: string) =>
+  pedir<Entrenamiento>(`/entrenamientos/${id}/nota`, enviarJson({ nota }, "PUT"));

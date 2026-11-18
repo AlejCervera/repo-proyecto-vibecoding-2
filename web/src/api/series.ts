@@ -16,3 +16,8 @@ export function actualizarSerie(id: number, datos: unknown): Promise<Serie> {
 export async function borrarSerie(id: number): Promise<void> {
   await pedir(`/series/${id}`, { method: "DELETE" });
 }
+
+/** Pone (o quita, con texto vacío) la nota de una serie. */
+export function anotarSerie(id: number, nota: string): Promise<Serie> {
+  return pedir<Serie>(`/series/${id}/nota`, enviarJson({ nota }, "PUT"));
+}

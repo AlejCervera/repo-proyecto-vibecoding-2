@@ -71,7 +71,7 @@ def obtener(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
     """El entrenamiento y sus series, o None si no es del usuario."""
     row = conn.execute(
-        "SELECT id, fecha, rutina_id, rutina_nombre FROM entrenamientos "
+        "SELECT id, fecha, rutina_id, rutina_nombre, nota FROM entrenamientos "
         "WHERE id = %s AND usuario_id = %s",
         (entrenamiento_id, usuario_id),
     ).fetchone()
@@ -85,8 +85,17 @@ def obtener(
         "fecha": row[1].isoformat(),
         "rutina_id": row[2],
         "rutina_nombre": row[3],
+        "nota": row[4],
     }
     return cabecera, [serie_a_dict(s) for s in series]
+
+
+def anotar(conn: psycopg.Connection, usuario_id: int, entrenamiento_id: int, nota: str | None) -> bool:
+    cur = conn.execute(
+        "UPDATE entrenamientos SET nota = %s WHERE id = %s AND usuario_id = %s",
+        (nota, entrenamiento_id, usuario_id),
+    )
+    return cur.rowcount == 1
 
 
 def quitar(conn: psycopg.Connection, usuario_id: int, entrenamiento_id: int) -> bool:

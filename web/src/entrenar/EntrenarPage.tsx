@@ -22,6 +22,7 @@ import { CronometroPanel } from "./CronometroPanel";
 import { leerInicio, marcarInicio } from "./estadisticas";
 import { guardarAjustes, leerAjustes } from "./plan";
 import { PasoEjercicio } from "./PasoEjercicio";
+import { pareja, trasGuardar } from "./superserie";
 import { contarHoy } from "./progreso";
 import { RelojDescanso } from "./RelojDescanso";
 import { ResumenEntreno } from "./ResumenEntreno";
@@ -131,6 +132,9 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
 
   const e = ejercicios[actual];
   const esUltimo = actual === ejercicios.length - 1;
+  const otro = pareja(ejercicios, actual);
+  const superserie =
+    otro === null ? null : { con: ejercicios[otro].nombre, posicion: otro > actual ? (1 as const) : (2 as const) };
 
   return (
     // Cualquier toque desbloquea el sonido (iPhone solo lo permite tras una pulsación).
@@ -213,10 +217,17 @@ export function EntrenarPage({ rutinaId, paso, onSesionCaducada }: Props) {
         descanso={leerDuracion(e.id)}
         onAbrirDescanso={() => setDescansoEnPaso(paso)}
         onCambiarPrevistas={(n) => cambiarAjustes({ ...ajustes, [e.id]: n })}
+        superserie={superserie}
         onGuardada={(s) => {
           setSeries((prev) => [s, ...prev]);
           setInicio(marcarInicio(rutinaId, hoy, Date.now()));
-          cambiarCronometro(iniciar(leerDuracion(e.id), Date.now()));
+          // Superserie: tras el 1.º se pasa al 2.º sin descanso; tras el 2.º, descanso y vuelta al 1.º
+          const hechasAhora = new Map(cuenta).set(e.id, (cuenta.get(e.id) ?? 0) + 1);
+          const quedan = (j: number) =>
+            previstas(ejercicios[j].id, ejercicios[j].series) - (hechasAhora.get(ejercicios[j].id) ?? 0);
+          const siguiente = trasGuardar(ejercicios, actual, quedan);
+          if (siguiente.descanso) cambiarCronometro(iniciar(leerDuracion(e.id), Date.now()));
+          if (siguiente.ir !== null) window.location.hash = ir(siguiente.ir);
         }}
         onBorrada={(id) => {
           setSeries((prev) => prev.filter((s) => s.id !== id));

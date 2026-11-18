@@ -23,7 +23,7 @@ def test_crear_y_listar(ana, serie):
     r = ana.post("/series", json=serie)
     assert r.status_code == 201
     creada = r.json()
-    assert creada == {**serie, "id": creada["id"], "peso_kg": 80.0, "ejercicio": "Press de banca"}
+    assert creada == {**serie, "id": creada["id"], "peso_kg": 80.0, "ejercicio": "Press de banca", "nota": None}
 
     assert ana.get("/series").json() == [creada]
 
